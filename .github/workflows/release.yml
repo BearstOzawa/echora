@@ -114,7 +114,11 @@ jobs:
           restore-keys: cargo-release-windows-x64-
       - run: rustup update stable --no-self-update
       - run: npm ci
+      - name: Normalize Windows build command
+        run: npm pkg set "scripts.build:desktop=tsc -b && vite build --outDir dist-desktop"
       - name: Build unsigned installers
+        env:
+          VITE_ECHORA_UI_PLATFORM: desktop
         run: npm run client:desktop:build -- --bundles nsis,msi --no-sign --ci
       - name: Collect packages
         shell: pwsh
@@ -161,7 +165,8 @@ jobs:
           restore-keys: cargo-release-android-
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
-      - run: sdkmanager 'ndk;27.2.12479018'
+      - name: Install Android NDK
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018"'
       - run: npm ci
       - name: Configure Android signing
         env:
@@ -217,6 +222,8 @@ jobs:
           restore-keys: cargo-release-ios-device-
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-apple-ios
+      - name: Install XcodeGen
+        run: brew install xcodegen
       - run: npm ci
       - name: Build unsigned IPA
         run: npm run client:mobile:ios:build -- --target aarch64 --no-sign --ci
@@ -257,6 +264,8 @@ jobs:
           restore-keys: cargo-release-ios-simulator-
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-apple-ios-sim
+      - name: Install XcodeGen
+        run: brew install xcodegen
       - run: npm ci
       - name: Build simulator app
         run: npm run client:mobile:ios:build:simulator
