@@ -31,6 +31,8 @@
     "stability:android": "node scripts/android-soak.mjs",
     "stability:analyze": "node scripts/analyze-android-soak.mjs",
     "performance:budget": "node scripts/check-bundle-budget.mjs",
+    "release:check-version": "node scripts/check-release-version.mjs",
+    "deployment:register": "node scripts/register-cloud-deployment.mjs",
     "icon:generate": "node scripts/generate-icon.mjs && tauri icon src-tauri/icons/icon-source.png && node scripts/finalize-mobile-icons.mjs"
   },
   "dependencies": {

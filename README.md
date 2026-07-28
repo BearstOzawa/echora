@@ -1,106 +1,96 @@
 # Echora
 
-Echora is a local-first music workspace for Web, desktop, and mobile clients. It treats listening as an arrangement that can be shaped by intent, energy, time, and personal preferences instead of centering the product on a traditional player bar.
+Echora 是面向 Web、桌面与移动端的音乐应用。它将在线音乐、本地音乐、播放管理与 AI 编排统一在同一套产品体验中。
 
-## Current scope
+- Web：[echora-web.lili.uno](https://echora-web.lili.uno)
+- 官网与账户：[echora-cloud.lili.uno](https://echora-cloud.lili.uno)
+- 云端服务：[BearstOzawa/echora-cloud](https://github.com/BearstOzawa/echora-cloud)
 
-- A music library for search, liked tracks, local tracks, current arrangements, and playlists
-- Playlist creation, duplication, deletion, bulk actions, and desktop context menus
-- A draggable two-dimensional arrangement where position represents time and planned intensity
-- Persistent Listening Agent sessions with natural-language search, arrangement changes, undo, and reusable preferences
-- Embedded playback, volume, source status, quality switching, speed controls, and audio effects
-- Light and dark appearances, each with seven accent palettes and optional track-following color
-- Local persistence for playlists, liked tracks, settings, playback sessions, and AI session data
-- Two built-in LX source variants with optional user-supplied enhanced-quality credentials
-- Real multi-platform search with configurable result sizes and URL resolution: v1.2.0 uses QQ, NetEase Cloud Music, Kuwo, and Kugou; v1.1.2 replaces Kugou with Migu
-- Dynamic platform chart catalogs loaded from the public QQ Music, NetEase Cloud Music, Kuwo, Kugou, and Migu feeds supported by the selected source variant
-- A frameless, resizable Tauri desktop shell with native-style window controls
-- Keyboard-accessible menus and reduced-motion behavior
+## 产品能力
 
-Home and Featured use ten editorial discovery dimensions backed by current source searches and are presented as theme browsing rather than rankings. Collection and chart request sizes come from Content settings. The Charts page keeps platform-provided ordering, update metadata, and explicit live/cached/fallback provenance. Playback URLs are resolved through the isolated built-in LX runtime and cached for 20 minutes. Web downloads are handed to the browser and do not create an Echora local library. Desktop and mobile builds store downloaded or imported audio under the scoped application-local `music` directory. Desktop users can register multiple source folders in `Application Settings -> Local & Downloads`; rescans copy new audio into the managed library, and removing a source does not delete imported tracks. Mobile uses the system file picker instead of desktop-style folder sources.
+- 搜索、发现、精选、榜单、歌单、收藏与播放队列
+- 通过对话生成并调整音乐编排
+- Web、桌面和移动端使用各自的交互界面，共享核心业务能力
+- 账户、歌单、收藏、设置和会话保存在 Echora Cloud
+- 桌面与移动客户端支持本地音乐、下载和离线播放
+- 支持 EchoraAI，也支持用户配置自己的 AI 服务
+- 桌面媒体控制、系统托盘、移动端媒体会话与应用快捷入口
 
-Listening sessions use the configured OpenAI, Anthropic, OpenAI-compatible, or Ollama service to produce a structured plan. The model never supplies track records directly: search queries from the plan are executed against the currently available music sources, and only validated catalog results enter the queue. When AI is not configured, the same workflow uses an explicit local strategy for common artist, scene, energy, discovery, and keep-current requests.
+## 平台状态
 
-## Development
+| 平台 | 界面 | 当前状态 |
+| --- | --- | --- |
+| Web | 桌面与移动浏览器 | 可部署 |
+| macOS | Tauri 桌面客户端 | 可构建 |
+| Android | Tauri 移动客户端 | 可构建与调试 |
+| iOS | Tauri 移动客户端 | 支持模拟器验证，正式签名发布尚未启用 |
+
+在线音乐解析由 Echora Cloud 发起，音频地址返回后由终端直接播放。下载与导入的音乐保存在设备本地，不上传至账户。原生客户端在离线时可继续使用本地音乐、已下载内容和账户快照。
+
+## 开发
+
+需要 Node.js 22。构建原生客户端时，还需要 Rust stable 和对应平台的原生 SDK。
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-The automatic Web entry selects one UI application when the page starts. It does not swap component trees when the window is resized. For platform-specific development, use the fixed entries:
+固定界面入口：
 
 ```bash
 npm run dev:desktop
 npm run dev:mobile
 ```
 
-Run the desktop client:
-
-```bash
-npm run client:desktop:dev
-```
-
-Production build:
-
-```bash
-npm run build
-```
-
-Platform-only Web bundles are emitted separately and do not include the other platform application:
-
-```bash
-npm run build:desktop # dist-desktop
-npm run build:mobile  # dist-mobile
-```
-
-Run the automated behavior tests:
+常用验证：
 
 ```bash
 npm test
-```
-
-Configure the cross-platform update service for release builds:
-
-```bash
-VITE_ECHORA_UPDATE_ENDPOINT=https://your-worker.example \
-ECHORA_BUILD_ID="$GITHUB_SHA" \
 npm run build:desktop
+npm run build:mobile
+npm run performance:budget
+cargo check --manifest-path src-tauri/Cargo.toml
 ```
 
-The update endpoint is optional during development. When omitted, Echora keeps update checks disabled without affecting startup or playback. Release builds send only the application version, build ID, platform, architecture, channel, and a random local installation ID. Desktop installers, Android APKs, and signed iOS IPAs are downloaded from GitHub Releases; Web updates refresh to the published build. The update service lives in the sibling `echora-cloud` project.
-
-Package the desktop client:
+默认连接生产 Echora Cloud。本地联调时，在 `.env.development.local` 中设置：
 
 ```bash
+VITE_ECHORA_CLOUD_URL=http://127.0.0.1:8787
+```
+
+## 原生客户端
+
+```bash
+npm run client:desktop:dev
 npm run client:desktop:build
-```
 
-Initialize and run a mobile target after its native SDK is installed:
-
-```bash
 npm run client:mobile:android:init
 npm run client:mobile:android:dev
 
 npm run client:mobile:ios:init
 npm run client:mobile:ios:dev
-npm run client:mobile:ios:build:simulator
 ```
 
-## Architecture
+Android 需要 JDK 17、Android SDK 与 NDK `27.2.12479018`。iOS 需要 Xcode；没有开发者签名时仍可构建模拟器版本。
 
-- Tauri 2 desktop shell (scaffolded)
-- React and TypeScript UI
-- Independent desktop and mobile React application trees selected by `src/platforms/uiPlatform.ts`
-- A shared `useEchoraController` application controller for playback, sources, library data, AI sessions, persistence, and configuration
-- Platform-owned navigation, page composition, player placement, settings presentation, and transient surfaces under `src/platforms/desktop` and `src/platforms/mobile`
-- Platform bridge contract for search, official charts, lyrics, source requests, media, and AI requests
-- Web BFF transport for provider APIs that browsers cannot call directly because of CORS
-- Scoped Tauri filesystem storage for native offline audio, with an IndexedDB non-native adapter
-- Sandboxed built-in LX runtime for playback URL resolution
-- Deterministic format and quality verification
-- Optional user-provided AI model configuration routed through the platform bridge
+## 项目结构
 
-The Web surface is the current complete development entry point. Desktop Web and native desktop share the desktop UI application; mobile Web and the future native mobile package share the mobile UI application. Business state is shared, but platform UI must not branch on viewport inside the controller. The legacy shared stylesheet remains a migration base while page styles move into their platform directories.
+```text
+src/                  React 应用、业务状态与平台界面
+src/platforms/        桌面与移动端界面入口
+src/components/       共享交互组件
+src-tauri/            桌面与移动端原生能力
+scripts/              构建、图标和稳定性工具
+docs/                 架构与维护文档
+```
 
-A production Web deployment must run the BFF routes provided by the Vite gateway (preview mode includes them). Desktop and mobile Tauri builds consume fixed, platform-only frontend bundles through separate configuration overlays. Native packages now use the system HTTP stack for multi-platform search, LX source requests, and AI requests. Chart catalogs, lyrics, and range-aware media delivery remain on the native transport roadmap.
+架构边界见 [docs/platform-architecture.md](docs/platform-architecture.md)。
+
+## 贡献与安全
+
+提交代码前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请按 [SECURITY.md](SECURITY.md) 中的方式私下报告，不要公开提交包含凭据、个人数据或可复现攻击细节的 Issue。
+
+## 许可证
+
+项目尚未发布开源许可证。在许可证确定前，仓库内容仅供查看，不授予复制、修改或再分发权利。

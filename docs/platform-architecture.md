@@ -1,85 +1,56 @@
-# Echora multi-platform architecture
+# 平台架构
 
-## Product targets
+## 产品组成
 
-Echora has three shipping targets, but only two interaction shells:
+Echora 代码库交付三个产品目标：
 
-- Responsive Web: desktop Web and mobile Web, deployed together.
-- Desktop Native: the desktop shell packaged with Tauri.
-- Mobile Native: the mobile shell packaged with Tauri mobile.
+- Web：同一部署根据设备选择桌面或移动界面。
+- Desktop：Tauri 桌面壳，使用桌面界面与原生文件、窗口和媒体能力。
+- Mobile：Tauri 移动壳，使用移动界面与系统媒体、文件和生命周期能力。
 
-Desktop Web and desktop native share the desktop shell. Mobile Web and mobile
-native share the mobile shell. Native-only behavior is supplied by a platform
-adapter rather than being embedded in page components.
+Echora Cloud 是独立服务，负责账户、云端数据、在线音乐、EchoraAI 和版本登记。终端不保存官方服务密钥。
 
-## Intended boundaries
+## 前端边界
 
 ```text
-src/
-  core/                 music, queue, AI, library and settings domain logic
-  features/             headless feature controllers and shared view models
-  shells/
-    desktop/            desktop navigation, windows and pointer interactions
-    mobile/             mobile navigation, sheets, gestures and safe areas
-  platforms/
-    web/                 BFF transport, browser download and browser storage
-    tauri-desktop/       filesystem, window, tray and desktop download adapter
-    tauri-mobile/        offline library, share sheet and mobile lifecycle
-  entries/
-    web.tsx              responsive shell loader; mobile shell is lazy loaded
-    desktop.tsx          imports desktop shell and desktop adapter only
-    mobile.tsx           imports mobile shell and mobile adapter only
+src/main.tsx
+  -> src/platforms/uiPlatform.ts
+      -> desktop/DesktopApplication.tsx
+      -> mobile/MobileApplication.tsx
+  -> shared application controller and domain modules
+  -> platformBridge.ts / nativePlatformGateway.ts
 ```
 
-The dependency direction is one way:
+桌面与移动端拥有独立的页面结构、导航、媒体控制器和样式文件。播放、歌单、会话、设置与云端会话等业务状态保持共享。平台差异通过能力接口表达，不在业务模块中直接判断窗口宽度。
 
-```text
-entry -> shell -> features -> core
-  |                 |
-  +-> platform adapter <-+
-```
+## 数据边界
 
-`core` must not import React, Tauri or browser globals. Shells must not perform
-provider requests or direct filesystem work.
-
-## Build behavior
-
-- The Web build may contain both shells, but loads the unused shell as a lazy
-  chunk only after the responsive breakpoint changes.
-- The desktop package imports only the desktop entry, so mobile navigation and
-  mobile styles are absent from its bundle.
-- The mobile package imports only the mobile entry, so desktop tables, window
-  controls and desktop-only local-library code are absent from its bundle.
-- Shared domain modules are bundled once in each product, not copied at runtime.
-
-CSS follows the same rule: shared tokens are small, while `desktop.css` and
-`mobile.css` are imported only by their corresponding shell.
-
-## Platform contracts
-
-`PlatformBridge` selects the Web BFF in browsers and the Tauri HTTP transport in
-native packages. Native search, LX source requests, and AI requests no longer
-depend on Vite middleware. Chart catalogs, lyrics, and range-aware media delivery
-remain the next native transport milestones.
-
-Storage, download and lifecycle behavior also stay behind capabilities:
-
-| Capability | Web | Desktop native | Mobile native |
+| 数据 | Web | 原生客户端 | Echora Cloud |
 | --- | --- | --- | --- |
-| Music transport | deployed BFF | native command/HTTP adapter | native command/HTTP adapter |
-| Download | browser download | managed offline library | managed offline library |
-| File import | file picker | file and folder picker | system document picker |
-| Window lifecycle | browser | tray/close policy | foreground/background lifecycle |
-| Share | Web Share when available | system save/share | native share sheet |
+| 账户、歌单、收藏、设置、会话 | 会话缓存 | 离线快照与待提交更改 | 主数据 |
+| 在线音乐目录与解析结果 | 临时缓存 | 临时缓存 | 聚合与解析 |
+| 下载音乐 | 浏览器下载 | 应用本地目录 | 不存储 |
+| 导入音乐 | 浏览器会话 | 设备本地目录 | 不存储 |
+| EchoraAI 凭据 | 不保存官方密钥 | 不保存官方密钥 | 服务端保管 |
+| 自定义 AI 配置 | 账户数据 | 账户数据与离线快照 | 加密保存 |
 
-## Migration sequence
+在线音乐解析请求经过 Cloud，最终音频由终端直连内容地址。Cloud 不转发持续播放流量。
 
-1. Keep the current shared app while the first Web product is completed.
-2. Extract platform-neutral state and commands from `App.tsx` into feature
-   controllers without changing behavior.
-3. Move existing desktop and mobile markup into separate shell components.
-4. Add target-specific entries and CSS imports, then compare bundle contents.
-5. Complete the remaining native chart, lyrics, and media stream adapters.
+## 构建目标
 
-This sequence avoids a premature rewrite while preventing the current responsive
-prototype from becoming the permanent native architecture.
+| 命令 | 产物 |
+| --- | --- |
+| `npm run build` | 自动选择界面的 Web 构建 |
+| `npm run build:desktop` | 仅桌面界面的前端构建 |
+| `npm run build:mobile` | 仅移动界面的前端构建 |
+| `npm run client:desktop:build` | 当前桌面平台安装包 |
+| `npm run client:mobile:android:build` | Android 安装包 |
+| `npm run client:mobile:ios:build:simulator` | iOS 模拟器应用 |
+
+`scripts/check-bundle-budget.mjs` 同时检查桌面与移动构建，防止平台样式和代码重新合并进同一产物。
+
+## 原生能力
+
+`src-tauri/src/lib.rs` 暴露文件导入、下载、媒体控制、窗口、系统托盘和平台桥接能力。Android 与 iOS 的系统集成分别位于 `src-tauri/android`、`src-tauri/ios` 以及生成的原生项目中。
+
+浏览器请求通过 Echora Cloud 解决跨域和官方密钥保护问题；原生请求同样遵循 Cloud API 契约，避免平台之间出现不同的音乐与账户行为。

@@ -1,0 +1,150 @@
+name: Native Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to build
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: echora-native-release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+  VITE_ECHORA_CLOUD_URL: https://echora-cloud.lili.uno
+
+jobs:
+  verify:
+    name: Verify release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run release:check-version -- "$RELEASE_TAG"
+      - run: npm test
+      - run: npm run build:desktop
+      - run: npm run build:mobile
+      - run: npm run performance:budget
+
+  macos:
+    name: macOS arm64
+    needs: verify
+    runs-on: macos-14
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: cargo-release-macos-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: cargo-release-macos-
+      - run: rustup update stable --no-self-update
+      - run: npm ci
+      - run: npm run client:desktop:build -- --bundles dmg
+      - name: Collect package
+        run: |
+          mkdir -p release-artifacts
+          find src-tauri/target/release/bundle/dmg -name '*.dmg' -exec cp {} release-artifacts/ \;
+          test -n "$(find release-artifacts -name '*.dmg' -print -quit)"
+          cd release-artifacts
+          shasum -a 256 *.dmg > SHA256SUMS-macos.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: echora-macos-arm64
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  android:
+    name: Android arm64
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: cargo-release-android-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: cargo-release-android-
+      - run: rustup update stable --no-self-update
+      - run: rustup target add aarch64-linux-android
+      - run: sdkmanager 'ndk;27.2.12479018'
+      - run: npm ci
+      - run: npm run client:mobile:android:build -- --apk --target aarch64
+      - name: Collect package
+        run: |
+          mkdir -p release-artifacts
+          find src-tauri/gen/android/app/build/outputs/apk -name '*.apk' -exec cp {} release-artifacts/ \;
+          test -n "$(find release-artifacts -name '*.apk' -print -quit)"
+          cd release-artifacts
+          sha256sum *.apk > SHA256SUMS-android.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: echora-android-arm64
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  draft-release:
+    name: Draft GitHub Release
+    needs: [macos, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: echora-*
+          path: release-artifacts
+          merge-multiple: true
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --clobber release-artifacts/*
+          else
+            gh release create "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --draft \
+              --generate-notes \
+              --title "Echora ${RELEASE_TAG#v}" \
+              release-artifacts/*
+          fi
