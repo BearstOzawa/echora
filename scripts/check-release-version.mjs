@@ -13,11 +13,16 @@ const packageJson = JSON.parse(await readFile(new URL('../package.json', import.
 const tauriConfig = JSON.parse(await readFile(new URL('../src-tauri/tauri.conf.json', import.meta.url), 'utf8'))
 const cargoToml = await readFile(new URL('../src-tauri/Cargo.toml', import.meta.url), 'utf8')
 const cargoVersion = /^version\s*=\s*"([^"]+)"/m.exec(cargoToml)?.[1]
+const iosAppPlist = await readFile(new URL('../src-tauri/gen/apple/echora_iOS/Info.plist', import.meta.url), 'utf8')
+const iosExtensionPlist = await readFile(new URL('../src-tauri/gen/apple/EchoraNowPlayingExtension/Info.plist', import.meta.url), 'utf8')
+const plistVersion = (contents) => /<key>CFBundleShortVersionString<\/key>\s*<string>([^<]+)<\/string>/.exec(contents)?.[1]
 
 const versions = {
   'package.json': packageJson.version,
   'src-tauri/tauri.conf.json': tauriConfig.version,
   'src-tauri/Cargo.toml': cargoVersion,
+  'src-tauri/gen/apple/echora_iOS/Info.plist': plistVersion(iosAppPlist),
+  'src-tauri/gen/apple/EchoraNowPlayingExtension/Info.plist': plistVersion(iosExtensionPlist),
 }
 
 const mismatches = Object.entries(versions).filter(([, version]) => version !== expected)

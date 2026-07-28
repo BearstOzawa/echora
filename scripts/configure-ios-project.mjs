@@ -10,6 +10,8 @@ const staleArchiveAppPath = 'src-tauri/gen/apple/build/echora_iOS.xcarchive/Prod
 const staleSimulatorAppPath = 'src-tauri/gen/apple/build/arm64-sim/Echora.app'
 const iosIconSourceDirectory = 'src-tauri/icons/ios'
 const generatedIosIconDirectory = 'src-tauri/gen/apple/Assets.xcassets/AppIcon.appiconset'
+const tauriConfig = JSON.parse(await readFile('src-tauri/tauri.conf.json', 'utf8'))
+const applicationVersion = tauriConfig.version
 
 if (process.platform !== 'darwin') {
   console.log('iOS project configuration is only available on macOS')
@@ -25,6 +27,13 @@ try {
 
 let projectSpec = await readFile(generatedProjectSpecPath, 'utf8')
 let projectSpecChanged = false
+const versionedProjectSpec = projectSpec
+  .replace(/CFBundleShortVersionString: [^\n]+/g, `CFBundleShortVersionString: ${applicationVersion}`)
+  .replace(/CFBundleVersion: "[^"]+"/g, `CFBundleVersion: "${applicationVersion}"`)
+if (versionedProjectSpec !== projectSpec) {
+  projectSpec = versionedProjectSpec
+  projectSpecChanged = true
+}
 const replaceProjectAnchor = (anchor, replacement, message) => {
   if (!projectSpec.includes(anchor)) throw new Error(message)
   projectSpec = projectSpec.replace(anchor, replacement)
@@ -74,8 +83,8 @@ if (!projectSpec.includes('../../ios/EchoraSpeechRecognitionBridge.swift')) {
 
 if (!projectSpec.includes('        NSSupportsLiveActivities: true')) {
   replaceProjectAnchor(
-    '        CFBundleVersion: "0.1.0"\n    entitlements:',
-    '        CFBundleVersion: "0.1.0"\n        NSSupportsLiveActivities: true\n    entitlements:',
+    `        CFBundleVersion: "${applicationVersion}"\n    entitlements:`,
+    `        CFBundleVersion: "${applicationVersion}"\n        NSSupportsLiveActivities: true\n    entitlements:`,
     'Unable to locate iOS application metadata',
   )
 }
@@ -116,8 +125,8 @@ if (!projectSpec.includes('  EchoraNowPlayingExtension:')) {
       path: EchoraNowPlayingExtension/Info.plist
       properties:
         CFBundleDisplayName: Echora
-        CFBundleShortVersionString: 0.1.0
-        CFBundleVersion: "0.1.0"
+        CFBundleShortVersionString: ${applicationVersion}
+        CFBundleVersion: "${applicationVersion}"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:

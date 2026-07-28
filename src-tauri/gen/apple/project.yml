@@ -57,8 +57,8 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        CFBundleShortVersionString: 0.1.0
-        CFBundleVersion: "0.1.0"
+        CFBundleShortVersionString: 0.1.1
+        CFBundleVersion: "0.1.1"
         NSSupportsLiveActivities: true
     entitlements:
       path: echora_iOS/echora_iOS.entitlements
@@ -109,8 +109,8 @@ targets:
       path: EchoraNowPlayingExtension/Info.plist
       properties:
         CFBundleDisplayName: Echora
-        CFBundleShortVersionString: 0.1.0
-        CFBundleVersion: "0.1.0"
+        CFBundleShortVersionString: 0.1.1
+        CFBundleVersion: "0.1.1"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:

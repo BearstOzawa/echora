@@ -1,3 +1,4 @@
+import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -13,6 +14,14 @@ val tauriProperties = Properties().apply {
     }
 }
 
+val releaseKeystorePropertiesFile = rootProject.file("keystore.properties")
+val releaseKeystoreProperties = Properties().apply {
+    if (releaseKeystorePropertiesFile.exists()) {
+        load(FileInputStream(releaseKeystorePropertiesFile))
+    }
+}
+val hasReleaseSigning = releaseKeystorePropertiesFile.exists()
+
 android {
     compileSdk = 36
     namespace = "studio.echora.client"
@@ -23,6 +32,16 @@ android {
         targetSdk = 36
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
         versionName = tauriProperties.getProperty("tauri.android.versionName", "1.0")
+    }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                keyAlias = releaseKeystoreProperties["keyAlias"] as String
+                keyPassword = releaseKeystoreProperties["password"] as String
+                storeFile = file(releaseKeystoreProperties["storeFile"] as String)
+                storePassword = releaseKeystoreProperties["password"] as String
+            }
+        }
     }
     buildTypes {
         getByName("debug") {
@@ -38,6 +57,9 @@ android {
         }
         getByName("release") {
             isMinifyEnabled = true
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 *fileTree(".") { include("**/*.pro") }
                     .plus(getDefaultProguardFile("proguard-android-optimize.txt"))

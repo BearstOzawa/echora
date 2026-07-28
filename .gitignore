@@ -24,3 +24,4 @@ src-tauri/target/
 *.jks
 *.p12
 *.mobileprovision
+src-tauri/gen/android/keystore.properties

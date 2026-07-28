@@ -25,7 +25,7 @@ jobs:
   verify:
     name: Verify release
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
         with:
@@ -43,10 +43,18 @@ jobs:
       - run: npm run performance:budget
 
   macos:
-    name: macOS arm64
+    name: macOS ${{ matrix.arch }}
     needs: verify
     runs-on: macos-14
-    timeout-minutes: 60
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            target: aarch64-apple-darwin
+          - arch: x86_64
+            target: x86_64-apple-darwin
     steps:
       - uses: actions/checkout@v7
         with:
@@ -61,29 +69,75 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             src-tauri/target
-          key: cargo-release-macos-${{ hashFiles('src-tauri/Cargo.lock') }}
-          restore-keys: cargo-release-macos-
+          key: cargo-release-macos-${{ matrix.target }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: cargo-release-macos-${{ matrix.target }}-
       - run: rustup update stable --no-self-update
+      - run: rustup target add "${{ matrix.target }}"
       - run: npm ci
-      - run: npm run client:desktop:build -- --bundles dmg
+      - name: Build unsigned DMG
+        run: npm run client:desktop:build -- --target "${{ matrix.target }}" --bundles dmg --no-sign --ci
       - name: Collect package
+        env:
+          RELEASE_ARCH: ${{ matrix.arch }}
         run: |
+          version="${RELEASE_TAG#v}"
+          source="$(find "src-tauri/target/${{ matrix.target }}/release/bundle/dmg" -name '*.dmg' -print -quit)"
+          test -n "$source"
           mkdir -p release-artifacts
-          find src-tauri/target/release/bundle/dmg -name '*.dmg' -exec cp {} release-artifacts/ \;
-          test -n "$(find release-artifacts -name '*.dmg' -print -quit)"
-          cd release-artifacts
-          shasum -a 256 *.dmg > SHA256SUMS-macos.txt
+          cp "$source" "release-artifacts/Echora-${version}-macOS-${RELEASE_ARCH}.dmg"
       - uses: actions/upload-artifact@v7
         with:
-          name: echora-macos-arm64
+          name: echora-macos-${{ matrix.arch }}
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  windows:
+    name: Windows x64
+    needs: verify
+    runs-on: windows-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~\.cargo\registry
+            ~\.cargo\git
+            src-tauri\target
+          key: cargo-release-windows-x64-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: cargo-release-windows-x64-
+      - run: rustup update stable --no-self-update
+      - run: npm ci
+      - name: Build unsigned installers
+        run: npm run client:desktop:build -- --bundles nsis,msi --no-sign --ci
+      - name: Collect packages
+        shell: pwsh
+        run: |
+          $version = $env:RELEASE_TAG.TrimStart('v')
+          $exe = Get-ChildItem 'src-tauri/target/release/bundle/nsis/*.exe' | Select-Object -First 1
+          $msi = Get-ChildItem 'src-tauri/target/release/bundle/msi/*.msi' | Select-Object -First 1
+          if (-not $exe -or -not $msi) { throw 'Windows installers were not generated.' }
+          New-Item -ItemType Directory -Force release-artifacts | Out-Null
+          Copy-Item $exe.FullName "release-artifacts/Echora-$version-Windows-x64-Setup.exe"
+          Copy-Item $msi.FullName "release-artifacts/Echora-$version-Windows-x64.msi"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: echora-windows-x64
           path: release-artifacts/*
           if-no-files-found: error
 
   android:
-    name: Android arm64
+    name: Android APK
     needs: verify
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    environment: production
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
         with:
@@ -106,26 +160,123 @@ jobs:
           key: cargo-release-android-${{ hashFiles('src-tauri/Cargo.lock') }}
           restore-keys: cargo-release-android-
       - run: rustup update stable --no-self-update
-      - run: rustup target add aarch64-linux-android
+      - run: rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
       - run: sdkmanager 'ndk;27.2.12479018'
       - run: npm ci
-      - run: npm run client:mobile:android:build -- --apk --target aarch64
+      - name: Configure Android signing
+        env:
+          ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$ANDROID_KEY_BASE64"
+          test -n "$ANDROID_KEY_ALIAS"
+          test -n "$ANDROID_KEY_PASSWORD"
+          printf '%s' "$ANDROID_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/echora-release.jks"
+          {
+            printf 'password=%s\n' "$ANDROID_KEY_PASSWORD"
+            printf 'keyAlias=%s\n' "$ANDROID_KEY_ALIAS"
+            printf 'storeFile=%s\n' "$RUNNER_TEMP/echora-release.jks"
+          } > src-tauri/gen/android/keystore.properties
+      - name: Build signed universal APK
+        run: npm run client:mobile:android:build -- --apk --target aarch64 armv7 x86_64 --ci
       - name: Collect package
         run: |
+          version="${RELEASE_TAG#v}"
+          source="$(find src-tauri/gen/android/app/build/outputs/apk -name '*.apk' ! -name '*unsigned*' -print -quit)"
+          test -n "$source"
           mkdir -p release-artifacts
-          find src-tauri/gen/android/app/build/outputs/apk -name '*.apk' -exec cp {} release-artifacts/ \;
-          test -n "$(find release-artifacts -name '*.apk' -print -quit)"
-          cd release-artifacts
-          sha256sum *.apk > SHA256SUMS-android.txt
+          cp "$source" "release-artifacts/Echora-${version}-Android-universal.apk"
       - uses: actions/upload-artifact@v7
         with:
-          name: echora-android-arm64
+          name: echora-android
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  ios-device:
+    name: iOS unsigned IPA
+    needs: verify
+    runs-on: macos-14
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: cargo-release-ios-device-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: cargo-release-ios-device-
+      - run: rustup update stable --no-self-update
+      - run: rustup target add aarch64-apple-ios
+      - run: npm ci
+      - name: Build unsigned IPA
+        run: npm run client:mobile:ios:build -- --target aarch64 --no-sign --ci
+      - name: Collect package
+        run: |
+          version="${RELEASE_TAG#v}"
+          source="$(find src-tauri/gen/apple -name '*.ipa' -print -quit)"
+          test -n "$source"
+          mkdir -p release-artifacts
+          cp "$source" "release-artifacts/Echora-${version}-iOS-unsigned.ipa"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: echora-ios-unsigned
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  ios-simulator:
+    name: iOS Simulator
+    needs: verify
+    runs-on: macos-14
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: cargo-release-ios-simulator-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: cargo-release-ios-simulator-
+      - run: rustup update stable --no-self-update
+      - run: rustup target add aarch64-apple-ios-sim
+      - run: npm ci
+      - name: Build simulator app
+        run: npm run client:mobile:ios:build:simulator
+      - name: Collect package
+        run: |
+          version="${RELEASE_TAG#v}"
+          source="$(find src-tauri/gen/apple -path '*iphonesimulator*' -name '*.app' -type d -print -quit)"
+          test -n "$source"
+          mkdir -p release-artifacts
+          ditto -c -k --sequesterRsrc --keepParent "$source" "release-artifacts/Echora-${version}-iOS-Simulator.zip"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: echora-ios-simulator
           path: release-artifacts/*
           if-no-files-found: error
 
   draft-release:
     name: Draft GitHub Release
-    needs: [macos, android]
+    needs: [verify, macos, windows, android, ios-device, ios-simulator]
+    if: ${{ always() && needs.verify.result == 'success' && needs.macos.result == 'success' && needs.windows.result == 'success' && needs.android.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v8
@@ -133,6 +284,13 @@ jobs:
           pattern: echora-*
           path: release-artifacts
           merge-multiple: true
+      - name: Create checksum manifest
+        run: |
+          cd release-artifacts
+          find . -maxdepth 1 -type f ! -name 'SHA256SUMS.txt' -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            | sed 's#  \./#  #' > SHA256SUMS.txt
       - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
