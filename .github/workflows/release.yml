@@ -220,6 +220,8 @@ jobs:
             src-tauri/target
           key: cargo-release-ios-device-${{ hashFiles('src-tauri/Cargo.lock') }}
           restore-keys: cargo-release-ios-device-
+      - name: Select Xcode 16.2
+        run: sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-apple-ios
       - run: npm ci
@@ -260,6 +262,8 @@ jobs:
             src-tauri/target
           key: cargo-release-ios-simulator-${{ hashFiles('src-tauri/Cargo.lock') }}
           restore-keys: cargo-release-ios-simulator-
+      - name: Select Xcode 16.2
+        run: sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-apple-ios-sim
       - run: npm ci
