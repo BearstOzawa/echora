@@ -1,4 +1,4 @@
-import { access, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
+import { access, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import sharp from 'sharp'
 
@@ -148,9 +148,13 @@ if (!projectSpec.includes('      - path: ../../ios/EchoraLiveActivityIntents.swi
 }
 
 if (projectSpecChanged) await writeFile(generatedProjectSpecPath, projectSpec)
+await Promise.all([
+  mkdir(`${generatedProjectDirectory}/assets`, { recursive: true }),
+  mkdir(`${generatedProjectDirectory}/Externals`, { recursive: true }),
+])
 execFileSync('/usr/bin/env', ['xcodegen', 'generate'], {
   cwd: generatedProjectDirectory,
-  stdio: 'ignore',
+  stdio: 'inherit',
 })
 
 const sourceXml = await readFile(sourcePlistPath, 'utf8')
