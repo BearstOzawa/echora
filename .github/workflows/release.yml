@@ -222,11 +222,9 @@ jobs:
           restore-keys: cargo-release-ios-device-
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-apple-ios
-      - name: Install XcodeGen
-        run: brew install xcodegen
       - run: npm ci
       - name: Build unsigned IPA
-        run: npm run client:mobile:ios:build -- --target aarch64 --no-sign --ci
+        run: npx tauri ios build --config src-tauri/tauri.mobile.conf.json --target aarch64 --no-sign --ci
       - name: Collect package
         run: |
           version="${RELEASE_TAG#v}"
@@ -264,11 +262,11 @@ jobs:
           restore-keys: cargo-release-ios-simulator-
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-apple-ios-sim
-      - name: Install XcodeGen
-        run: brew install xcodegen
       - run: npm ci
       - name: Build simulator app
-        run: npm run client:mobile:ios:build:simulator
+        run: npx tauri ios build --debug --target aarch64-sim --no-sign --ci --config src-tauri/tauri.mobile.conf.json
+      - name: Sign simulator app
+        run: node scripts/sign-ios-simulator-app.mjs
       - name: Collect package
         run: |
           version="${RELEASE_TAG#v}"
