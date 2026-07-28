@@ -222,11 +222,13 @@ jobs:
           restore-keys: cargo-release-ios-device-
       - name: Select Xcode 16.2
         run: sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
+      - name: Install XcodeGen
+        run: brew install xcodegen
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-apple-ios
       - run: npm ci
       - name: Build unsigned IPA
-        run: npx tauri ios build --config src-tauri/tauri.mobile.conf.json --target aarch64 --no-sign --ci
+        run: npm run client:mobile:ios:build -- --target aarch64 --no-sign --ci
       - name: Collect package
         run: |
           version="${RELEASE_TAG#v}"
@@ -264,17 +266,17 @@ jobs:
           restore-keys: cargo-release-ios-simulator-
       - name: Select Xcode 16.2
         run: sudo xcode-select --switch /Applications/Xcode_16.2.app/Contents/Developer
+      - name: Install XcodeGen
+        run: brew install xcodegen
       - run: rustup update stable --no-self-update
       - run: rustup target add aarch64-apple-ios-sim
       - run: npm ci
       - name: Build simulator app
-        run: npx tauri ios build --debug --target aarch64-sim --no-sign --ci --config src-tauri/tauri.mobile.conf.json
-      - name: Sign simulator app
-        run: node scripts/sign-ios-simulator-app.mjs
+        run: npm run client:mobile:ios:build:simulator
       - name: Collect package
         run: |
           version="${RELEASE_TAG#v}"
-          source="$(find src-tauri/gen/apple -path '*iphonesimulator*' -name '*.app' -type d -print -quit)"
+          source="$(find src-tauri/gen/apple/build/arm64-sim -name '*.app' -type d -print -quit)"
           test -n "$source"
           mkdir -p release-artifacts
           ditto -c -k --sequesterRsrc --keepParent "$source" "release-artifacts/Echora-${version}-iOS-Simulator.zip"
