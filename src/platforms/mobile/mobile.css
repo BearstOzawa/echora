@@ -1,0 +1,2507 @@
+/* The mobile entry owns its layout at every viewport width. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+  --mobile-gutter: clamp(16px, 4.6vw, 22px);
+  --mobile-canvas-width: min(100vw, 480px);
+  --mobile-nav-height: 52px;
+  --mobile-player-clearance: 0px;
+  --mobile-bottom-clearance: calc(var(--mobile-nav-height) + var(--safe-area-inset-bottom) + var(--mobile-player-clearance));
+  --mobile-content-bottom: calc(var(--mobile-bottom-clearance) + 10px);
+  position: fixed;
+  top: var(--mobile-visual-viewport-offset-top, 0px);
+  right: 0;
+  bottom: auto;
+  left: 0;
+  width: 100%;
+  min-width: 0;
+  height: var(--mobile-visual-viewport-height, 100dvh);
+  min-height: 0;
+  display: block;
+  overflow: hidden;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] {
+  --safe-area-inset-top: max(env(safe-area-inset-top, 0px), var(--native-safe-area-top, 0px), 28px);
+  --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-bottom, 0px), 28px);
+  --safe-area-inset-right: max(env(safe-area-inset-right, 0px), var(--native-safe-area-right, 0px));
+  --safe-area-inset-left: max(env(safe-area-inset-left, 0px), var(--native-safe-area-left, 0px));
+  font-family: Roboto, "Noto Sans CJK SC", "Noto Sans SC", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Android stays edge-to-edge, but only the actual system icon zone receives a
+   theme-matched fill. Extending it into content creates a visible white glow
+   on light themes, especially in landscape. */
+html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] .mobile-system-bar-scrim {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 3000;
+  height: var(--safe-area-inset-top);
+  pointer-events: none;
+  background: var(--theme-stage);
+}
+
+/* Android WebView can block its UI thread in HardwareRenderer while live blur
+   surfaces resize around the IME. Keep the glass hierarchy through translucent
+   fills, strokes and highlights without sampling the scene behind each layer. */
+html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] *,
+html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] *::before,
+html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Large transform animations are disproportionately expensive in Android
+   WebView software-rendering fallbacks. Keep state feedback, but reveal whole
+   workspaces and sheets in their final position and virtualize long queues. */
+html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] :is(
+  .spatial-stage > section,
+  .global-queue-panel,
+  .playback-variant-panel,
+  .settings-modal,
+  .effects-panel,
+  .playlist-editor,
+  .playlist-picker,
+  .agent-preferences,
+  .memory-manager,
+  .context-menu,
+  .global-queue-list > button
+) {
+  animation: none !important;
+}
+html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] .global-queue-panel {
+  contain: layout paint;
+}
+html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] .global-queue-list > button {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 60px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] :is(
+  .mobile-home-page > .mobile-content-section,
+  .mobile-discovery-page > .mobile-content-section
+) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 360px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .mobile-chart-list > * { content-visibility: auto; contain-intrinsic-size: auto 130px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .mobile-track-list > * { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"].has-global-player {
+  --mobile-player-clearance: 70px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"].is-library-subpage {
+  --mobile-bottom-clearance: calc(var(--mobile-player-clearance) + var(--safe-area-inset-bottom));
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body.is-library,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body.is-agent-session,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body.is-now-playing {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--mobile-canvas-width);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  display: block;
+  overflow: hidden;
+  transform: translateX(-50%);
+  box-shadow: 0 0 56px rgba(0, 0, 0, .12);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .spatial-stage {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-scroll {
+  padding: max(10px, var(--safe-area-inset-top)) var(--mobile-gutter)
+    var(--mobile-content-bottom);
+  scrollbar-width: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-scroll::-webkit-scrollbar { display: none; }
+
+/* Mobile collection layouts are container-owned and never depend on viewport breakpoints. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-home-page,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-discovery-page,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-page { padding-inline: var(--mobile-gutter); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-card-rail,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-rail {
+  margin: 0 calc(-1 * var(--mobile-gutter)) 0 0;
+  padding: 0 var(--mobile-gutter) 5px 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  gap: 11px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-card-rail { grid-auto-columns: 136px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-rail { grid-auto-columns: min(352px, 84vw); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-hot > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  gap: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list > article {
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  padding: 7px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--glass-stroke) 66%, transparent);
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 38px;
+  gap: 10px;
+  align-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list > article > img {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  object-fit: cover;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list > article > span { min-width: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list strong,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list strong { font-size: 14px; font-weight: 660; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list small {
+  margin-top: 4px;
+  color: var(--theme-faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-preview-track-list > article > button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--theme-accent) 12%, transparent);
+  color: var(--theme-accent);
+  display: grid;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-theme-grid > button { min-width: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-theme-grid > button > span { aspect-ratio: 1.18; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-provider-section > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-provider-section > div > button {
+  min-width: 0;
+  min-height: 64px;
+  grid-template-columns: 28px minmax(0, 1fr) 16px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-provider-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--source-color, var(--theme-accent)) 14%, transparent);
+  color: var(--source-color, var(--theme-accent));
+  display: grid;
+  place-items: center;
+}
+
+/* The player and navigation share one edge-to-edge glass dock. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome {
+  position: fixed;
+  right: auto;
+  bottom: 0;
+  left: 50%;
+  z-index: 700;
+  width: var(--mobile-canvas-width);
+  min-height: calc(var(--mobile-nav-height) + var(--safe-area-inset-bottom));
+  padding-bottom: var(--safe-area-inset-bottom);
+  overflow: visible;
+  isolation: isolate;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: translateX(-50%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome.has-player {
+  padding-top: 4px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -46px 0 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    color-mix(in srgb, var(--theme-stage) 9%, transparent) 16%,
+    color-mix(in srgb, var(--theme-panel-strong) 34%, transparent) 39%,
+    color-mix(in srgb, var(--theme-panel-strong) 68%, transparent) 68%,
+    color-mix(in srgb, var(--theme-panel-strong) 82%, transparent) 100%
+  );
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, rgba(0, 0, 0, .25) 18%, #000 46%);
+  mask-image: linear-gradient(to bottom, transparent 0, rgba(0, 0, 0, .25) 18%, #000 46%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome.is-subpage {
+  min-height: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome.is-subpage:not(.has-player) {
+  display: none;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  z-index: 1;
+  height: var(--mobile-nav-height);
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button {
+  position: relative;
+  min-width: 0;
+  min-height: var(--mobile-nav-height);
+  padding: 0 3px;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  color: var(--theme-faint);
+  display: flex;
+  grid-template-rows: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  font-size: 15px;
+  font-weight: 760;
+  line-height: 1;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button::before { display: none !important; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button.is-active { color: var(--theme-text); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button > em {
+  top: 10px;
+  right: auto;
+  left: calc(50% + 20px);
+  min-width: 16px;
+  padding: 1px 3px 2px;
+  border-radius: 5px;
+  font-size: 8px;
+  line-height: 1;
+  text-align: center;
+  transform: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button:has(> em) > span { transform: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome.has-player .mobile-bottom-navigation > button { padding-top: 0; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  z-index: 2;
+  width: calc(100% - 24px);
+  height: 56px;
+  margin: 0 12px 10px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  grid-template-columns: minmax(0, 1fr) 40px 82px;
+  gap: 6px;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--glass-floating) 78%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 58%, transparent), 0 8px 24px rgba(0, 0, 0, .07);
+  backdrop-filter: blur(28px) saturate(145%);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player-track {
+  height: 48px;
+  padding: 3px;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player-cover { width: 40px; height: 40px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player-track strong { font-size: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player-track small { margin-top: 3px; font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .playback-transport.is-compact .playback-toolbar {
+  width: 40px;
+  height: 48px;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 40px;
+  grid-template-rows: 48px;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .playback-transport.is-compact .playback-primary {
+  grid-column: 1;
+  grid-row: 1;
+  width: 40px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .playback-transport.is-compact .playback-toolbar .playback-play {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--theme-panel-strong), var(--theme-panel-strong)) padding-box,
+    conic-gradient(var(--theme-accent) var(--player-progress, 0%), color-mix(in srgb, var(--theme-text) 18%, transparent) 0) border-box;
+  color: var(--theme-accent);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .playback-transport.is-compact .playback-toolbar .playback-play svg {
+  width: 18px;
+  height: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player::after {
+  content: none;
+  display: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"]:not([data-workspace="nowPlaying"]) .global-player-tools {
+  width: 88px;
+  min-width: 88px;
+  gap: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"]:not([data-workspace="nowPlaying"]) .global-player-more,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"]:not([data-workspace="nowPlaying"]) .global-player-queue {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+}
+
+/* Discover keeps the local view switch available after scrolling. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-discovery-page { padding-top: var(--safe-area-inset-top); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-discovery-page > .mobile-page-title { padding-top: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-discovery-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  margin: 4px 0 18px;
+  padding: 3px;
+  border: 1px solid color-mix(in srgb, var(--glass-stroke) 78%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--theme-panel-strong) 70%, transparent);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 3px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 12%, transparent), 0 10px 28px rgba(0, 0, 0, .08);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-discovery-tabs button {
+  position: relative;
+  min-width: 0;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--theme-faint);
+  font-size: 14px;
+  font-weight: 650;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-discovery-tabs button.is-active {
+  background: color-mix(in srgb, var(--glass-control-active) 74%, transparent);
+  color: var(--theme-text);
+  font-weight: 760;
+  box-shadow: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-discovery-tabs button.is-active::after { content: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-list { gap: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-list .mobile-chart-summary {
+  min-height: 132px;
+  padding: 13px;
+  grid-template-columns: 86px minmax(0, 1fr) 18px;
+  gap: 13px;
+  border-radius: 16px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-list .mobile-chart-cover { width: 86px; height: 86px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-content > span strong { font-size: 16px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-content > span small { font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-filters {
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 6px;
+  overflow: visible;
+  scroll-padding-left: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-filters button {
+  height: 34px;
+  padding: 0 8px;
+  gap: 5px;
+  border-radius: 17px;
+  font-size: 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-provider-section button { font-size: 13px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-provider-mark,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-filters button > span {
+  color: var(--source-color, var(--theme-accent));
+}
+
+/* Mobile search has useful content before the first query. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-results { padding-top: 10px; overscroll-behavior-y: contain; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-start {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 4px 0 22px;
+  display: block;
+  color: var(--theme-muted);
+  text-align: left;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-start > header {
+  min-height: 84px;
+  display: block;
+  align-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-start > header > span {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--theme-accent) 13%, var(--glass-control));
+  color: var(--theme-accent);
+  display: grid;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-start > header strong {
+  margin: 0;
+  font-size: 20px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-start > header p {
+  max-width: none;
+  margin: 5px 0 0;
+  font-size: 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-discovery {
+  width: 100%;
+  min-width: 0;
+  margin-top: 20px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending > strong,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-discovery > strong {
+  margin: 0 0 10px;
+  display: block;
+  font-size: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending > div {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending button {
+  min-width: 0;
+  min-height: 46px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--glass-stroke);
+  background: transparent;
+  color: var(--theme-text);
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  text-align: left;
+  font-size: 14px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending button b {
+  color: var(--theme-accent);
+  font-size: 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending button span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending.is-fresh { margin-top: 22px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending.is-fresh button b { color: var(--theme-accent); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-live-state { min-height: 116px; color: var(--theme-muted); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--type-caption); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-discovery > div {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-discovery button {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1.55;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 14px;
+  background: var(--glass-control);
+  color: white;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-discovery img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-discovery button::after {
+  content: '';
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, .66));
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-discovery button span {
+  position: absolute;
+  right: 10px;
+  bottom: 9px;
+  left: 10px;
+  z-index: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 680;
+  text-align: left;
+}
+
+/* My is a profile home, not a desktop library sidebar compressed into a phone. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-page {
+  padding-top: max(8px, var(--safe-area-inset-top));
+}
+.mobile-personal-toolbar {
+  position: relative;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+}
+.mobile-personal-toolbar h1 { position: absolute; left: 50%; margin: 0; text-align: center; font-size: 19px; font-weight: 730; transform: translateX(-50%); }
+.mobile-personal-toolbar > button,
+.mobile-personal-toolbar-actions > button {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--theme-muted);
+  display: grid;
+  place-items: center;
+}
+.mobile-personal-toolbar-actions { grid-column: 3; display: flex; align-items: center; gap: 2px; }
+.mobile-personal-toolbar-actions > button:last-child i {
+  position: absolute;
+  right: 7px;
+  bottom: 8px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--theme-stage);
+  border-radius: 50%;
+  background: #f0a23a;
+}
+.mobile-personal-toolbar-actions > button:last-child i.is-ready { background: #33bd79; }
+.mobile-personal-toolbar-actions > button:last-child i.is-error { background: #e05b61; }
+.mobile-profile-hero {
+  margin: 8px 0 18px;
+  padding: 8px 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.mobile-profile-identity {
+  width: 100%;
+  min-height: 128px;
+  padding: 6px 0 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 76px auto;
+  justify-items: center;
+  gap: 10px;
+  align-items: center;
+  text-align: center;
+  cursor: default;
+  user-select: none;
+}
+.mobile-profile-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--theme-accent) 17%, var(--glass-control-active));
+  color: var(--theme-accent);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  font-weight: 760;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-accent) 28%, transparent), 0 12px 30px rgba(0, 0, 0, .12);
+}
+.mobile-profile-identity > span:nth-child(2) { min-width: 0; max-width: min(100%, 300px); }
+.mobile-profile-identity strong,
+.mobile-profile-identity small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mobile-profile-identity strong { font-size: 20px; font-weight: 720; }
+.mobile-profile-identity small { margin-top: 6px; color: var(--theme-faint); font-size: 11px; }
+.mobile-profile-identity > svg { display: none; }
+.mobile-source-summary {
+  width: 100%;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--theme-muted);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 18px;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+}
+.mobile-source-summary > span { display: flex; align-items: center; gap: 9px; }
+.mobile-source-summary i { width: 8px; height: 8px; border-radius: 50%; background: #f0a23a; }
+.mobile-source-summary i.is-ready { background: #33bd79; }
+.mobile-source-summary i.is-error { background: #e05b61; }
+.mobile-source-summary strong { color: var(--theme-text); font-size: 14px; }
+.mobile-source-summary small { font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcuts {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 6px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcuts > button {
+  min-width: 0;
+  min-height: 78px;
+  padding: 7px 2px 6px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--theme-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  text-align: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcuts > button > span:first-child {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  margin: 0 0 7px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--theme-accent) 13%, var(--glass-control-active));
+  color: var(--theme-accent);
+  display: grid;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcuts > button > svg { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcut-copy { width: 100%; min-width: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcut-copy strong,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcut-copy small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcut-copy strong { font-size: 12px; font-weight: 660; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-shortcut-copy small { margin-top: 4px; color: var(--theme-faint); font-size: 12px; }
+.mobile-source-shortcut-icon > i {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--theme-stage);
+  border-radius: 50%;
+  background: #f0a23a;
+}
+.mobile-source-shortcut-icon > i.is-ready { background: #33bd79; }
+.mobile-source-shortcut-icon > i.is-error { background: #e05b61; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section {
+  margin-top: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > header,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > header {
+  min-height: 38px;
+  padding: 0 2px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > header strong,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > header strong {
+  font-size: 15px;
+  font-weight: 680;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > div {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--glass-stroke) 74%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--glass-control) 50%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button {
+  width: 100%;
+  min-width: 0;
+  min-height: 62px;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--glass-stroke) 66%, transparent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--theme-muted);
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 18px;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button:last-child { border-bottom: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button > span:first-child {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--theme-accent) 12%, var(--glass-control-active));
+  color: var(--theme-accent);
+  display: grid;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section strong,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button strong { color: var(--theme-text); font-size: 14px; font-weight: 650; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button small { margin-top: 4px; color: var(--theme-faint); font-size: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section.is-personalization { margin-top: 20px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section {
+  margin-top: 20px;
+  padding-top: 0;
+  border-top: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > header { min-height: 42px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > header > button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > div > article,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-create-playlist {
+  min-height: 66px;
+  border-bottom-color: color-mix(in srgb, var(--glass-stroke) 70%, transparent);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > div > article > button:first-child {
+  padding-left: 10px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-create-playlist {
+  box-sizing: border-box;
+  padding: 10px 12px;
+}
+
+.theme-drawer-backdrop { padding: 0; align-items: flex-end; }
+.mobile-theme-sheet {
+  width: var(--mobile-canvas-width);
+  max-height: 82dvh;
+  padding: 10px 16px calc(18px + var(--safe-area-inset-bottom));
+  overflow-y: auto;
+  border-radius: 26px 26px 0 0;
+  border: 1px solid var(--material-line);
+  border-bottom: 0;
+  background: var(--material-sheet);
+  box-shadow: inset 0 1px 0 var(--material-highlight), var(--material-shadow);
+  backdrop-filter: var(--material-blur-sheet);
+  -webkit-backdrop-filter: var(--material-blur-sheet);
+}
+.mobile-theme-sheet > header { height: 48px; display: flex; align-items: center; justify-content: space-between; }
+.mobile-theme-sheet > header > span { display: flex; align-items: center; gap: 9px; }
+.mobile-theme-sheet > header > button { width: 38px; height: 38px; border: 0; border-radius: 50%; background: transparent; color: var(--theme-muted); display: grid; place-items: center; }
+.mobile-appearance-modes { margin-top: 8px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mobile-appearance-modes > button { min-height: 68px; padding: 10px; border: 1px solid var(--glass-stroke); border-radius: 14px; background: var(--glass-control); color: var(--theme-muted); display: grid; grid-template-columns: 24px minmax(0, 1fr) 16px; gap: 8px; align-items: center; text-align: left; }
+.mobile-appearance-modes > button.is-active { border-color: color-mix(in srgb, var(--theme-accent) 38%, var(--glass-stroke)); background: color-mix(in srgb, var(--theme-accent) 10%, var(--glass-control)); color: var(--theme-text); }
+.mobile-appearance-modes strong, .mobile-appearance-modes small { display: block; }
+.mobile-appearance-modes small { margin-top: 4px; color: var(--theme-faint); font-size: 12px; }
+.mobile-palette-grid { margin-top: 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.mobile-palette-grid > button { position: relative; min-height: 58px; padding: 7px 3px; border: 0; border-radius: 12px; background: transparent; color: var(--theme-muted); display: grid; justify-items: center; gap: 5px; font-size: 11px; }
+.mobile-palette-grid > button > i { width: 28px; height: 28px; border: 3px solid color-mix(in srgb, var(--theme-panel-strong) 86%, transparent); border-radius: 50%; box-shadow: 0 0 0 1px var(--glass-stroke); }
+.mobile-palette-grid > button > svg { position: absolute; top: 5px; right: calc(50% - 22px); width: 15px; height: 15px; padding: 2px; border-radius: 50%; background: var(--theme-text); color: var(--theme-stage); }
+.mobile-theme-follow { width: 100%; min-height: 60px; margin-top: 12px; padding: 9px 2px; border: 0; border-top: 1px solid var(--glass-stroke); background: transparent; color: var(--theme-text); display: flex; align-items: center; justify-content: space-between; text-align: left; }
+.mobile-theme-follow strong, .mobile-theme-follow small { display: block; }
+.mobile-theme-follow small { margin-top: 4px; color: var(--theme-faint); font-size: 12px; }
+.mobile-theme-follow > i { width: 42px; height: 24px; padding: 3px; border-radius: 12px; background: var(--theme-line); }
+.mobile-theme-follow > i b { display: block; width: 18px; height: 18px; border-radius: 50%; background: var(--theme-muted); transition: transform 160ms ease; }
+.mobile-theme-follow.is-on > i { background: var(--theme-accent); }
+.mobile-theme-follow.is-on > i b { background: white; transform: translateX(18px); }
+
+/* Music Field: the main surface is one conversation, sessions live in a side drawer. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-session-workspace.is-mobile-agent,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-session-workspace.is-mobile-agent.is-rail-collapsed,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-session-workspace.is-mobile-agent.is-inspector-collapsed {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: calc(58px + var(--safe-area-inset-top)) minmax(0, 1fr);
+  overflow: hidden;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .agent-rail-header,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .agent-inspector-header,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-inspector { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .agent-main-header {
+  grid-column: 1;
+  grid-row: 1;
+  min-height: 0;
+  padding: var(--safe-area-inset-top) 10px 0;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 6px;
+  background: color-mix(in srgb, var(--theme-panel-strong) 70%, transparent);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+}
+.mobile-session-menu {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--theme-muted);
+  display: grid;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .workspace-pane-title strong {
+  max-width: 31vw;
+  font-size: 16px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-main {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-rail {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: max(0px, calc(50% - 240px));
+  z-index: 1010;
+  width: min(84vw, 340px);
+  min-height: 0;
+  padding: calc(10px + var(--safe-area-inset-top)) 12px calc(14px + var(--safe-area-inset-bottom));
+  border: 0;
+  border-right: 1px solid var(--glass-stroke);
+  background: var(--material-sheet);
+  display: grid;
+  grid-template-rows: 64px minmax(0, 1fr) auto;
+  transform: translateX(-104%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 220ms cubic-bezier(.22, .78, .22, 1), opacity 160ms ease;
+  box-shadow: 20px 0 60px rgba(0, 0, 0, .26);
+  backdrop-filter: blur(34px) saturate(145%);
+  -webkit-backdrop-filter: blur(34px) saturate(145%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent.is-session-drawer-open .session-rail {
+  transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body:has(.is-session-drawer-open) {
+  z-index: 1000;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-list {
+  min-height: 0;
+  padding-top: 4px;
+  overflow-y: auto;
+  display: block;
+}
+.mobile-session-drawer-header {
+  min-width: 0;
+  min-height: 64px;
+  padding: 4px 2px 8px 8px;
+  border-bottom: 1px solid var(--glass-stroke);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mobile-session-drawer-header strong,
+.mobile-session-drawer-header small { display: block; }
+.mobile-session-drawer-header strong { font-size: 18px; font-weight: 740; }
+.mobile-session-drawer-header small { margin-top: 4px; color: var(--theme-faint); font-size: 12px; }
+.mobile-session-drawer-header > div { display: flex; align-items: center; gap: 2px; }
+.mobile-session-drawer-header button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--theme-muted);
+  display: grid;
+  place-items: center;
+}
+.mobile-session-drawer-header button:first-child {
+  background: color-mix(in srgb, var(--theme-accent) 14%, var(--glass-control));
+  color: var(--theme-accent);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-item {
+  width: 100%;
+  min-width: 0;
+  min-height: 62px;
+  margin-bottom: 6px;
+  border-radius: 13px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-select {
+  min-height: 62px;
+  padding: 9px 34px 9px 11px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-select > span {
+  min-width: 0;
+  padding: 0 8px 0 16px;
+  display: block;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-select strong { font-size: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-select small,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-select time { display: block; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-select small { font-size: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-select time { font-size: 11px; }
+.mobile-session-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, .34);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-view > .agent-mode-notice { margin: 10px var(--mobile-gutter) 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-stream { padding: 14px var(--mobile-gutter) 16px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-intro h1 { font-size: 21px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-turn > p { font-size: 14px; line-height: 1.65; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-area {
+  position: relative;
+  z-index: 20;
+  padding: 6px 10px 8px;
+  background: color-mix(in srgb, var(--theme-stage) 88%, transparent);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-view {
+  position: relative;
+  padding-bottom: var(--mobile-bottom-clearance);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-stream {
+  min-height: 0;
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-stream::before {
+  content: '';
+  flex: 1 0 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-stream.is-pristine::before {
+  flex: 0 0 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-suggestions {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-suggestions button {
+  max-width: 78vw;
+  min-height: 34px;
+  flex: 0 0 auto;
+  white-space: normal;
+  text-align: left;
+  font-size: 11px;
+  line-height: 1.35;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-suggestions button.is-extra { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-suggestions.is-expanded button.is-extra { display: flex; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-suggestions .composer-suggestions-toggle { justify-content: center; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer {
+  min-height: 104px;
+  padding: 10px 46px 44px 12px;
+  border-radius: 14px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer textarea { min-height: 34px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer > .composer-submit { right: 9px; bottom: 8px; width: 32px; height: 32px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer > .composer-voice {
+  right: 49px;
+  bottom: 8px;
+  width: 32px;
+  height: 32px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-meta {
+  right: 90px;
+  bottom: 8px;
+  left: 10px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-meta .composer-context { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-meta .composer-meta-actions {
+  width: auto;
+  min-width: 0;
+  height: 32px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-meta .composer-meta-actions > button {
+  max-width: 100%;
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid var(--glass-stroke);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--glass-control) 68%, transparent);
+  overflow: hidden;
+  color: var(--theme-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer > .composer-collapse-toggle {
+  top: 8px;
+  right: 9px;
+  bottom: auto;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--glass-stroke);
+  background: color-mix(in srgb, var(--glass-control) 72%, transparent);
+  color: var(--theme-muted);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-area.is-collapsed {
+  padding: 6px 10px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-expand-bar {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px;
+  border: 1px solid var(--glass-stroke);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--glass-control) 76%, transparent);
+  color: var(--theme-muted);
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 22px;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-expand-bar > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--theme-text);
+  font-size: 13px;
+}
+
+/* Mobile arrangement is an editable play order, not a reduced desktop canvas. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-arrangement-view { height: 100%; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement {
+  width: 100%;
+  height: 100%;
+  padding: 16px var(--mobile-gutter) calc(var(--mobile-bottom-clearance) + 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement::-webkit-scrollbar { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-header {
+  position: sticky;
+  top: -16px;
+  z-index: 8;
+  min-height: 48px;
+  margin: 0 calc(var(--mobile-gutter) * -1);
+  padding: 16px var(--mobile-gutter) 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: color-mix(in srgb, var(--material-sheet) 82%, transparent);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-header strong,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-header small { display: block; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-header strong { font-size: 19px; font-weight: 720; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-header small { margin-top: 4px; color: var(--theme-faint); font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-header > button {
+  min-width: 66px;
+  height: 32px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--glass-control-active) 72%, transparent);
+  color: var(--theme-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy {
+  min-height: 70px;
+  margin-top: 14px;
+  padding: 11px 13px 10px;
+  border: 1px solid color-mix(in srgb, var(--glass-stroke) 72%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--glass-control) 48%, transparent);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: 1fr auto;
+  gap: 5px 12px;
+  align-items: center;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy > span { color: var(--theme-muted); font-size: 11px; font-weight: 640; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy > small { grid-column: 1 / -1; color: var(--theme-faint); font-size: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy > div {
+  height: 30px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  gap: 2px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy > div > i {
+  min-width: 2px;
+  max-width: 8px;
+  flex: 1 1 8px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--theme-muted) 26%, transparent);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy > div > i.is-active { background: var(--theme-accent); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-list {
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--glass-stroke) 72%, transparent);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--glass-control) 42%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track {
+  position: relative;
+  min-width: 0;
+  min-height: 70px;
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in srgb, var(--glass-stroke) 62%, transparent);
+  background: color-mix(in srgb, var(--theme-panel-strong) 88%, var(--glass-control));
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track:last-child { border-bottom: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track-content {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  min-height: 70px;
+  background: color-mix(in srgb, var(--theme-panel-strong) 94%, var(--glass-control));
+  display: flex;
+  align-items: stretch;
+  transition: transform 180ms cubic-bezier(.22, .78, .22, 1), background 140ms ease;
+  will-change: transform;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track-content.is-swiping { transition: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track.is-active .mobile-arrangement-track-content { background: color-mix(in srgb, var(--theme-accent) 8%, var(--theme-panel-strong)); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track.is-dragging .mobile-arrangement-track-content {
+  z-index: 3;
+  background: color-mix(in srgb, var(--theme-accent) 12%, var(--glass-control-active));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .15);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-swipe-delete {
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 1;
+  width: 72px;
+  padding: 0;
+  border: 0;
+  background: color-mix(in srgb, #e05a64 86%, transparent);
+  color: white;
+  font-size: 12px;
+  font-weight: 650;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track.is-swiping .mobile-arrangement-swipe-delete,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track.is-revealed .mobile-arrangement-swipe-delete { opacity: 1; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track.is-revealed .mobile-arrangement-swipe-delete { pointer-events: auto; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-swipe-delete:disabled { opacity: .35; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track-main {
+  min-width: 0;
+  min-height: 70px;
+  flex: 1 1 auto;
+  padding: 8px 10px 8px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--theme-text);
+  display: grid;
+  grid-template-columns: 26px 46px minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  text-align: left;
+  touch-action: pan-y;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-order { color: var(--theme-faint); font-size: 11px; font-variant-numeric: tabular-nums; text-align: center; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-cover { position: relative; width: 46px; height: 46px; overflow: hidden; border-radius: 10px; background: var(--glass-control-active); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-cover .mini-levels { position: absolute; right: 4px; bottom: 4px; width: 17px; height: 17px; padding: 3px; border-radius: 50%; background: color-mix(in srgb, var(--theme-panel-strong) 82%, transparent); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-copy { min-width: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-copy strong,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-copy small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-copy strong { font-size: 14px; font-weight: 650; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-copy small { margin-top: 4px; color: var(--theme-faint); font-size: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track-main > time { color: var(--theme-faint); font-size: 11px; font-variant-numeric: tabular-nums; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-handle { width: 42px; flex: 0 0 42px; padding: 0; border: 0; background: transparent; color: var(--theme-faint); display: grid; place-items: center; cursor: grab; touch-action: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-handle:active { cursor: grabbing; color: var(--theme-accent); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-empty { margin-top: 14px; padding: 36px 18px; border-radius: 17px; background: color-mix(in srgb, var(--glass-control) 42%, transparent); text-align: center; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-empty strong { font-size: 15px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-empty p { margin: 8px auto 0; max-width: 240px; color: var(--theme-faint); font-size: 11px; line-height: 1.6; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement.is-long .mobile-arrangement-energy { min-height: 62px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement.is-long .mobile-arrangement-track,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement.is-long .mobile-arrangement-track-content,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement.is-long .mobile-arrangement-track-main { min-height: 62px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement.is-long .mobile-arrangement-cover { width: 40px; height: 40px; border-radius: 9px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement.is-long .mobile-arrangement-track-main { grid-template-columns: 24px 40px minmax(0, 1fr) auto; padding-block: 6px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement.is-long .mobile-arrangement-handle { width: 38px; flex-basis: 38px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track { content-visibility: auto; contain-intrinsic-size: 0 70px; }
+
+/* Settings are a left navigation layer; detail pages replace it in place. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-modal-backdrop {
+  padding: 0 0 0 max(0px, calc(50% - 240px));
+  align-items: stretch;
+  justify-content: flex-start;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-modal.is-mobile {
+  width: min(90vw, 380px);
+  height: 100dvh;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--glass-stroke);
+  border-radius: 0 24px 24px 0;
+  background: var(--material-sheet);
+  box-shadow: 22px 0 70px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(36px) saturate(145%);
+  -webkit-backdrop-filter: blur(36px) saturate(145%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-navigation {
+  padding: calc(12px + var(--safe-area-inset-top)) 12px calc(12px + var(--safe-area-inset-bottom));
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-navigation-brand {
+  min-height: 64px;
+  grid-template-columns: minmax(0, 1fr) 40px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav {
+  border: 0;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--glass-control) 52%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav > button {
+  min-height: 64px;
+  border-radius: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav strong { font-size: 15px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav small { font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-content-header {
+  min-height: calc(64px + var(--safe-area-inset-top));
+  padding: var(--safe-area-inset-top) 10px 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-content-header h2 { font-size: 19px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-content-header > button:last-child { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section { padding: 18px 16px 7px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-row > span > strong { font-size: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-row > span > small { font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .local-folder-list { border-radius: 16px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .local-source-actions > button { min-height: 58px; border-radius: 16px; }
+
+/* Light settings use their own readable glass stack instead of inheriting the dim overlay. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .settings-modal.is-mobile {
+  --theme-text: #171a1f;
+  --theme-muted: #47505c;
+  --theme-faint: #66707d;
+  --glass-stroke: rgba(35, 43, 54, .16);
+  --glass-stroke-strong: rgba(35, 43, 54, .23);
+  --glass-control: var(--material-control);
+  --glass-control-active: rgba(52, 64, 80, .10);
+  --interaction-hover: rgba(52, 64, 80, .05);
+  --interaction-active: rgba(52, 64, 80, .095);
+  border-right-color: rgba(35, 43, 54, .2);
+  background: var(--material-sheet);
+  box-shadow: inset 0 1px 0 var(--material-highlight), 22px 0 70px rgba(23, 30, 40, .3);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .settings-navigation,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .settings-content {
+  background: var(--material-panel);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .settings-category-nav {
+  overflow: hidden;
+  border: 1px solid rgba(35, 43, 54, .15);
+  background: color-mix(in srgb, var(--material-panel) 78%, transparent);
+  box-shadow: inset 0 1px 0 var(--material-highlight), 0 8px 24px rgba(42, 50, 62, .06);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .settings-category-nav > button {
+  border-bottom-color: rgba(35, 43, 54, .12);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .settings-content-header {
+  border-bottom-color: rgba(35, 43, 54, .16);
+  background: var(--material-chrome);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .settings-page-section {
+  border-bottom-color: rgba(35, 43, 54, .16);
+  background: color-mix(in srgb, var(--material-panel) 78%, transparent);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .settings-page-row,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="light"] .content-limit-setting {
+  border-top-color: rgba(35, 43, 54, .14);
+}
+
+/* Sound Space is rebuilt as a readable bottom sheet. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop { padding: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop > .effects-panel {
+  width: var(--mobile-canvas-width);
+  height: auto;
+  max-height: 88dvh;
+  border: 0;
+  border-radius: 26px 26px 0 0;
+  background: var(--material-sheet);
+  grid-template-rows: auto auto;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 16%, transparent), 0 -24px 70px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(36px) saturate(150%);
+  -webkit-backdrop-filter: blur(36px) saturate(150%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-center-header {
+  min-height: 112px;
+  padding: 16px 16px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 42px 42px;
+  grid-template-areas: "brand actions" "tabs tabs";
+  gap: 8px 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-brand { grid-area: brand; min-width: 0; align-self: center; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-header-actions { grid-area: actions; align-self: center; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-brand strong { font-size: 18px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-brand small { margin-top: 3px; font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-center-header nav {
+  grid-area: tabs;
+  width: 100%;
+  height: 40px;
+  padding: 3px;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 3px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-center-header nav button {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-header-actions > .effect-power {
+  width: 42px;
+  height: 24px;
+  min-width: 42px;
+  padding: 3px;
+  border-radius: 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-header-actions > .effect-power i {
+  width: 36px;
+  height: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-header-actions > .effect-power b {
+  width: 18px;
+  height: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-header-actions > .effect-power.is-on b { transform: translateX(18px); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-toggle {
+  width: 42px;
+  height: 24px;
+  flex: 0 0 42px;
+  padding: 3px;
+  border-radius: 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-toggle i {
+  width: 18px;
+  height: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-toggle.is-on i { transform: translateX(18px); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-option > i {
+  width: 38px;
+  height: 22px;
+  flex: 0 0 38px;
+  padding: 2px;
+  border-radius: 11px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-option > i b {
+  width: 18px;
+  height: 18px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effect-option > i.is-on b { transform: translateX(16px); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-choice,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .content-limit-options,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .preference-track-count > div,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .preference-playback-mode > div,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .session-view-switch,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .inspector-tabs {
+  box-sizing: border-box;
+  padding: 3px;
+  gap: 3px;
+  border-radius: 10px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-choice button,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .content-limit-options > button,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .preference-track-count > div > button,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .preference-track-count > div > label,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .preference-playback-mode > div button,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .session-view-switch button,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .inspector-tabs button { border-radius: 7px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .preference-track-count > div {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-main-header .session-view-switch button { height: 26px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-signal-chain { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-content { grid-row: 2; min-height: 0; max-height: calc(88dvh - 112px); overflow-y: auto; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-effects-layout {
+  min-height: 0;
+  display: block;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-browser { padding: 16px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-browser > header strong { font-size: 16px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-browser > header small { font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-grid {
+  margin-top: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-grid > button {
+  min-height: 68px;
+  height: auto;
+  padding: 11px 12px;
+  border-radius: 13px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-grid > button > span { min-width: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-grid > button > i { justify-self: end; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-grid > button strong { font-size: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-grid > button small { margin-top: 4px; font-size: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-detail {
+  margin: 0 16px 18px;
+  padding: 17px;
+  border-radius: 17px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-detail h2 { font-size: 22px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .sound-preset-detail > p { font-size: 12px; line-height: 1.5; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .device-adaptation { padding: 16px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .device-adaptation section { width: 100%; grid-template-columns: 1fr; gap: 8px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .device-adaptation section button { width: 100%; min-width: 0; }
+
+/* Music service status follows the same mobile sheet language and remains readable over artwork. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-drawer-backdrop {
+  padding: 0;
+  align-items: flex-end;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-drawer-backdrop > .source-panel {
+  position: relative;
+  inset: auto;
+  width: var(--mobile-canvas-width);
+  max-width: none;
+  height: min(84dvh, 720px);
+  max-height: 84dvh;
+  padding-bottom: var(--safe-area-inset-bottom);
+  overflow-y: auto;
+  border: 0;
+  border-radius: 26px 26px 0 0;
+  background: var(--material-sheet);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 16%, transparent), 0 -24px 70px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(36px) saturate(150%);
+  -webkit-backdrop-filter: blur(36px) saturate(150%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-panel-heading {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--material-chrome);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-panel-heading > .source-phase { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-panel-mobile-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-panel-mobile-actions > button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--theme-muted);
+  display: grid;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-panel-footer { display: none; }
+
+/* Playback sheets cover the player and tab bar instead of floating above them. */
+@keyframes mobile-centered-sheet-in {
+  from { opacity: 0; transform: translate(-50%, 24px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel {
+  position: fixed;
+  right: auto;
+  bottom: 0;
+  left: 50%;
+  z-index: 1200;
+  width: var(--mobile-canvas-width);
+  height: min(78dvh, 660px);
+  max-height: none;
+  padding: 0 0 var(--safe-area-inset-bottom);
+  border: 0;
+  border-radius: 26px 26px 0 0;
+  background: var(--material-sheet);
+  grid-template-rows: 58px 44px minmax(0, 1fr);
+  box-shadow: 0 -22px 60px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(42px) saturate(155%);
+  -webkit-backdrop-filter: blur(42px) saturate(155%);
+  transform: translateX(-50%);
+  animation: mobile-centered-sheet-in 200ms cubic-bezier(.22, .78, .22, 1) both;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel::before {
+  content: none;
+  display: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel > header {
+  min-height: 58px;
+  padding: 12px var(--mobile-gutter) 6px;
+  border-bottom: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-header-actions { display: flex; align-items: center; gap: 2px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-header-actions > button {
+  height: 36px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--theme-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 12px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-header-actions > .global-queue-mobile-arrangement { width: auto; min-width: 58px; display: flex; color: var(--theme-accent); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-header-actions > button:last-child { width: 36px; padding: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel > header strong { font-size: 18px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel > header small { margin-top: 4px; font-size: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-toolbar {
+  padding: 5px var(--mobile-gutter) 7px;
+  border-bottom: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-toolbar button {
+  height: 32px;
+  border: 0;
+  background: color-mix(in srgb, var(--glass-control) 70%, transparent);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel > footer {
+  display: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel > footer button {
+  background: color-mix(in srgb, var(--glass-control) 62%, transparent);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-list { max-height: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-list > button {
+  width: calc(100% - 16px);
+  min-height: 60px;
+  margin: 0 8px 2px;
+  padding: 7px calc(var(--mobile-gutter) - 8px);
+  border-bottom: 0;
+  border-radius: 12px;
+  grid-template-columns: 24px 42px minmax(0, 1fr) auto;
+  gap: 9px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-list > button.is-active {
+  background: color-mix(in srgb, var(--theme-accent) 11%, transparent);
+  box-shadow: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playback-variant-panel {
+  position: fixed;
+  right: auto;
+  bottom: 0;
+  left: 50%;
+  z-index: 1200;
+  width: var(--mobile-canvas-width);
+  max-height: min(76dvh, 620px);
+  margin: 0;
+  padding-bottom: var(--safe-area-inset-bottom);
+  border: 0;
+  border-radius: 26px 26px 0 0;
+  background: var(--material-sheet);
+  transform: translateX(-50%);
+  animation: mobile-centered-sheet-in 200ms cubic-bezier(.22, .78, .22, 1) both;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor-backdrop,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-picker-backdrop,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-backdrop,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .memory-manager-backdrop {
+  padding: 0;
+  align-items: flex-end;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body:has(.playlist-editor-backdrop, .playlist-picker-backdrop, .agent-preferences-backdrop, .memory-manager-backdrop) { z-index: 1400; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-backdrop,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .memory-manager-backdrop,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor-backdrop,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-picker-backdrop { z-index: 1450; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .context-menu {
+  z-index: 1700;
+  right: auto !important;
+  left: 50% !important;
+  width: calc(var(--mobile-canvas-width) - 24px);
+  max-width: none;
+  transform: translateX(-50%);
+  animation: mobile-context-menu-in 160ms cubic-bezier(.22, .78, .22, 1) both;
+}
+@keyframes mobile-context-menu-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(5px) scale(.985); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-picker,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-panel,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .memory-manager {
+  width: var(--mobile-canvas-width);
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 26px 26px 0 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-picker-mobile-create {
+  width: auto;
+  min-width: 58px;
+  padding: 0 8px;
+  border-radius: 10px;
+  color: var(--theme-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 660;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-picker > footer { display: none; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-panel > header {
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-panel > header > button:last-child { display: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-panel > header > .agent-preferences-mobile-done {
+  width: auto;
+  min-width: 52px;
+  padding: 0 8px;
+  border-radius: 10px;
+  color: var(--theme-accent);
+  display: block;
+  font-size: 14px;
+  font-weight: 660;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-panel > footer { display: none; }
+
+/* Song mode centers the record in the available visual region and gives controls a stable home. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .now-playing-workspace { height: 100dvh; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-now-playing-dismiss {
+  top: calc(8px + var(--safe-area-inset-top));
+  left: 50%;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  transform: translateX(-50%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-layout {
+  width: 100%;
+  height: 100%;
+  padding: calc(58px + var(--safe-area-inset-top)) var(--mobile-gutter)
+    calc(196px + var(--safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-visual {
+  width: 100%;
+  max-width: 480px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  transform: translateY(-1vh);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-cover-stage {
+  width: min(72vw, 320px, 40dvh);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-record-meta {
+  width: min(100%, 340px);
+  margin: clamp(24px, 4vh, 34px) auto 0;
+  text-align: left;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-record-meta h1 {
+  margin: 8px 0 6px;
+  font-size: clamp(22px, 5vw, 26px);
+  line-height: 1.2;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-record-meta .now-playing-entities { justify-content: flex-start; font-size: 13px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-layout {
+  width: 100%;
+  padding: calc(54px + var(--safe-area-inset-top)) var(--mobile-gutter)
+    calc(192px + var(--safe-area-inset-bottom));
+  grid-template-columns: 1fr;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .lyrics-pane { height: 100%; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-song-header,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .lyric-line {
+  width: min(100%, 340px);
+  margin-inline: auto;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-song-header { padding-left: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .lyrics-scroll { padding: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .lyrics-spacer.is-start { height: 24px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .lyric-line { padding-right: 12px; padding-left: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .lyric-line.is-active::before {
+  left: -6px;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 3px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player {
+  position: fixed;
+  right: auto;
+  bottom: 0;
+  left: max(0px, calc(50% - 240px));
+  z-index: 720;
+  width: var(--mobile-canvas-width);
+  height: calc(178px + var(--safe-area-inset-bottom));
+  padding: 10px var(--mobile-gutter) calc(20px + var(--safe-area-inset-bottom));
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  grid-template-columns: minmax(0, 1fr);
+  box-shadow: 0 -18px 50px rgba(0, 0, 0, .12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: color-mix(in srgb, var(--theme-panel-strong) 72%, transparent);
+  backdrop-filter: blur(32px) saturate(150%);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-center { width: 100%; min-width: 0; height: 100%; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact { width: 100%; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 18px minmax(0, 1fr);
+  gap: 16px;
+  justify-items: stretch;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact .playback-progress {
+  grid-row: 1;
+  width: 100%;
+  max-width: none;
+  justify-self: stretch;
+  grid-template-columns: 38px minmax(0, 1fr) 38px;
+  gap: 8px;
+  padding: 0 2px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact .playback-toolbar {
+  grid-row: 2;
+  width: 100%;
+  max-width: none;
+  justify-self: stretch;
+  min-height: 0;
+  display: grid;
+  position: relative;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 56px 42px;
+  gap: 16px 5px;
+  align-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-primary {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  width: min(220px, 64vw);
+  max-width: none;
+  margin: 0 auto;
+  justify-content: space-between;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-secondary {
+  position: absolute;
+  inset: auto auto 0 0;
+  grid-area: auto;
+  width: 37.5%;
+  height: 42px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-volume {
+  position: absolute;
+  inset: auto auto 0 37.5%;
+  grid-area: auto;
+  justify-self: auto;
+  width: 12.5%;
+  height: 42px;
+  display: grid;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-play {
+  width: 56px;
+  height: 56px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-tools {
+  position: absolute;
+  right: var(--mobile-gutter);
+  bottom: calc(20px + var(--safe-area-inset-bottom));
+  z-index: 4;
+  width: calc((var(--mobile-canvas-width) - 2 * var(--mobile-gutter)) * .5);
+  min-width: 0;
+  height: 42px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  place-items: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-speed-popover {
+  position: fixed;
+  right: auto;
+  bottom: calc(174px + var(--safe-area-inset-bottom));
+  left: 50%;
+  width: min(230px, calc(var(--mobile-canvas-width) - 32px));
+  border-radius: 14px;
+  transform: translateX(-50%);
+  animation: mobile-centered-sheet-in 160ms cubic-bezier(.22, .78, .22, 1) both;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact .playback-toolbar .playback-speed-popover > div {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact .playback-toolbar .playback-speed-popover > div > button {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > div > article { min-width: 0; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlist-cover {
+  min-width: 0;
+  overflow: hidden;
+  contain: paint;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlist-cover img { display: block; max-width: 100%; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-header > button,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-page-back,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-search { width: 36px; height: 36px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-main-header .session-view-switch { height: 40px; border-radius: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-main-header .session-view-switch button { min-width: 58px; height: 32px; padding-inline: 9px; border-radius: 10px; font-size: 13px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-effects,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-more,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-variant,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-queue {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .volume-popover {
+  position: fixed;
+  right: auto;
+  bottom: calc(174px + var(--safe-area-inset-bottom));
+  left: 50%;
+  z-index: 1250;
+  width: min(250px, calc(var(--mobile-canvas-width) - 32px));
+  transform: translateX(-50%);
+}
+
+@media (max-height: 700px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-visual { transform: none; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-cover-stage { width: min(60vw, 245px, 35dvh); }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-record-meta { margin-top: 18px; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .volume-popover { bottom: calc(166px + var(--safe-area-inset-bottom)); }
+}
+
+/* The mobile entry keeps readable copy even when previewed in a wide browser. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-intro p,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-suggestions button { font-size: 12px; }
+
+/* iOS owns the visible viewport while the software keyboard is present. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] input,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] textarea,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] select {
+  font-size: 16px;
+}
+
+html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"],
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+  --mobile-player-clearance: 0px;
+  --mobile-bottom-clearance: 0px;
+  --mobile-content-bottom: 16px;
+}
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-mobile-os="android"][data-platform-entry="mobile"][data-form-factor="mobile"] {
+  top: 0;
+  --mobile-keyboard-viewport-height: min(
+    var(--mobile-visual-viewport-height, 100dvh),
+    var(--native-viewport-height, 100dvh)
+  );
+  height: var(--mobile-keyboard-viewport-height);
+}
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-mobile-os="android"][data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-drawer-backdrop,
+  .settings-modal-backdrop,
+  .playlist-editor-backdrop,
+  .playlist-picker-backdrop,
+  .agent-preferences-backdrop,
+  .session-editor-backdrop,
+  .memory-manager-backdrop,
+  .track-share-backdrop
+) {
+  top: 0;
+  bottom: auto;
+  height: var(--mobile-keyboard-viewport-height);
+  max-height: var(--mobile-keyboard-viewport-height);
+}
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-mobile-os="android"][data-platform-entry="mobile"][data-form-factor="mobile"] .settings-modal.is-mobile {
+  height: 100%;
+  max-height: 100%;
+}
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-mobile-os="android"][data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .playlist-editor,
+  .session-editor,
+  .agent-preferences-panel,
+  .track-share-panel
+) {
+  max-height: calc(100% - max(8px, var(--safe-area-inset-top)));
+}
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-mobile-os="android"][data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .session-editor-backdrop
+) {
+  position: fixed !important;
+  inset: 0 0 auto !important;
+  height: var(--mobile-visual-viewport-height, 100dvh) !important;
+}
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-mobile-os="android"][data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .session-editor
+) {
+  position: absolute !important;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  animation: none;
+  transform: none;
+}
+
+/* Playlist naming is a short transactional sheet. While the IME is open it
+   follows the client shell's visual viewport instead of combining browser,
+   native and landscape positioning rules. */
+html[data-ui-platform="mobile"]:is([data-mobile-keyboard="open"], [data-native-keyboard="open"])
+  .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100%;
+  height: 100% !important;
+  max-height: none !important;
+  padding: max(8px, var(--safe-area-inset-top)) max(8px, var(--safe-area-inset-right)) 0 max(8px, var(--safe-area-inset-left));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+html[data-ui-platform="mobile"]:is([data-mobile-keyboard="open"], [data-native-keyboard="open"])
+  .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor {
+  position: relative !important;
+  inset: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: min(100%, 540px);
+  max-height: calc(100% - max(8px, var(--safe-area-inset-top)));
+  margin: 0;
+  transform: none !important;
+  animation: none !important;
+}
+
+/* A landscape IME can leave less than 100 CSS pixels above the keyboard.
+   Preserve the transaction header and the complete text field in that space. */
+@media (orientation: landscape) and (max-height: 480px) {
+  html[data-ui-platform="mobile"]:is([data-mobile-keyboard="open"], [data-native-keyboard="open"])
+    .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor {
+    grid-template-rows: 38px auto;
+  }
+
+  html[data-ui-platform="mobile"]:is([data-mobile-keyboard="open"], [data-native-keyboard="open"])
+    .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor > header {
+    min-height: 38px;
+    padding: 0 12px;
+    grid-template-columns: 52px minmax(0, 1fr) 52px;
+  }
+
+  html[data-ui-platform="mobile"]:is([data-mobile-keyboard="open"], [data-native-keyboard="open"])
+    .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor > header :is(
+      .playlist-editor-mobile-cancel,
+      .playlist-editor-mobile-submit
+    ) {
+    height: 38px;
+  }
+
+  html[data-ui-platform="mobile"]:is([data-mobile-keyboard="open"], [data-native-keyboard="open"])
+    .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor > label {
+    padding: 3px 14px 4px;
+    gap: 0;
+  }
+
+  html[data-ui-platform="mobile"]:is([data-mobile-keyboard="open"], [data-native-keyboard="open"])
+    .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor > label input {
+    height: 36px;
+  }
+
+  html[data-ui-platform="mobile"]:is([data-mobile-keyboard="open"], [data-native-keyboard="open"])
+    .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor > label > small {
+    display: none;
+  }
+}
+html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation,
+html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"]:not([data-workspace="nowPlaying"]) .global-player,
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation,
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"]:not([data-workspace="nowPlaying"]) .global-player {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-area,
+html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-area {
+  padding-bottom: 8px;
+}
+
+/* The search header, rather than its results, owns the Dynamic Island inset. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-header {
+  min-height: calc(62px + var(--safe-area-inset-top));
+  padding-top: calc(9px + var(--safe-area-inset-top));
+}
+
+/* Detail pages own a full-width backdrop while their content follows one gutter. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-scroll.mobile-collection-page {
+  padding: 0 0 var(--mobile-content-bottom);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-hero {
+  width: 100%;
+  min-height: 282px;
+  padding: max(62px, calc(var(--safe-area-inset-top) + 52px)) var(--mobile-gutter) 20px;
+  grid-template-columns: 112px minmax(0, 1fr);
+  column-gap: 15px;
+  row-gap: 16px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-page-back {
+  top: max(10px, var(--safe-area-inset-top));
+  left: var(--mobile-gutter);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-search {
+  top: max(10px, var(--safe-area-inset-top));
+  right: var(--mobile-gutter);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-cover {
+  width: 112px;
+  height: 112px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-tracks,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-artist-albums {
+  width: 100%;
+  padding-inline: var(--mobile-gutter);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(.mobile-entity-loading, .mobile-entity-error) {
+  margin-inline: var(--mobile-gutter);
+}
+
+/* Lyric copy shares a centered reading axis on the mobile product. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .lyrics-scroll {
+  padding-right: 0;
+  padding-left: 0;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .lyric-line {
+  padding-right: 18px;
+  padding-left: 18px;
+  text-align: center;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .lyric-line > span {
+  width: 100%;
+}
+
+/* Long song metadata must not participate in the record view's grid sizing. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-layout,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-visual {
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace :is(
+  .song-display-control,
+  .now-playing-record-meta,
+  .lyrics-pane,
+  .now-playing-song-header,
+  .now-playing-entities
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace :is(
+  .now-playing-record-meta h1,
+  .now-playing-song-header h1,
+  .now-playing-entities
+) {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Phone landscape is a dedicated mobile composition, not a widened portrait canvas. */
+@media (orientation: landscape) and (max-height: 600px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+    --mobile-gutter: max(20px, var(--safe-area-inset-left), var(--safe-area-inset-right));
+    --mobile-canvas-width: 100vw;
+    --mobile-nav-height: 48px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body.is-library,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body.is-agent-session,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body.is-now-playing {
+    box-shadow: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-scroll {
+    padding-top: max(8px, var(--safe-area-inset-top));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-home-greeting,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-page-title,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-toolbar {
+    min-height: 46px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-home-greeting h1,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-page-title h1 {
+    font-size: 24px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-card-rail {
+    grid-auto-columns: min(176px, 24vw);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-rail {
+    grid-auto-columns: min(350px, 43vw);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-hot > div,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-start,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-start > header,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-start > .mobile-search-live-state {
+    grid-column: 1 / -1;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-search-trending.is-fresh {
+    margin-top: 10px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-theme-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-provider-section > div,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-scene-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player {
+    width: min(620px, calc(100% - 32px));
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation {
+    padding-right: var(--mobile-gutter);
+    padding-left: var(--mobile-gutter);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-session-workspace.is-mobile-agent,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-session-workspace.is-mobile-agent.is-rail-collapsed,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-session-workspace.is-mobile-agent.is-inspector-collapsed {
+    grid-template-rows: calc(50px + var(--safe-area-inset-top)) minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body.is-agent-session {
+    bottom: var(--mobile-bottom-clearance);
+    height: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .agent-main-header {
+    padding-right: var(--mobile-gutter);
+    padding-left: var(--mobile-gutter);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .workspace-pane-title strong {
+    max-width: 42vw;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-stream {
+    padding: 8px max(24px, calc((100vw - 760px) / 2)) 10px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer-area {
+    right: auto;
+    left: auto;
+    width: min(760px, calc(100% - var(--mobile-gutter) - var(--mobile-gutter)));
+    margin-inline: auto;
+    padding: 3px 0 5px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view {
+    grid-template-rows: auto minmax(66px, 1fr) auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view > .agent-mode-notice {
+    min-height: 44px;
+    margin: 6px max(var(--mobile-gutter), calc((100vw - 760px) / 2)) 0;
+    padding-block: 5px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer {
+    height: 68px;
+    min-height: 68px;
+    padding: 7px 44px 27px 11px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .composer-suggestions {
+    height: 28px;
+    margin-bottom: 4px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .composer-suggestions button {
+    height: 28px;
+    min-height: 28px;
+    padding-block: 3px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer textarea {
+    height: 27px;
+    min-height: 0;
+    line-height: 1.35;
+  }
+
+  html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-session-workspace.is-mobile-agent,
+  html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-session-workspace.is-mobile-agent {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .agent-main-header,
+  html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .agent-main-header,
+  html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-view > .agent-mode-notice,
+  html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-view > .agent-mode-notice {
+    display: none;
+  }
+
+  html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view,
+  html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"][data-mobile-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer-area,
+  html[data-ui-platform="mobile"][data-native-keyboard="open"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer-area {
+    height: 100%;
+    padding: 8px 16px;
+    align-items: center;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--theme-stage) 94%, transparent);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .now-playing-workspace {
+    height: var(--mobile-visual-viewport-height, 100dvh);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-now-playing-dismiss {
+    top: max(8px, var(--safe-area-inset-top));
+    left: max(14px, var(--safe-area-inset-left));
+    transform: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-layout,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-layout {
+    width: 48%;
+    height: 100%;
+    margin: 0;
+    padding: max(42px, calc(34px + var(--safe-area-inset-top))) 20px 18px max(20px, var(--safe-area-inset-left));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-visual {
+    max-width: 100%;
+    transform: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-cover-stage {
+    width: min(30vw, 188px, 48dvh);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-record-meta {
+    width: min(100%, 310px);
+    margin-top: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-record-meta h1 {
+    margin-top: 4px;
+    font-size: clamp(18px, 2.4vw, 22px);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-song-header,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .lyric-line {
+    width: min(100%, 360px);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player {
+    top: 0;
+    right: 0;
+    bottom: auto;
+    left: auto;
+    width: 52%;
+    height: var(--mobile-visual-viewport-height, 100dvh);
+    padding: max(48px, calc(36px + var(--safe-area-inset-top))) max(24px, var(--safe-area-inset-right)) max(18px, var(--safe-area-inset-bottom)) 24px;
+    display: grid;
+    align-content: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player::before {
+    border-left: 1px solid color-mix(in srgb, var(--glass-stroke) 72%, transparent);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact {
+    height: min(190px, calc(100dvh - 92px));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-primary {
+    width: min(220px, 72%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-tools {
+    right: max(24px, var(--safe-area-inset-right));
+    bottom: max(18px, var(--safe-area-inset-bottom));
+    width: calc((52vw - max(48px, var(--safe-area-inset-right))) * .5);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-speed-popover,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .volume-popover {
+    right: 26%;
+    bottom: max(16px, var(--safe-area-inset-bottom));
+    left: auto;
+    transform: translateX(50%);
+  }
+}

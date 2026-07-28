@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Echora 需要访问麦克风，将你的语音转换为音乐场输入。</string>
+  <key>NSSpeechRecognitionUsageDescription</key>
+  <string>Echora 使用系统语音识别，把你的表达整理为音乐场指令。</string>
+</dict>
+</plist>

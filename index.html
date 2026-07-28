@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#121419" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Echora 智能音乐空间" />
+    <link rel="icon" type="image/png" href="/favicon-v2.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-v2.png" />
+    <link rel="manifest" href="/site.webmanifest?v=2" />
+    <title>Echora</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --boot-background: #f2f4f7;
+        --boot-foreground: #1d2229;
+        --boot-accent: #2f8ea8;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --boot-background: #101318;
+          --boot-foreground: #f3f5f7;
+          --boot-accent: #63bed2;
+        }
+      }
+      html, body, #root { width: 100%; min-height: 100%; margin: 0; }
+      body { background: var(--boot-background); }
+      .echora-boot {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 100dvh;
+        padding: env(safe-area-inset-top, 0) 24px env(safe-area-inset-bottom, 0);
+        background: var(--boot-background);
+        color: var(--boot-foreground);
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 13px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .echora-boot > i {
+        width: 54px;
+        height: 54px;
+        position: relative;
+        color: var(--boot-accent);
+      }
+      .echora-boot > i::before, .echora-boot > i::after { content: ''; position: absolute; inset: 0; -webkit-mask: url('/echora-mark-v2.svg') center / contain no-repeat; mask: url('/echora-mark-v2.svg') center / contain no-repeat; }
+      .echora-boot > i::before { background: color-mix(in srgb, currentColor 62%, #15171c); opacity: .56; transform: translateY(1.4px); }
+      .echora-boot > i::after { background: linear-gradient(155deg, color-mix(in srgb, currentColor 70%, white), currentColor 48%, color-mix(in srgb, currentColor 80%, black)); filter: drop-shadow(0 4px 7px color-mix(in srgb, currentColor 22%, transparent)); }
+      .echora-boot > strong { font-size: 18px; font-weight: 680; letter-spacing: 0; }
+      .echora-boot > span { height: 14px; display: flex; align-items: flex-end; gap: 3px; color: var(--boot-accent); }
+      .echora-boot > span > i { width: 3px; border-radius: 3px; background: currentColor; animation: echora-boot-level 780ms ease-in-out infinite alternate; }
+      .echora-boot > span > i:nth-child(1) { height: 6px; }
+      .echora-boot > span > i:nth-child(2) { height: 13px; animation-delay: -260ms; }
+      .echora-boot > span > i:nth-child(3) { height: 9px; animation-delay: -520ms; }
+      @keyframes echora-boot-level { to { height: 4px; opacity: .55; } }
+      @media (prefers-reduced-motion: reduce) { .echora-boot > span > i { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"><div class="echora-boot" role="status" aria-label="正在启动 Echora"><i aria-hidden="true"></i><strong>Echora</strong><span aria-hidden="true"><i></i><i></i><i></i></span></div></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

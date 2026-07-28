@@ -1,0 +1,26 @@
+node_modules/
+dist/
+dist-desktop/
+dist-mobile/
+src-tauri/target/
+.DS_Store
+*.local
+*.log
+*.tsbuildinfo
+.wrangler/
+.env
+.env.*
+!.env.example
+
+# Release artifacts are published through GitHub Releases.
+*.apk
+*.aab
+*.ipa
+*.dmg
+*.idsig
+
+# Signing material must remain outside the repository.
+*.keystore
+*.jks
+*.p12
+*.mobileprovision

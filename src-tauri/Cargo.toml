@@ -1,0 +1,39 @@
+[package]
+name = "echora"
+version = "0.1.0"
+description = "A local-first personal music agent"
+authors = ["Echora Contributors"]
+edition = "2021"
+
+[lib]
+name = "echora_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2.11.5", features = ["protocol-asset", "macos-private-api", "tray-icon", "image-png"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-http = { version = "2", features = ["unsafe-headers"] }
+tauri-plugin-opener = "2"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+url = "2"
+fs2 = "0.4"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSApplication", "NSMenu", "NSMenuItem"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString"] }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+base64 = "0.22"
+libc = "0.2"
+objc2 = "0.6"
+objc2-avf-audio = { version = "0.3", default-features = false, features = ["std", "AVAudioSession", "AVAudioSessionTypes"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSData", "NSDictionary", "NSObject", "NSString", "NSValue"] }
+objc2-media-player = { version = "0.3", default-features = false, features = ["std", "MPMediaItem", "MPNowPlayingInfoCenter"] }
+objc2-ui-kit = { version = "0.3", default-features = false, features = ["std", "UIImage", "UIScrollView", "UIView", "UIViewController"] }

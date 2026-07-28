@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_liked_short">我喜欢的音乐</string>
+    <string name="shortcut_liked_long">打开我喜欢的音乐</string>
+    <string name="shortcut_search_short">搜索</string>
+    <string name="shortcut_search_long">搜索整个音乐世界</string>
+    <string name="shortcut_daily_short">每日推荐</string>
+    <string name="shortcut_daily_long">打开每日推荐</string>
+</resources>

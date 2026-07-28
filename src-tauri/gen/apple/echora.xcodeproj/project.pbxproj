@@ -1,0 +1,649 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		059A490555F26CC27F86AE95 /* EchoraLiveActivityBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A75D1418D41891A1ABFDC8DD /* EchoraLiveActivityBridge.swift */; };
+		0BEA19DDF419441F0872B7FE /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9087CC7ADEF05ECDA5EE0260 /* WebKit.framework */; };
+		100AD6CF3006A2B545F312A3 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 4788FBD2E5044D06F766F937 /* assets */; };
+		20EDCAFAB47DD1114ACAB259 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECC0BA369B0CC4FDE06B1E0B /* Security.framework */; };
+		3258A6E24D9C15AB3D194EA4 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 99B83262608B2623072D830F /* MetalKit.framework */; };
+		4329435B0F687B823A93CDBF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60804FD1FB699FFA118E755C /* QuartzCore.framework */; };
+		4DEB05A7C402A0C14C23AFAB /* EchoraMediaSessionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 334EB9AE6A0548B5587FC9BB /* EchoraMediaSessionBridge.swift */; };
+		6310894952D08C68C92DB9F3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F4DA3B57A0254E5AAC1FCD7F /* LaunchScreen.storyboard */; };
+		64594A39BF4AE524A19259C9 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC03B3F4D0AB4731D07912BA /* libapp.a */; };
+		6BB97F237A5415FC43498FD3 /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = 983A23694DD9EC03A962A54D /* libapp.a */; };
+		6DC955AE025BC5B7850B5EDA /* EchoraNowPlayingAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F21E1047E07A4478B3D7FF8 /* EchoraNowPlayingAttributes.swift */; };
+		6DC989BD19546D7278F0BA02 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F866345F8A92EF486C96D8AF /* AVFAudio.framework */; };
+		731B5074AEA87D9788F97CF0 /* EchoraQuickActionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55564F9DD6ADFC8571941E9 /* EchoraQuickActionBridge.swift */; };
+		854989113AAEA9F89E555FF9 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = D1CB0FEB5F4775E3338DF9C6 /* main.mm */; };
+		88A640FC241B6FDB236B229B /* EchoraLiveActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA93FC328210D38E014C7A2 /* EchoraLiveActivityIntents.swift */; };
+		9F05E759E7BB1B4754874BB6 /* EchoraSpeechRecognitionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420B28F7989F8802CD032965 /* EchoraSpeechRecognitionBridge.swift */; };
+		A2113C1524623E4DD631E781 /* EchoraNowPlayingAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F21E1047E07A4478B3D7FF8 /* EchoraNowPlayingAttributes.swift */; };
+		A263EF5DB7DD5D12C310EF2C /* EchoraLiveActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA93FC328210D38E014C7A2 /* EchoraLiveActivityIntents.swift */; };
+		A35DA4A57150979DE4BDB3B7 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CE1FC42C9AADE7D572BD5B0 /* MediaPlayer.framework */; };
+		C998B627E16D4CD922A98B41 /* EchoraNowPlayingLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C8298ABFE0208E65C55FEA1 /* EchoraNowPlayingLiveActivity.swift */; };
+		CC803B7293DAF1012F338C6A /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D292BE7FF75ED433B087562 /* Speech.framework */; };
+		D0452E756B1C0DDB6175991F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EEC1661562D606F1D5ED624 /* UIKit.framework */; };
+		D10B05560920D68D4E6FC419 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F0E932D54AB5850C664A55B /* CoreGraphics.framework */; };
+		D6DF13D581E1A10552312BCB /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A914508F29E3F10346BAA07 /* Metal.framework */; };
+		DD750A31038C7B5C1030C2D1 /* EchoraNowPlayingExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DE82CB28C4AFD66A18B07AE3 /* EchoraNowPlayingExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FCC31037D91E6E87A218C377 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92D978484896AF0FE1B115A0 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1B01FC900227955815C81F7B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AFA353CA6803CAD3BDEA9EB5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3FD0091FABE70BFF7F5D23C;
+			remoteInfo = EchoraNowPlayingExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1BECF629802C058311699A7E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DD750A31038C7B5C1030C2D1 /* EchoraNowPlayingExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		017F219EC4D7D810A4470659 /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		0CE1FC42C9AADE7D572BD5B0 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		0F0E932D54AB5850C664A55B /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		1DA93FC328210D38E014C7A2 /* EchoraLiveActivityIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraLiveActivityIntents.swift; sourceTree = "<group>"; };
+		334EB9AE6A0548B5587FC9BB /* EchoraMediaSessionBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraMediaSessionBridge.swift; sourceTree = "<group>"; };
+		3A914508F29E3F10346BAA07 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		420B28F7989F8802CD032965 /* EchoraSpeechRecognitionBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraSpeechRecognitionBridge.swift; sourceTree = "<group>"; };
+		4788FBD2E5044D06F766F937 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		48F15D48F9BBEE8E1056E2E3 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		5C8298ABFE0208E65C55FEA1 /* EchoraNowPlayingLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraNowPlayingLiveActivity.swift; sourceTree = "<group>"; };
+		60804FD1FB699FFA118E755C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		754C0880C2122596098416BB /* echora_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = echora_iOS.entitlements; sourceTree = "<group>"; };
+		8BF0F2B07B9B48B5FC40425A /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		8EEC1661562D606F1D5ED624 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		8F21E1047E07A4478B3D7FF8 /* EchoraNowPlayingAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraNowPlayingAttributes.swift; sourceTree = "<group>"; };
+		9087CC7ADEF05ECDA5EE0260 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		92D978484896AF0FE1B115A0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		983A23694DD9EC03A962A54D /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		99B83262608B2623072D830F /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		9D292BE7FF75ED433B087562 /* Speech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speech.framework; path = System/Library/Frameworks/Speech.framework; sourceTree = SDKROOT; };
+		A2863F6A07318CE64AEE665E /* echora_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = echora_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A75D1418D41891A1ABFDC8DD /* EchoraLiveActivityBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraLiveActivityBridge.swift; sourceTree = "<group>"; };
+		AC03B3F4D0AB4731D07912BA /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		AC1804F0E50FEE7B7EF1BF78 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B55564F9DD6ADFC8571941E9 /* EchoraQuickActionBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraQuickActionBridge.swift; sourceTree = "<group>"; };
+		D1CB0FEB5F4775E3338DF9C6 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		DE82CB28C4AFD66A18B07AE3 /* EchoraNowPlayingExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = EchoraNowPlayingExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECC0BA369B0CC4FDE06B1E0B /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		F4DA3B57A0254E5AAC1FCD7F /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F866345F8A92EF486C96D8AF /* AVFAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFAudio.framework; path = System/Library/Frameworks/AVFAudio.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		28ECC8F1CF73B3A3128E95F3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				64594A39BF4AE524A19259C9 /* libapp.a in Frameworks */,
+				6DC989BD19546D7278F0BA02 /* AVFAudio.framework in Frameworks */,
+				D10B05560920D68D4E6FC419 /* CoreGraphics.framework in Frameworks */,
+				A35DA4A57150979DE4BDB3B7 /* MediaPlayer.framework in Frameworks */,
+				CC803B7293DAF1012F338C6A /* Speech.framework in Frameworks */,
+				D6DF13D581E1A10552312BCB /* Metal.framework in Frameworks */,
+				3258A6E24D9C15AB3D194EA4 /* MetalKit.framework in Frameworks */,
+				4329435B0F687B823A93CDBF /* QuartzCore.framework in Frameworks */,
+				20EDCAFAB47DD1114ACAB259 /* Security.framework in Frameworks */,
+				D0452E756B1C0DDB6175991F /* UIKit.framework in Frameworks */,
+				0BEA19DDF419441F0872B7FE /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0AA99A453CCAF942AB583352 /* ios */ = {
+			isa = PBXGroup;
+			children = (
+				A75D1418D41891A1ABFDC8DD /* EchoraLiveActivityBridge.swift */,
+				1DA93FC328210D38E014C7A2 /* EchoraLiveActivityIntents.swift */,
+				334EB9AE6A0548B5587FC9BB /* EchoraMediaSessionBridge.swift */,
+				8F21E1047E07A4478B3D7FF8 /* EchoraNowPlayingAttributes.swift */,
+				5C8298ABFE0208E65C55FEA1 /* EchoraNowPlayingLiveActivity.swift */,
+				B55564F9DD6ADFC8571941E9 /* EchoraQuickActionBridge.swift */,
+				420B28F7989F8802CD032965 /* EchoraSpeechRecognitionBridge.swift */,
+			);
+			name = ios;
+			path = ../../ios;
+			sourceTree = "<group>";
+		};
+		1162953E145B87034BE05B41 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				8BF0F2B07B9B48B5FC40425A /* lib.rs */,
+				017F219EC4D7D810A4470659 /* main.rs */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = "<group>";
+		};
+		5215D2ECDA62E2765FE3E4E6 /* echora_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				754C0880C2122596098416BB /* echora_iOS.entitlements */,
+				AC1804F0E50FEE7B7EF1BF78 /* Info.plist */,
+			);
+			path = echora_iOS;
+			sourceTree = "<group>";
+		};
+		58ECABE9DF914A1E60F4A670 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F866345F8A92EF486C96D8AF /* AVFAudio.framework */,
+				0F0E932D54AB5850C664A55B /* CoreGraphics.framework */,
+				AC03B3F4D0AB4731D07912BA /* libapp.a */,
+				0CE1FC42C9AADE7D572BD5B0 /* MediaPlayer.framework */,
+				3A914508F29E3F10346BAA07 /* Metal.framework */,
+				99B83262608B2623072D830F /* MetalKit.framework */,
+				60804FD1FB699FFA118E755C /* QuartzCore.framework */,
+				ECC0BA369B0CC4FDE06B1E0B /* Security.framework */,
+				9D292BE7FF75ED433B087562 /* Speech.framework */,
+				8EEC1661562D606F1D5ED624 /* UIKit.framework */,
+				9087CC7ADEF05ECDA5EE0260 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		79C82448B083B6776CEE82F2 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				ED2A02A0BEF090A7E7A96F0B /* echora */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		87E9A5C57CA61C4BED2A3604 /* debug */ = {
+			isa = PBXGroup;
+			children = (
+				983A23694DD9EC03A962A54D /* libapp.a */,
+			);
+			path = debug;
+			sourceTree = "<group>";
+		};
+		99D0F012B6C3C4CA61DE924D /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+				D8F16BF1F3F81688A7A121D6 /* arm64 */,
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		D8F16BF1F3F81688A7A121D6 /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				87E9A5C57CA61C4BED2A3604 /* debug */,
+			);
+			path = arm64;
+			sourceTree = "<group>";
+		};
+		EBCA4B8C3CC80BF5B7DE5533 = {
+			isa = PBXGroup;
+			children = (
+				4788FBD2E5044D06F766F937 /* assets */,
+				92D978484896AF0FE1B115A0 /* Assets.xcassets */,
+				F4DA3B57A0254E5AAC1FCD7F /* LaunchScreen.storyboard */,
+				5215D2ECDA62E2765FE3E4E6 /* echora_iOS */,
+				99D0F012B6C3C4CA61DE924D /* Externals */,
+				0AA99A453CCAF942AB583352 /* ios */,
+				79C82448B083B6776CEE82F2 /* Sources */,
+				1162953E145B87034BE05B41 /* src */,
+				58ECABE9DF914A1E60F4A670 /* Frameworks */,
+				FCA474D380D7473B693CED72 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ED2A02A0BEF090A7E7A96F0B /* echora */ = {
+			isa = PBXGroup;
+			children = (
+				D1CB0FEB5F4775E3338DF9C6 /* main.mm */,
+				ED4B1749A6C22005BEE64E60 /* bindings */,
+			);
+			path = echora;
+			sourceTree = "<group>";
+		};
+		ED4B1749A6C22005BEE64E60 /* bindings */ = {
+			isa = PBXGroup;
+			children = (
+				48F15D48F9BBEE8E1056E2E3 /* bindings.h */,
+			);
+			path = bindings;
+			sourceTree = "<group>";
+		};
+		FCA474D380D7473B693CED72 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A2863F6A07318CE64AEE665E /* echora_iOS.app */,
+				DE82CB28C4AFD66A18B07AE3 /* EchoraNowPlayingExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		"TEMP_9F3FB46D-0361-4C6F-885F-1A2D790BEFE3" /* x86_64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = x86_64;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AD67B2B8356A693400A92168 /* echora_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 79AA22AA40C718498ED8E83C /* Build configuration list for PBXNativeTarget "echora_iOS" */;
+			buildPhases = (
+				81450C1F249C05E48F90AA66 /* Build Rust Code */,
+				CFF1B9747FDF9786D158CE96 /* Sources */,
+				94B0F779D2B52A7C57EB5843 /* Resources */,
+				28ECC8F1CF73B3A3128E95F3 /* Frameworks */,
+				1BECF629802C058311699A7E /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FE026CA3741CF81DA76697C0 /* PBXTargetDependency */,
+			);
+			name = echora_iOS;
+			packageProductDependencies = (
+			);
+			productName = echora_iOS;
+			productReference = A2863F6A07318CE64AEE665E /* echora_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E3FD0091FABE70BFF7F5D23C /* EchoraNowPlayingExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 99A5D0E6EE4454CC4A37A1BB /* Build configuration list for PBXNativeTarget "EchoraNowPlayingExtension" */;
+			buildPhases = (
+				4F3D8AE8EAD7E398F2D07008 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EchoraNowPlayingExtension;
+			packageProductDependencies = (
+			);
+			productName = EchoraNowPlayingExtension;
+			productReference = DE82CB28C4AFD66A18B07AE3 /* EchoraNowPlayingExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AFA353CA6803CAD3BDEA9EB5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = FECCC801EB98A25531C09D31 /* Build configuration list for PBXProject "echora" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = EBCA4B8C3CC80BF5B7DE5533;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FCA474D380D7473B693CED72 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AD67B2B8356A693400A92168 /* echora_iOS */,
+				E3FD0091FABE70BFF7F5D23C /* EchoraNowPlayingExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		94B0F779D2B52A7C57EB5843 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FCC31037D91E6E87A218C377 /* Assets.xcassets in Resources */,
+				6310894952D08C68C92DB9F3 /* LaunchScreen.storyboard in Resources */,
+				100AD6CF3006A2B545F312A3 /* assets in Resources */,
+				6BB97F237A5415FC43498FD3 /* libapp.a in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		81450C1F249C05E48F90AA66 /* Build Rust Code */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Code";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "npm run -- tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4F3D8AE8EAD7E398F2D07008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				88A640FC241B6FDB236B229B /* EchoraLiveActivityIntents.swift in Sources */,
+				6DC955AE025BC5B7850B5EDA /* EchoraNowPlayingAttributes.swift in Sources */,
+				C998B627E16D4CD922A98B41 /* EchoraNowPlayingLiveActivity.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CFF1B9747FDF9786D158CE96 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				059A490555F26CC27F86AE95 /* EchoraLiveActivityBridge.swift in Sources */,
+				A263EF5DB7DD5D12C310EF2C /* EchoraLiveActivityIntents.swift in Sources */,
+				4DEB05A7C402A0C14C23AFAB /* EchoraMediaSessionBridge.swift in Sources */,
+				A2113C1524623E4DD631E781 /* EchoraNowPlayingAttributes.swift in Sources */,
+				731B5074AEA87D9788F97CF0 /* EchoraQuickActionBridge.swift in Sources */,
+				9F05E759E7BB1B4754874BB6 /* EchoraSpeechRecognitionBridge.swift in Sources */,
+				854989113AAEA9F89E555FF9 /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FE026CA3741CF81DA76697C0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E3FD0091FABE70BFF7F5D23C /* EchoraNowPlayingExtension */;
+			targetProxy = 1B01FC900227955815C81F7B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		237958535FD7A6378576F393 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = release;
+		};
+		519008211B6A04DE80C2FA25 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = debug;
+		};
+		697CAC8E529F622D63A4312F /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				INFOPLIST_FILE = EchoraNowPlayingExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = studio.echora.client.nowplaying;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = debug;
+		};
+		88FB3E790316224AF7BF2D98 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = echora_iOS/echora_iOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = echora_iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = studio.echora.client;
+				PRODUCT_NAME = "Echora";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = release;
+		};
+		AEDD2CAAFDF0E8908A8F155B /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				INFOPLIST_FILE = EchoraNowPlayingExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = studio.echora.client.nowplaying;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = release;
+		};
+		D7BE16EC23D370C901BC91D4 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = echora_iOS/echora_iOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = echora_iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = studio.echora.client;
+				PRODUCT_NAME = "Echora";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		79AA22AA40C718498ED8E83C /* Build configuration list for PBXNativeTarget "echora_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D7BE16EC23D370C901BC91D4 /* debug */,
+				88FB3E790316224AF7BF2D98 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		99A5D0E6EE4454CC4A37A1BB /* Build configuration list for PBXNativeTarget "EchoraNowPlayingExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				697CAC8E529F622D63A4312F /* debug */,
+				AEDD2CAAFDF0E8908A8F155B /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		FECCC801EB98A25531C09D31 /* Build configuration list for PBXProject "echora" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				519008211B6A04DE80C2FA25 /* debug */,
+				237958535FD7A6378576F393 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AFA353CA6803CAD3BDEA9EB5 /* Project object */;
+}

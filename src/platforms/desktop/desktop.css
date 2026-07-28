@@ -1,0 +1,169 @@
+/* Desktop owns a stable work surface; resizing never swaps it into the mobile product. */
+html[data-ui-platform="desktop"],
+html[data-ui-platform="desktop"] body,
+html[data-ui-platform="desktop"] #root { min-width: 960px; overflow: hidden; }
+.client-shell[data-platform-entry="desktop"] { width: 100vw; min-width: 960px; height: 100vh; }
+
+/* Desktop settings use a direct sidebar -> detail model with compact grouped controls. */
+.client-shell[data-platform-entry="desktop"] .settings-modal-backdrop { min-width: 960px; padding: 32px; overflow: auto; }
+.client-shell[data-platform-entry="desktop"] .settings-modal.is-desktop {
+  width: min(1120px, calc(100vw - 64px));
+  min-width: 896px;
+  height: min(760px, calc(100vh - 64px));
+  min-height: 620px;
+  grid-template-columns: 252px minmax(0, 1fr);
+  border-radius: 14px;
+  border: 1px solid var(--material-line);
+  background: var(--material-sheet);
+  box-shadow: inset 0 1px 0 var(--material-highlight), var(--material-shadow);
+  backdrop-filter: var(--material-blur-sheet);
+  -webkit-backdrop-filter: var(--material-blur-sheet);
+}
+.client-shell[data-platform-entry="desktop"] .settings-navigation {
+  padding: 16px 12px 12px;
+  border-right-color: var(--material-line);
+  background: var(--material-panel);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.client-shell[data-platform-entry="desktop"] .settings-navigation-brand {
+  min-height: 58px;
+  padding: 2px 8px 10px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+.client-shell[data-platform-entry="desktop"] .settings-navigation-brand > span { width: 36px; height: 36px; border-radius: 10px; }
+.client-shell[data-platform-entry="desktop"] .settings-navigation-brand strong { font-size: var(--type-primary); }
+.client-shell[data-platform-entry="desktop"] .settings-navigation-brand small { margin-top: 3px; font-size: var(--type-caption); }
+.client-shell[data-platform-entry="desktop"] .settings-search { height: 40px; margin: 0 2px 10px; border-radius: 9px; }
+.client-shell[data-platform-entry="desktop"] .settings-category-nav { gap: 2px; }
+.client-shell[data-platform-entry="desktop"] .settings-category-nav > button {
+  min-height: 52px;
+  padding: 7px 9px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 9px;
+  border-radius: 8px;
+}
+.client-shell[data-platform-entry="desktop"] .settings-category-nav > button > svg:first-child { width: 28px; height: 28px; padding: 6px; border-radius: 8px; }
+.client-shell[data-platform-entry="desktop"] .settings-category-nav strong { font-size: var(--type-body); }
+.client-shell[data-platform-entry="desktop"] .settings-category-nav small { margin-top: 2px; font-size: var(--type-caption); }
+.client-shell[data-platform-entry="desktop"] .settings-navigation > footer { padding: 10px 8px 0; font-size: var(--type-caption); }
+
+.client-shell[data-platform-entry="desktop"] .settings-content {
+  background: var(--material-page);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.client-shell[data-platform-entry="desktop"] .settings-content-header {
+  min-height: 92px;
+  padding: 18px 24px;
+  gap: 16px;
+  border-bottom-color: var(--material-line);
+  background: var(--material-chrome);
+  box-shadow: inset 0 1px 0 var(--material-highlight);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.client-shell[data-platform-entry="desktop"] .settings-content-header h2 { margin: 0; font-size: 24px; }
+.client-shell[data-platform-entry="desktop"] .settings-content-header p { margin-top: 6px; max-width: 620px; font-size: var(--type-body); }
+.client-shell[data-platform-entry="desktop"] .settings-content-header > button { width: 36px; height: 36px; flex-basis: 36px; }
+.client-shell[data-platform-entry="desktop"] .settings-content-scroll { padding: 18px 24px 34px; }
+.client-shell[data-platform-entry="desktop"] .settings-page-section {
+  --settings-section-indent: 0px;
+  width: min(820px, 100%);
+  margin: 0 auto 14px;
+  padding: 0 18px 5px;
+  overflow: hidden;
+  border: 1px solid var(--material-line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--material-panel) 78%, transparent);
+  box-shadow: inset 0 1px 0 var(--material-highlight), 0 10px 28px color-mix(in srgb, var(--theme-text) 7%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.client-shell[data-platform-entry="desktop"] .settings-page-section.application-update-section {
+  padding: 20px 18px 18px;
+}
+.client-shell[data-platform-entry="desktop"] .settings-page-section > header {
+  min-height: 58px;
+  padding: 11px 0 9px;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+}
+.client-shell[data-platform-entry="desktop"] .settings-page-section > header > svg { margin: 0; }
+.client-shell[data-platform-entry="desktop"] .settings-page-section > header strong { font-size: var(--type-primary); }
+.client-shell[data-platform-entry="desktop"] .settings-page-section > header small { margin-top: 3px; font-size: var(--type-meta); }
+.client-shell[data-platform-entry="desktop"] .settings-page-row {
+  min-height: 68px;
+  padding: 11px 0;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 290px);
+  gap: 22px;
+}
+.client-shell[data-platform-entry="desktop"] .settings-page-row > span > strong { font-size: var(--type-body); }
+.client-shell[data-platform-entry="desktop"] .settings-page-row > span > small { margin-top: 4px; font-size: var(--type-meta); }
+.client-shell[data-platform-entry="desktop"] .settings-page-section:has(.glass-select) { position: relative; overflow: visible; }
+.client-shell[data-platform-entry="desktop"] .content-limit-setting { min-height: 74px; padding: 12px 0; }
+.client-shell[data-platform-entry="desktop"] .settings-page-section .source-variant-options { max-width: none; margin: 2px 0 10px; }
+.client-shell[data-platform-entry="desktop"] .settings-page-section > .source-version-note,
+.client-shell[data-platform-entry="desktop"] .settings-page-section > .source-credential-note,
+.client-shell[data-platform-entry="desktop"] .settings-section-body { margin-left: 0; }
+.client-shell[data-platform-entry="desktop"] .settings-page-status,
+.client-shell[data-platform-entry="desktop"] .settings-page-note,
+.client-shell[data-platform-entry="desktop"] .settings-content-scroll > .data-settings-status {
+  width: min(820px, 100%);
+  margin: 0 auto 14px;
+}
+.client-shell[data-platform-entry="desktop"] .settings-page-section.data-settings-section { padding: 0 18px 16px; }
+.client-shell[data-platform-entry="desktop"] .settings-page-section.data-settings-section .configuration-actions > button { min-height: 46px; }
+
+/* Solid entity actions do not inherit the glass button's inner highlight. */
+.client-shell[data-platform-entry="desktop"] .library-entity-actions button.is-primary {
+  border-color: transparent;
+  background: var(--theme-accent);
+  color: var(--theme-accent-text);
+  box-shadow: none;
+}
+.client-shell[data-platform-entry="desktop"] .library-entity-actions button.is-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--theme-accent) 88%, var(--theme-text));
+  color: var(--theme-accent-text);
+}
+.client-shell[data-platform-entry="desktop"] .library-entity-actions button.is-primary:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 22%, transparent);
+}
+
+/* Light settings keep the glass layering while restoring product-level contrast. */
+.client-shell[data-platform-entry="desktop"][data-style="light"] .settings-modal.is-desktop {
+  --theme-text: #17191d;
+  --theme-muted: #414854;
+  --theme-faint: #616a77;
+  --glass-stroke: rgba(35, 42, 52, .18);
+  --glass-stroke-strong: rgba(35, 42, 52, .26);
+  --glass-control: var(--material-control);
+  --glass-control-active: rgba(58, 68, 82, .11);
+  --interaction-hover: rgba(58, 68, 82, .055);
+  --interaction-active: rgba(58, 68, 82, .10);
+  --glass-highlight: rgba(255, 255, 255, .72);
+  border-color: var(--material-line);
+  background: var(--material-sheet);
+  box-shadow: inset 0 1px 0 var(--material-highlight), 0 34px 90px rgba(35, 42, 52, .24);
+}
+.client-shell[data-platform-entry="desktop"][data-style="light"] .settings-navigation {
+  border-right-color: var(--material-line);
+  background: var(--material-panel);
+}
+.client-shell[data-platform-entry="desktop"][data-style="light"] .settings-content {
+  background: var(--material-page);
+}
+.client-shell[data-platform-entry="desktop"][data-style="light"] .settings-content-header {
+  border-bottom-color: var(--material-line);
+  background: var(--material-chrome);
+}
+.client-shell[data-platform-entry="desktop"][data-style="light"] .settings-page-section {
+  border-color: var(--material-line);
+  background: color-mix(in srgb, var(--material-panel) 78%, transparent);
+  box-shadow: inset 0 1px 0 var(--material-highlight), 0 8px 22px rgba(44, 52, 64, .07);
+}
+.client-shell[data-platform-entry="desktop"][data-style="light"] .settings-page-row {
+  border-top-color: rgba(35, 42, 52, .16);
+}

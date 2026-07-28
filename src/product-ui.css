@@ -1,0 +1,3808 @@
+/* Shared product finish: neutral hierarchy, restrained glass, and stable controls. */
+.client-shell {
+  --product-hover: color-mix(in srgb, var(--theme-text) 6%, transparent);
+  --product-active: color-mix(in srgb, var(--theme-text) 10%, transparent);
+  --product-selected: color-mix(in srgb, var(--theme-text) 8%, transparent);
+  --product-divider: color-mix(in srgb, var(--theme-text) 10%, transparent);
+  --product-surface: color-mix(in srgb, var(--theme-panel-strong) 70%, transparent);
+  --product-surface-strong: color-mix(in srgb, var(--theme-panel-strong) 86%, transparent);
+  --product-radius-control: 7px;
+  --product-radius-group: 11px;
+  --product-radius-sheet: 16px;
+}
+
+.client-shell button,
+.client-shell input,
+.client-shell select,
+.client-shell textarea { letter-spacing: 0; }
+
+.client-shell :is(button, a, [role="button"], input, select, textarea, label) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.client-shell button:focus:not(:focus-visible) { outline: 0; }
+
+.client-shell .settings-modal button,
+.client-shell .header-popover button,
+.client-shell .agent-preferences-panel button,
+.client-shell .mobile-theme-sheet button,
+.client-shell .playlist-editor button,
+.client-shell .playlist-picker button,
+.client-shell .context-menu button {
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+}
+
+.client-shell .settings-modal button:hover:not(:disabled),
+.client-shell .header-popover button:hover:not(:disabled),
+.client-shell .agent-preferences-panel button:hover:not(:disabled),
+.client-shell .mobile-theme-sheet button:hover:not(:disabled),
+.client-shell .playlist-editor button:hover:not(:disabled),
+.client-shell .playlist-picker button:hover:not(:disabled),
+.client-shell .context-menu button:hover:not(:disabled) {
+  filter: none;
+}
+
+/* Desktop settings use an open, information-dense system layout. */
+.client-shell[data-form-factor="desktop"] .settings-modal-backdrop {
+  padding: 24px;
+  background: rgba(15, 17, 21, .34);
+  backdrop-filter: blur(22px) saturate(118%);
+  -webkit-backdrop-filter: blur(22px) saturate(118%);
+}
+
+.client-shell[data-form-factor="desktop"] .settings-modal {
+  width: min(1080px, calc(100vw - 48px));
+  height: min(720px, calc(100vh - 48px));
+  min-height: 560px;
+  grid-template-columns: 232px minmax(0, 1fr);
+  border: 1px solid var(--product-divider);
+  border-radius: var(--product-radius-sheet);
+  background: color-mix(in srgb, var(--glass-floating) 92%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 16%, transparent), 0 30px 90px rgba(0, 0, 0, .3);
+  backdrop-filter: blur(42px) saturate(132%);
+  -webkit-backdrop-filter: blur(42px) saturate(132%);
+}
+
+.client-shell[data-form-factor="desktop"] .settings-navigation {
+  padding: 18px 14px 14px;
+  border-right: 1px solid var(--product-divider);
+  background: color-mix(in srgb, var(--theme-stage) 52%, transparent);
+}
+
+.client-shell[data-form-factor="desktop"] .settings-navigation-brand {
+  min-height: 58px;
+  padding: 0 8px 14px;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-navigation-brand strong {
+  font-size: 18px;
+  font-weight: 680;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-navigation-brand small {
+  margin-top: 4px;
+  font-size: 12.5px;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-search {
+  height: 38px;
+  margin: 0 0 10px;
+  border-color: var(--product-divider);
+  border-radius: var(--product-radius-control);
+  background: color-mix(in srgb, var(--theme-text) 4%, transparent);
+  box-shadow: none;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-search input { height: 36px; font-size: 13px; }
+.client-shell[data-form-factor="desktop"] .settings-category-nav { gap: 3px; }
+
+.client-shell[data-form-factor="desktop"] .settings-category-nav > button {
+  position: relative;
+  min-height: 52px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  box-shadow: none;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-category-nav > button::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: transparent;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-category-nav > button:hover { background: var(--product-hover); }
+.client-shell[data-form-factor="desktop"] .settings-category-nav > button.is-active { background: var(--product-selected); box-shadow: none; }
+.client-shell[data-form-factor="desktop"] .settings-category-nav > button.is-active::before { background: var(--theme-accent); }
+.client-shell[data-form-factor="desktop"] .settings-category-nav > button > svg:not(.settings-category-chevron) { width: 17px; height: 17px; color: var(--theme-muted); }
+.client-shell[data-form-factor="desktop"] .settings-category-nav > button.is-active > svg:not(.settings-category-chevron) { color: var(--theme-text); }
+.client-shell[data-form-factor="desktop"] .settings-category-chevron { display: none; }
+.client-shell[data-form-factor="desktop"] .settings-category-nav strong { font-size: 14px; font-weight: 650; }
+.client-shell[data-form-factor="desktop"] .settings-category-nav small { margin-top: 3px; font-size: 12px; line-height: 1.25; }
+.client-shell[data-form-factor="desktop"] .settings-navigation > footer { min-height: 40px; padding: 10px 8px 0; font-size: 12px; }
+
+.client-shell[data-form-factor="desktop"] .settings-content {
+  background: color-mix(in srgb, var(--theme-stage) 18%, transparent);
+}
+
+.client-shell[data-form-factor="desktop"] .settings-content-header {
+  min-height: 98px;
+  padding: 21px 44px 18px;
+  border-bottom-color: var(--product-divider);
+  background: transparent;
+  box-shadow: none;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-content-header h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-content-header p {
+  margin-top: 6px;
+  color: var(--theme-muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-content-header > button {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  border-radius: 8px;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-content-header > button:hover { background: var(--product-hover); }
+.client-shell[data-form-factor="desktop"] .settings-content-scroll { padding: 20px 24px 34px; }
+
+/* Platform sheets carry older high-specificity rules. Keep this layer authoritative. */
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-modal.is-desktop {
+  width: min(1080px, calc(100vw - 48px));
+  height: min(720px, calc(100vh - 48px));
+  min-height: 560px;
+  grid-template-columns: 232px minmax(0, 1fr);
+  border-radius: var(--product-radius-sheet);
+}
+
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-category-nav > button {
+  grid-template-columns: 20px minmax(0, 1fr);
+}
+
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-category-nav > button > svg:first-child {
+  display: block;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  background: transparent;
+}
+
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-page-section,
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-page-section.data-settings-section,
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"][data-style="light"] .settings-page-section {
+  width: min(760px, 100%);
+  margin: 0 auto 14px;
+  padding: 0 18px 5px;
+  overflow: hidden;
+  border: 1px solid var(--product-divider);
+  border-radius: var(--product-radius-group);
+  background: var(--product-surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 12%, transparent), 0 10px 28px color-mix(in srgb, black 10%, transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-page-section.application-update-section {
+  padding: 18px;
+}
+
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-page-section.data-settings-section {
+  padding-bottom: 14px;
+}
+
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-page-section:has(.glass-select) {
+  position: relative;
+  overflow: visible;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-page-section + .settings-page-section { margin-top: 0; }
+
+.client-shell[data-form-factor="desktop"] .settings-page-section > header {
+  min-height: 58px;
+  padding: 11px 0 9px;
+  border-bottom: 1px solid var(--product-divider);
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-page-section > header > svg { display: block; width: 18px; height: 18px; color: var(--theme-muted); }
+.client-shell[data-form-factor="desktop"] .settings-page-section > header strong { font-size: 16px; font-weight: 680; }
+.client-shell[data-form-factor="desktop"] .settings-page-section > header small { margin-top: 4px; font-size: 12.5px; line-height: 1.4; }
+
+.client-shell[data-form-factor="desktop"] .settings-page-row {
+  min-height: 68px;
+  margin-left: 0;
+  padding: 13px 0;
+  border-top: 1px solid var(--product-divider);
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 270px);
+  gap: 22px;
+  align-items: center;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-page-section > header + .settings-page-row { border-top: 0; }
+.client-shell[data-form-factor="desktop"] .settings-page-row > span > strong { font-size: 14px; font-weight: 640; line-height: 1.35; }
+.client-shell[data-form-factor="desktop"] .settings-page-row > span > small { margin-top: 4px; font-size: 12.5px; line-height: 1.45; }
+.client-shell[data-form-factor="desktop"] .content-limit-setting { min-height: 72px; margin-left: 0; padding: 14px 0; grid-template-columns: minmax(0, 1fr) 294px; align-items: center; }
+.client-shell[data-form-factor="desktop"] .settings-section-body { margin-left: 0; }
+
+/* Form controls stay compact and use neutral selection rather than bright tiles. */
+.client-shell .settings-choice,
+.client-shell .content-limit-options,
+.client-shell .agent-apply-options,
+.client-shell .preference-track-options {
+  box-sizing: border-box;
+  height: 38px;
+  min-height: 38px;
+  padding: 3px;
+  border: 1px solid var(--product-divider);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--theme-text) 4%, transparent);
+  box-shadow: none;
+}
+
+.client-shell .settings-choice button,
+.client-shell .content-limit-options button,
+.client-shell .agent-apply-options button,
+.client-shell .preference-track-options button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--theme-muted);
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 590;
+}
+
+.client-shell .settings-choice button:hover,
+.client-shell .content-limit-options button:hover,
+.client-shell .agent-apply-options button:hover,
+.client-shell .preference-track-options button:hover { background: var(--product-hover); color: var(--theme-text); }
+
+.client-shell .settings-choice button.is-active,
+.client-shell .content-limit-options button.is-active,
+.client-shell .agent-apply-options button.is-active,
+.client-shell .preference-track-options button.is-active {
+  background: var(--product-active);
+  color: var(--theme-text);
+  box-shadow: none;
+}
+
+.client-shell .settings-toggle {
+  width: 38px;
+  height: 22px;
+  flex-basis: 38px;
+  padding: 2px;
+  border: 1px solid var(--product-divider);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--theme-text) 12%, transparent);
+  box-shadow: none;
+}
+
+.client-shell .settings-toggle i {
+  width: 16px;
+  height: 16px;
+  background: color-mix(in srgb, var(--theme-text) 72%, var(--theme-panel));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .22);
+}
+
+.client-shell .settings-toggle.is-on { border-color: transparent; background: var(--theme-accent); }
+.client-shell .settings-toggle.is-on i { transform: translateX(16px); background: #fff; }
+
+.client-shell .glass-select-trigger,
+.client-shell .settings-page-row > input,
+.client-shell .settings-page-row > select,
+.client-shell .settings-page-row > .ai-secret-field > input,
+.client-shell .danger-confirmation-field > input {
+  height: 38px;
+  border-color: var(--product-divider);
+  border-radius: var(--product-radius-control);
+  background: color-mix(in srgb, var(--theme-text) 4%, transparent);
+  box-shadow: none;
+  font-size: 13px;
+}
+
+.client-shell .glass-select-trigger:hover,
+.client-shell .glass-select.is-open .glass-select-trigger { border-color: color-mix(in srgb, var(--theme-text) 20%, transparent); background: var(--product-hover); }
+
+.client-shell .glass-select-menu {
+  padding: 5px;
+  border-color: var(--product-divider);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--glass-floating) 94%, transparent);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .26);
+}
+
+.client-shell .glass-select-menu > button { min-height: 44px; border-radius: 7px; }
+.client-shell .glass-select-menu > button:hover:not(:disabled) { background: var(--product-hover); }
+.client-shell .glass-select-menu > button.is-selected { background: var(--product-selected); }
+
+.client-shell[data-form-factor="desktop"] .source-variant-options {
+  margin: 0;
+  max-width: none;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-page-section .source-variant-options > button {
+  min-height: 62px;
+  padding: 11px 38px 11px 0;
+  border: 0;
+  border-bottom: 1px solid var(--product-divider);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.client-shell[data-form-factor="desktop"] .source-variant-options > button:hover { background: var(--product-hover); }
+.client-shell[data-form-factor="desktop"] .source-variant-options > button.is-active { background: transparent; border-color: var(--product-divider); }
+.client-shell[data-form-factor="desktop"] .source-variant-options small { margin-top: 4px; font-size: 11.5px; }
+.client-shell[data-form-factor="desktop"] .source-variant-options i { top: 20px; right: 8px; width: 18px; height: 18px; }
+.client-shell[data-form-factor="desktop"] .source-version-note,
+.client-shell[data-form-factor="desktop"] .source-credential-note { margin-left: 0; }
+
+.client-shell[data-form-factor="desktop"] .settings-page-status,
+.client-shell[data-form-factor="desktop"] .settings-page-note {
+  width: min(760px, 100%);
+  min-height: 56px;
+  margin: 0 auto 14px;
+  padding: 10px 13px;
+  border: 1px solid var(--product-divider);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--theme-text) 3%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 7%, transparent);
+}
+
+.client-shell[data-form-factor="desktop"] .settings-page-status {
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-page-note {
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-page-status > span,
+.client-shell[data-form-factor="desktop"] .settings-page-note > svg { color: var(--theme-accent); }
+
+.client-shell[data-form-factor="desktop"] .profile-settings-section .settings-static-field {
+  height: 38px;
+  min-height: 38px;
+  padding-block: 0;
+}
+
+.client-shell[data-form-factor="desktop"] .profile-settings-section .settings-static-field small {
+  display: none;
+}
+
+.client-shell[data-form-factor="desktop"] .settings-content-scroll > .data-settings-status {
+  width: min(760px, 100%);
+  margin: 0 auto 14px;
+}
+.client-shell .settings-static-field,
+.client-shell .settings-inline-value { min-height: 38px; border-color: var(--product-divider); border-radius: 7px; background: color-mix(in srgb, var(--theme-text) 4%, transparent); box-shadow: none; }
+
+.client-shell .data-action-list {
+  overflow: hidden;
+  border: 1px solid var(--product-divider);
+  border-radius: var(--product-radius-group);
+  background: color-mix(in srgb, var(--theme-text) 2%, transparent);
+}
+
+.client-shell .settings-page-section .data-action-list .data-action-row {
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.client-shell .settings-page-section .data-action-list .data-action-row + .data-action-row { border-top: 1px solid var(--product-divider); }
+.client-shell .settings-page-section .data-action-list .data-action-row:hover { background: var(--product-hover); }
+.client-shell .data-action-row > span > i { display: none; }
+.client-shell .data-action-button { height: 34px; border-radius: 7px; background: var(--product-hover); }
+
+.client-shell .account-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  margin: 2px 0 6px;
+  padding: 3px;
+  border: 1px solid var(--product-divider);
+  border-radius: 9px;
+  background: var(--product-control);
+}
+
+.client-shell .account-mode-switch > button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--theme-muted);
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.client-shell .account-mode-switch > button:hover { background: var(--product-hover); color: var(--theme-text); }
+.client-shell .account-mode-switch > button.is-active { background: var(--product-selected); color: var(--theme-text); box-shadow: 0 1px 3px rgb(0 0 0 / .08); }
+
+.client-shell .account-session-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+}
+
+.client-shell .account-session-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 112px;
+  min-height: 38px;
+  border: 1px solid var(--product-divider);
+  border-radius: 8px;
+  background: var(--product-control);
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.client-shell .account-session-actions > button.is-primary { border-color: transparent; background: var(--theme-accent); color: white; }
+.client-shell .account-session-actions > button:disabled { opacity: .46; cursor: default; }
+.client-shell .account-status { margin: 12px 0 0; color: var(--theme-muted); font-size: 12.5px; line-height: 1.5; }
+
+.client-shell[data-form-factor="mobile"] .account-mode-switch { margin: 0 0 8px; }
+.client-shell[data-form-factor="mobile"] .account-session-actions { padding-top: 10px; }
+.client-shell[data-form-factor="mobile"] .account-session-actions > button { width: 100%; min-height: 42px; }
+
+.client-shell .settings-page-section.data-settings-section .configuration-scope {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border: 1px solid var(--product-divider);
+  border-radius: var(--product-radius-group);
+  background: color-mix(in srgb, var(--theme-text) 2%, transparent);
+}
+
+.client-shell .settings-page-section.data-settings-section .configuration-scope > button {
+  width: 100%;
+  min-height: 58px;
+  padding: 9px 38px 9px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  align-items: center;
+}
+
+.client-shell .settings-page-section.data-settings-section .configuration-scope > button + button { border-top: 1px solid var(--product-divider); }
+.client-shell .settings-page-section.data-settings-section .configuration-scope > button:hover { background: var(--product-hover); }
+.client-shell .settings-page-section.data-settings-section .configuration-scope > button.is-active { background: var(--product-selected); box-shadow: none; }
+.client-shell .configuration-scope-icon { display: none; }
+.client-shell .settings-page-section.data-settings-section .configuration-scope > button > span:not(.configuration-scope-icon) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.client-shell .settings-page-section.data-settings-section .configuration-scope > button strong,
+.client-shell .settings-page-section.data-settings-section .configuration-scope > button small {
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+.client-shell .settings-page-section.data-settings-section .configuration-scope > button > i { top: 20px; right: 14px; width: 17px; height: 17px; }
+
+.client-shell .settings-page-section.data-settings-section .configuration-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.client-shell .settings-page-section.data-settings-section .configuration-actions > button {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border-color: var(--product-divider);
+  border-radius: 8px;
+  background: var(--product-hover);
+  box-shadow: none;
+  grid-template-columns: 18px minmax(0, 1fr);
+}
+
+.client-shell .settings-page-section.data-settings-section .configuration-actions > button.is-primary {
+  border-color: transparent;
+  background: var(--theme-accent);
+  color: var(--theme-accent-text);
+}
+
+/* Appearance becomes a compact preference panel rather than a preview card. */
+.client-shell[data-form-factor="desktop"] .theme-menu {
+  width: 336px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--product-divider);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--glass-floating) 92%, transparent);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .26);
+  backdrop-filter: blur(38px) saturate(132%);
+  -webkit-backdrop-filter: blur(38px) saturate(132%);
+}
+
+.client-shell[data-form-factor="desktop"] .theme-menu-head { min-height: 64px; padding: 12px 15px; border-bottom: 1px solid var(--product-divider); }
+.client-shell[data-form-factor="desktop"] .theme-menu-head strong { font-size: 15px; }
+.client-shell[data-form-factor="desktop"] .theme-menu-head small { font-size: 11.5px; }
+.client-shell[data-form-factor="desktop"] .theme-menu-head > em { padding: 3px 7px; border-radius: 5px; background: var(--product-hover); font-size: 11px; }
+.client-shell[data-form-factor="desktop"] .theme-live-preview { display: none; }
+
+.client-shell[data-form-factor="desktop"] .appearance-options {
+  height: 46px;
+  margin: 12px 14px 8px;
+  padding: 3px;
+  border: 1px solid var(--product-divider);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--theme-text) 4%, transparent);
+  gap: 3px;
+}
+
+.client-shell[data-form-factor="desktop"] .appearance-options > button {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.client-shell[data-form-factor="desktop"] .appearance-options > button > span { justify-content: center; }
+.client-shell[data-form-factor="desktop"] .appearance-options > button > small { display: none; }
+.client-shell[data-form-factor="desktop"] .appearance-options > button.is-active { border: 0; background: var(--product-active); box-shadow: none; }
+.client-shell[data-form-factor="desktop"] .palette-section { padding: 10px 15px 15px; border-bottom: 1px solid var(--product-divider); }
+.client-shell[data-form-factor="desktop"] .palette-grid { margin-top: 10px; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.client-shell[data-form-factor="desktop"] .palette-grid button { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: transparent; }
+.client-shell[data-form-factor="desktop"] .palette-grid button i { width: 22px; height: 22px; border-radius: 50%; }
+.client-shell[data-form-factor="desktop"] .palette-grid button.is-active { box-shadow: inset 0 0 0 1px var(--theme-accent); }
+.client-shell[data-form-factor="desktop"] .theme-auto-row { min-height: 68px; padding: 11px 15px; border: 0; }
+
+/* Sound and source panels use lists, not card galleries. */
+.client-shell[data-form-factor="desktop"] .effects-panel {
+  right: 0;
+  width: min(720px, calc(100vw - 32px));
+  border: 1px solid var(--product-divider);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--glass-floating) 93%, transparent);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+}
+
+.client-shell[data-form-factor="desktop"] .effect-center-header {
+  min-height: 64px;
+  padding: 0 12px 0 16px;
+  grid-template-columns: 176px 1fr 90px;
+  border-bottom-color: var(--product-divider);
+}
+
+.client-shell[data-form-factor="desktop"] .effect-brand > svg { width: 20px; height: 20px; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--theme-muted); }
+.client-shell[data-form-factor="desktop"] .effect-brand strong { font-size: 14px; }
+.client-shell[data-form-factor="desktop"] .effect-brand small { margin-top: 2px; font-size: 11px; }
+.client-shell[data-form-factor="desktop"] .effect-center-header nav { height: 36px; border: 1px solid var(--product-divider); border-radius: 8px; background: color-mix(in srgb, var(--theme-text) 4%, transparent); }
+.client-shell[data-form-factor="desktop"] .effect-center-header nav button { min-width: 58px; border-radius: 6px; }
+.client-shell[data-form-factor="desktop"] .effect-center-header nav button.is-active { background: var(--product-active); box-shadow: none; }
+.client-shell[data-form-factor="desktop"] .sound-signal-chain { min-height: 52px; border-bottom-color: var(--product-divider); background: transparent; }
+.client-shell[data-form-factor="desktop"] .sound-effects-layout { grid-template-columns: minmax(0, 1.08fr) minmax(270px, .92fr); }
+.client-shell[data-form-factor="desktop"] .sound-preset-browser { padding: 14px 16px 16px; border-right: 1px solid var(--product-divider); }
+.client-shell[data-form-factor="desktop"] .sound-preset-browser > header { min-height: 48px; }
+.client-shell[data-form-factor="desktop"] .sound-preset-grid { overflow: hidden; grid-template-columns: 1fr; gap: 0; border: 1px solid var(--product-divider); border-radius: 10px; }
+.client-shell[data-form-factor="desktop"] .sound-preset-grid > button { min-height: 50px; padding: 8px 11px; border: 0; border-bottom: 1px solid var(--product-divider); border-radius: 0; background: transparent; box-shadow: none; }
+.client-shell[data-form-factor="desktop"] .sound-preset-grid > button:last-child { border-bottom: 0; }
+.client-shell[data-form-factor="desktop"] .sound-preset-grid > button:hover { background: var(--product-hover); }
+.client-shell[data-form-factor="desktop"] .sound-preset-grid > button.is-active { border-color: var(--product-divider); background: var(--product-selected); box-shadow: inset 2px 0 0 var(--theme-accent); }
+.client-shell[data-form-factor="desktop"] .sound-preset-detail { padding: 22px 20px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.client-shell[data-form-factor="desktop"] .sound-curve { border-color: var(--product-divider); border-radius: 8px; background: color-mix(in srgb, var(--theme-text) 3%, transparent); }
+.client-shell[data-form-factor="desktop"] .sound-traits > span { padding: 0; border: 0; border-radius: 0; background: transparent; }
+
+.client-shell[data-form-factor="desktop"] .source-panel {
+  width: min(420px, calc(100vw - 32px));
+  border-color: var(--product-divider);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--glass-floating) 93%, transparent);
+}
+
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"][data-style="light"] .source-panel {
+  background: rgba(250, 252, 255, .95);
+}
+
+.client-shell[data-platform-entry="desktop"][data-form-factor="desktop"][data-style="dark"] .source-panel {
+  background: rgba(25, 28, 34, .94);
+}
+
+.client-shell[data-form-factor="desktop"] .source-panel-heading { min-height: 56px; padding-inline: 15px; }
+.client-shell[data-form-factor="desktop"] .source-panel-heading > span > svg { color: var(--theme-muted); }
+.client-shell[data-form-factor="desktop"] .source-phase { border: 0; background: var(--product-hover); }
+.client-shell[data-form-factor="desktop"] .source-provider-list { padding: 0 14px 12px; grid-template-columns: 1fr; gap: 0; }
+.client-shell[data-form-factor="desktop"] .source-provider-list > div {
+  min-height: 58px;
+  padding: 9px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--product-divider);
+  border-radius: 0;
+  background: transparent;
+}
+.client-shell[data-form-factor="desktop"] .source-provider-list > div:last-child { border-bottom: 0; }
+.client-shell[data-form-factor="desktop"] .source-service-summary { padding-inline: 15px; }
+.client-shell[data-form-factor="desktop"] .source-panel .source-panel-footer > button { border-radius: 7px; background: var(--product-hover); }
+
+/* Preferences and menus follow the same restrained component language. */
+.client-shell[data-form-factor="desktop"] .agent-preferences-panel {
+  width: min(540px, calc(100vw - 40px));
+  border-color: var(--product-divider);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--glass-floating) 94%, transparent);
+}
+
+.client-shell[data-form-factor="desktop"] .agent-preferences-panel > header { min-height: 64px; padding: 0 16px; }
+.client-shell[data-form-factor="desktop"] .agent-preferences-content { padding: 2px 16px 8px; }
+.client-shell[data-form-factor="desktop"] .agent-preferences-content > section { min-height: 66px; padding: 12px 0; border-bottom-color: var(--product-divider); }
+.client-shell[data-form-factor="desktop"] .agent-preferences-panel > footer { min-height: 54px; padding: 8px 16px; }
+.client-shell[data-form-factor="desktop"] .agent-preferences-panel > footer > button { height: 34px; border-radius: 7px; }
+
+.client-shell .context-menu {
+  padding: 5px;
+  border-color: var(--product-divider);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--glass-floating) 94%, transparent);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, .26);
+}
+.client-shell .context-menu button { min-height: 36px; border-radius: 6px; font-size: 13px; }
+.client-shell .context-menu button:hover { background: var(--product-hover); }
+
+/* Desktop floating surfaces share one material system while preserving hierarchy. */
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] {
+  --desktop-product-panel-border: color-mix(in srgb, var(--theme-text) 11%, transparent);
+  --desktop-product-panel-surface: rgba(250, 252, 255, .96);
+  --desktop-product-popover-surface: rgba(250, 252, 255, .92);
+  --desktop-product-panel-shadow: 0 24px 64px rgba(0, 0, 0, .24);
+  --desktop-product-popover-shadow: 0 16px 44px rgba(0, 0, 0, .22);
+  --desktop-product-dialog-scrim: rgba(10, 11, 14, .38);
+  --desktop-product-panel-header-single: 64px;
+  --desktop-product-panel-header-stacked: 76px;
+  --desktop-product-panel-title: 16px;
+  --desktop-product-dialog-title: 17px;
+  --desktop-product-panel-subtitle: 12px;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"][data-style="dark"] {
+  --desktop-product-panel-surface: rgba(31, 34, 41, .96);
+  --desktop-product-popover-surface: rgba(31, 34, 41, .92);
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .theme-menu,
+  .effects-panel,
+  .source-panel,
+  .global-queue-panel,
+  .playback-variant-panel,
+  .output-panel,
+  .profile-panel
+) {
+  border: 1px solid var(--desktop-product-panel-border);
+  border-radius: 14px;
+  background: var(--desktop-product-panel-surface);
+  color: var(--theme-text);
+  box-shadow: var(--desktop-product-panel-shadow);
+  backdrop-filter: blur(38px) saturate(145%);
+  -webkit-backdrop-filter: blur(38px) saturate(145%);
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .agent-preferences-panel,
+  .session-editor,
+  .memory-manager,
+  .playlist-editor,
+  .playlist-picker,
+  .track-share-panel
+) {
+  border: 1px solid var(--desktop-product-panel-border);
+  border-radius: 16px;
+  background: var(--desktop-product-panel-surface);
+  color: var(--theme-text);
+  box-shadow: var(--desktop-product-panel-shadow);
+  backdrop-filter: blur(38px) saturate(145%);
+  -webkit-backdrop-filter: blur(38px) saturate(145%);
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .settings-modal {
+  border-color: var(--desktop-product-panel-border);
+  background: var(--desktop-product-panel-surface);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(38px) saturate(145%);
+  -webkit-backdrop-filter: blur(38px) saturate(145%);
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .agent-preferences-backdrop,
+  .session-editor-backdrop,
+  .memory-manager-backdrop,
+  .playlist-editor-backdrop,
+  .playlist-picker-backdrop,
+  .track-share-backdrop
+) {
+  background: var(--desktop-product-dialog-scrim);
+  backdrop-filter: blur(12px) saturate(122%);
+  -webkit-backdrop-filter: blur(12px) saturate(122%);
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .theme-menu-head,
+  .effect-center-header,
+  .source-panel-heading,
+  .output-panel > .popover-heading,
+  .global-queue-panel > header,
+  .playback-variant-panel > header,
+  .profile-summary,
+  .agent-preferences-panel > header,
+  .session-editor > header,
+  .memory-manager > header,
+  .playlist-editor > header,
+  .playlist-picker > header,
+  .track-share-panel > header
+) {
+  border-bottom: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .effect-center-header,
+  .source-panel-heading,
+  .output-panel > .popover-heading,
+  .global-queue-panel > header,
+  .playback-variant-panel > header
+) { min-height: var(--desktop-product-panel-header-single); }
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .global-queue-panel > header,
+  .playback-variant-panel > header
+) {
+  min-height: var(--desktop-product-panel-header-stacked);
+  padding-block: 10px;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .global-queue-panel {
+  grid-template-rows: var(--desktop-product-panel-header-stacked) 46px minmax(0, 1fr) 58px;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .effect-brand strong,
+  .source-panel-heading > span > strong,
+  .output-panel > .popover-heading > strong,
+  .global-queue-panel > header > span > strong,
+  .playback-variant-panel > header > span > strong
+) {
+  color: var(--theme-text);
+  font-size: var(--desktop-product-panel-title);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .effect-brand small,
+  .global-queue-panel > header > span > small,
+  .playback-variant-panel > header > span > small
+) {
+  margin-top: 3px;
+  color: var(--theme-faint);
+  font-size: var(--desktop-product-panel-subtitle);
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .source-panel-heading > span {
+  color: var(--theme-text);
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .agent-preferences-panel > header,
+  .session-editor > header,
+  .memory-manager > header,
+  .playlist-editor > header,
+  .playlist-picker > header,
+  .track-share-panel > header
+) { min-height: 72px; }
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .agent-preferences-panel > header > div > strong,
+  .session-editor > header > div > strong,
+  .memory-manager > header > div > strong,
+  .playlist-editor > header > div > strong,
+  .playlist-picker > header > div > strong,
+  .track-share-panel > header > span > span > strong
+) {
+  color: var(--theme-text);
+  font-size: var(--desktop-product-dialog-title);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .agent-preferences-panel > header > div > small,
+  .session-editor > header > div > small,
+  .memory-manager > header > div > small,
+  .playlist-editor > header > div > small,
+  .playlist-picker > header > div > small,
+  .track-share-panel > header > span > span > small
+) {
+  margin-top: 4px;
+  color: var(--theme-faint);
+  font-size: var(--desktop-product-panel-subtitle);
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .theme-menu-head strong {
+  color: var(--theme-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] .theme-menu-head small {
+  color: var(--theme-faint);
+  font-size: 11.5px;
+}
+
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"][data-form-factor="desktop"] :is(
+  .playback-speed-popover,
+  .volume-popover,
+  .lyrics-type-popover,
+  .context-menu,
+  .glass-select-menu
+) {
+  border: 1px solid var(--desktop-product-panel-border);
+  border-radius: 12px;
+  background: var(--desktop-product-popover-surface);
+  color: var(--theme-text);
+  box-shadow: var(--desktop-product-popover-shadow);
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+}
+
+.client-shell[data-form-factor="desktop"] .playlist-list button,
+.client-shell[data-form-factor="desktop"] .library-sidebar nav button { border-radius: 7px; box-shadow: none; }
+.client-shell[data-form-factor="desktop"] .playlist-list button:hover,
+.client-shell[data-form-factor="desktop"] .library-sidebar nav button:hover { background: var(--product-hover); }
+.client-shell[data-form-factor="desktop"] .playlist-list button.is-active,
+.client-shell[data-form-factor="desktop"] .library-sidebar nav button.is-active { background: var(--product-selected); box-shadow: none; }
+.client-shell[data-form-factor="desktop"] .track-row:hover { background: var(--product-hover); }
+.client-shell[data-form-factor="desktop"] .track-row.is-playing { background: color-mix(in srgb, var(--theme-accent) 7%, transparent); }
+
+/* Mobile settings are a real app hierarchy, not a scaled desktop dialog. */
+.client-shell[data-form-factor="mobile"] .settings-modal-backdrop {
+  padding: 0;
+  place-items: center;
+  background: rgba(12, 14, 18, .28);
+  backdrop-filter: blur(18px) saturate(115%);
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+}
+
+.client-shell[data-form-factor="mobile"] .settings-modal {
+  width: var(--mobile-canvas-width);
+  max-width: 100%;
+  height: var(--mobile-visual-viewport-height, 100dvh);
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--theme-stage) 88%, transparent);
+  box-shadow: none;
+  backdrop-filter: blur(34px) saturate(128%);
+  -webkit-backdrop-filter: blur(34px) saturate(128%);
+}
+
+.client-shell[data-form-factor="mobile"] .settings-modal.is-mobile-root { grid-template-columns: 1fr; }
+.client-shell[data-form-factor="mobile"] .settings-modal.is-mobile-root .settings-content { display: none; }
+.client-shell[data-form-factor="mobile"] .settings-modal.is-mobile-detail .settings-navigation { display: none; }
+.client-shell[data-form-factor="mobile"] .settings-modal.is-mobile-detail { grid-template-columns: 1fr; }
+
+.client-shell[data-form-factor="mobile"] .settings-navigation {
+  width: 100%;
+  padding: calc(8px + var(--safe-area-inset-top)) 14px calc(18px + var(--safe-area-inset-bottom));
+  border: 0;
+  background: transparent;
+}
+
+.client-shell[data-form-factor="mobile"] .settings-navigation-brand {
+  min-height: 54px;
+  padding: 0 4px 8px;
+}
+.client-shell[data-form-factor="mobile"] .settings-navigation-brand strong { font-size: 18px; font-weight: 700; }
+.client-shell[data-form-factor="mobile"] .settings-navigation-brand small { margin-top: 2px; font-size: 11px; }
+.client-shell[data-form-factor="mobile"] .settings-mobile-close { width: 34px; height: 34px; border-radius: 9px; background: var(--product-hover); }
+.client-shell[data-form-factor="mobile"] .settings-search { display: none; }
+
+.client-shell[data-form-factor="mobile"] .settings-category-nav {
+  overflow: hidden;
+  margin-top: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--product-divider);
+  border-radius: 13px;
+  background: var(--product-surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent);
+}
+
+.client-shell[data-form-factor="mobile"] .settings-category-nav > button {
+  min-height: 60px;
+  padding: 9px 0;
+  border: 0;
+  border-bottom: 1px solid var(--product-divider);
+  border-radius: 0;
+  background: transparent;
+  grid-template-columns: minmax(0, 1fr) 18px;
+  gap: 8px;
+  box-shadow: none;
+}
+.client-shell[data-form-factor="mobile"] .settings-category-nav > button:last-child { border-bottom: 0; }
+.client-shell[data-form-factor="mobile"] .settings-category-nav > button > svg:not(.settings-category-chevron) { display: none; }
+.client-shell[data-form-factor="mobile"] .settings-category-chevron { display: block; color: var(--theme-faint); }
+.client-shell[data-form-factor="mobile"] .settings-category-nav strong { font-size: 15px; font-weight: 620; }
+.client-shell[data-form-factor="mobile"] .settings-category-nav small { margin-top: 3px; font-size: 11px; }
+.client-shell[data-form-factor="mobile"] .settings-category-nav > button:hover { background: transparent; }
+.client-shell[data-form-factor="mobile"] .settings-navigation > footer { margin: 10px 2px 0; padding: 12px 10px 0; border: 0; font-size: 11px; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav {
+  padding: 0 12px;
+  border-radius: 14px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav > button {
+  width: 100%;
+  min-height: 60px;
+  margin: 0;
+  padding: 9px 0;
+  grid-template-columns: minmax(0, 1fr) 18px;
+  gap: 8px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav > button > svg:first-child {
+  display: none;
+  width: 0;
+  height: 0;
+  padding: 0;
+  background: transparent;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav > button > span {
+  display: block;
+  width: auto;
+  min-width: 0;
+}
+
+.client-shell[data-form-factor="mobile"] .settings-content { width: 100%; height: 100%; background: transparent; }
+.client-shell[data-form-factor="mobile"] .settings-content-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: calc(58px + var(--safe-area-inset-top));
+  padding: calc(7px + var(--safe-area-inset-top)) 12px 7px;
+  border-bottom: 1px solid var(--product-divider);
+  background: color-mix(in srgb, var(--glass-floating) 84%, transparent);
+  align-items: center;
+  backdrop-filter: blur(28px) saturate(130%);
+  -webkit-backdrop-filter: blur(28px) saturate(130%);
+}
+.client-shell[data-form-factor="mobile"] .settings-content-header > div { text-align: center; }
+.client-shell[data-form-factor="mobile"] .settings-content-header h2 { margin: 0; font-size: 17px; line-height: 1.2; font-weight: 680; }
+.client-shell[data-form-factor="mobile"] .settings-content-header p { display: none; }
+.client-shell[data-form-factor="mobile"] .settings-content-header > button,
+.client-shell[data-form-factor="mobile"] .settings-mobile-back { width: 34px; height: 34px; flex-basis: 34px; border-radius: 9px; background: transparent; }
+.client-shell[data-form-factor="mobile"] .settings-content-scroll { padding: 12px 14px calc(28px + var(--safe-area-inset-bottom)); }
+
+.client-shell[data-form-factor="mobile"] .settings-page-section,
+.client-shell[data-form-factor="mobile"] .settings-page-section.data-settings-section {
+  --settings-section-indent: 0px;
+  overflow: visible;
+  margin: 0 0 12px;
+  padding: 0 12px;
+  border: 1px solid var(--product-divider);
+  border-radius: 13px;
+  background: var(--product-surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 9%, transparent);
+}
+
+.client-shell[data-form-factor="mobile"] .settings-page-section > header {
+  min-height: 44px;
+  padding: 10px 0 7px;
+  border-bottom: 1px solid var(--product-divider);
+  grid-template-columns: 1fr;
+  align-items: end;
+}
+.client-shell[data-form-factor="mobile"] .settings-page-section > header > svg { display: none; }
+.client-shell[data-form-factor="mobile"] .settings-page-section > header strong { font-size: 12px; color: var(--theme-muted); font-weight: 620; }
+.client-shell[data-form-factor="mobile"] .settings-page-section > header small { display: none; }
+.client-shell[data-form-factor="mobile"] .settings-page-row {
+  min-height: 62px;
+  margin-left: 0;
+  padding: 11px 0;
+  border-top: 1px solid var(--product-divider);
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+.client-shell[data-form-factor="mobile"] .settings-page-section > header + .settings-page-row { border-top: 0; }
+.client-shell[data-form-factor="mobile"] .settings-page-row > span > strong { font-size: 14px; font-weight: 610; }
+.client-shell[data-form-factor="mobile"] .settings-page-row > span > small { margin-top: 3px; font-size: 11px; line-height: 1.38; }
+.client-shell[data-form-factor="mobile"] .settings-page-row.is-field-row { grid-template-columns: 1fr; gap: 8px; }
+.client-shell[data-form-factor="mobile"] .settings-page-row > .settings-choice { width: min(170px, 44vw); height: 38px; }
+.client-shell[data-form-factor="mobile"] .settings-page-row.is-choice-row { grid-template-columns: 1fr; gap: 8px; }
+.client-shell[data-form-factor="mobile"] .settings-page-row.is-choice-row > .settings-choice { width: 100%; }
+.client-shell[data-form-factor="mobile"] .content-limit-setting { min-height: 74px; margin: 0; padding: 11px 0; grid-template-columns: 1fr; gap: 10px; }
+.client-shell[data-form-factor="mobile"] .settings-section-body { margin-left: 0; }
+.client-shell[data-form-factor="mobile"] .settings-page-status,
+.client-shell[data-form-factor="mobile"] .settings-page-note {
+  min-height: 58px;
+  margin: 0 0 14px;
+  padding: 11px 12px;
+  border: 1px solid var(--product-divider);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--theme-text) 3%, var(--product-surface));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 8%, transparent);
+}
+.client-shell[data-form-factor="mobile"] .settings-page-status { grid-template-columns: 20px minmax(0, 1fr); gap: 10px; }
+.client-shell[data-form-factor="mobile"] .settings-page-note { grid-template-columns: 18px minmax(0, 1fr); gap: 10px; }
+.client-shell[data-form-factor="mobile"] .settings-page-status > span,
+.client-shell[data-form-factor="mobile"] .settings-page-note > svg { color: var(--theme-accent); }
+.client-shell[data-form-factor="mobile"] .profile-settings-section .settings-static-field {
+  box-sizing: border-box;
+  height: 38px;
+  min-height: 38px;
+  padding-block: 0;
+}
+.client-shell[data-form-factor="mobile"] .profile-settings-section .settings-static-field small { display: none; }
+.client-shell[data-form-factor="mobile"] .source-variant-options { margin: 0; grid-template-columns: 1fr; gap: 0; }
+.client-shell[data-form-factor="mobile"] .settings-page-section .source-variant-options > button { min-height: 58px; padding: 10px 34px 10px 0; border: 0; border-bottom: 1px solid var(--product-divider); border-radius: 0; background: transparent; box-shadow: none; }
+.client-shell[data-form-factor="mobile"] .source-variant-options > button:last-child { border-bottom: 0; }
+.client-shell[data-form-factor="mobile"] .source-version-note,
+.client-shell[data-form-factor="mobile"] .source-credential-note { margin-left: 0; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-content-scroll {
+  padding: 12px 14px calc(28px + var(--safe-area-inset-bottom));
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section.data-settings-section {
+  margin: 0 0 14px;
+  padding: 0 12px;
+  border: 1px solid var(--product-divider);
+  border-radius: 13px;
+  background: var(--product-surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 9%, transparent);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section.application-update-section {
+  padding-block: 12px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section > header {
+  min-height: 44px;
+  padding: 10px 0 7px;
+  grid-template-columns: minmax(0, 1fr);
+  border-bottom: 1px solid var(--product-divider);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section > header > svg {
+  display: none;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-row {
+  min-height: 62px;
+  margin-left: 0;
+  padding: 11px 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-row.is-field-row,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-row.is-choice-row {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-row:has(.glass-select) {
+  grid-template-columns: minmax(0, 1fr) 148px;
+  gap: 12px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-row:has(.glass-select) .glass-select {
+  width: 148px;
+  min-width: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-row > .settings-toggle {
+  justify-self: end;
+  margin: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-variant-options {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section.data-settings-section .configuration-scope > button {
+  min-height: 62px;
+  padding: 9px 36px 9px 11px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  align-items: center;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section.data-settings-section .configuration-scope-icon {
+  display: none;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section.data-settings-section .configuration-scope > button strong,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section.data-settings-section .configuration-scope > button small {
+  white-space: normal;
+  word-break: keep-all;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section .source-variant-options > button {
+  min-height: 58px;
+  padding: 10px 34px 10px 0;
+  border-bottom: 1px solid var(--product-divider);
+}
+
+/* Mobile appearance and bottom sheets share the same mature grouping. */
+.client-shell[data-form-factor="mobile"] .mobile-theme-sheet,
+.client-shell[data-form-factor="mobile"] .effects-drawer-backdrop > .effects-panel,
+.client-shell[data-form-factor="mobile"] .source-drawer-backdrop > .source-panel {
+  border: 0;
+  border-radius: 20px 20px 0 0;
+  background: color-mix(in srgb, var(--glass-floating) 90%, transparent);
+  box-shadow: 0 -22px 64px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(38px) saturate(132%);
+  -webkit-backdrop-filter: blur(38px) saturate(132%);
+}
+
+.client-shell[data-form-factor="mobile"] .mobile-theme-sheet > header { min-height: 58px; border-bottom: 1px solid var(--product-divider); }
+.client-shell[data-form-factor="mobile"] .mobile-theme-sheet > header > span > svg { display: none; }
+.client-shell[data-form-factor="mobile"] .mobile-appearance-modes {
+  height: 46px;
+  margin: 12px 14px 8px;
+  padding: 3px;
+  border: 1px solid var(--product-divider);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--theme-text) 4%, transparent);
+  gap: 3px;
+}
+.client-shell[data-form-factor="mobile"] .mobile-appearance-modes > button { min-height: 38px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; box-shadow: none; justify-content: center; }
+.client-shell[data-form-factor="mobile"] .mobile-appearance-modes > button > svg,
+.client-shell[data-form-factor="mobile"] .mobile-appearance-modes > button small { display: none; }
+.client-shell[data-form-factor="mobile"] .mobile-appearance-modes > button.is-active { background: var(--product-active); box-shadow: none; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-appearance-modes > button {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-appearance-modes > button > span {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.client-shell[data-form-factor="mobile"] .mobile-palette-grid { margin: 12px 14px; padding: 0; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.client-shell[data-form-factor="mobile"] .mobile-palette-grid > button { min-width: 0; height: 42px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.client-shell[data-form-factor="mobile"] .mobile-palette-grid > button > span { display: none; }
+.client-shell[data-form-factor="mobile"] .mobile-palette-grid > button > i { width: 26px; height: 26px; border-radius: 50%; }
+.client-shell[data-form-factor="mobile"] .mobile-theme-follow { min-height: 66px; margin: 0; padding: 10px 16px calc(10px + var(--safe-area-inset-bottom)); border: 0; border-top: 1px solid var(--product-divider); border-radius: 0; background: transparent; }
+
+.client-shell[data-form-factor="mobile"] .effect-center-header { min-height: 58px; padding-inline: 14px; border-bottom-color: var(--product-divider); }
+.client-shell[data-form-factor="mobile"] .effect-brand > svg { display: none; }
+.client-shell[data-form-factor="mobile"] .effect-brand small { display: none; }
+.client-shell[data-form-factor="mobile"] .effect-center-header nav { height: 36px; border: 1px solid var(--product-divider); border-radius: 8px; background: color-mix(in srgb, var(--theme-text) 4%, transparent); }
+.client-shell[data-form-factor="mobile"] .effect-center-header nav button { border-radius: 6px; font-size: 12px; }
+.client-shell[data-form-factor="mobile"] .effect-center-header nav button.is-active { background: var(--product-active); box-shadow: none; }
+.client-shell[data-form-factor="mobile"] .sound-signal-chain { display: none; }
+.client-shell[data-form-factor="mobile"] .sound-preset-browser { padding: 12px 14px; }
+.client-shell[data-form-factor="mobile"] .sound-preset-grid { overflow: hidden; grid-template-columns: 1fr; gap: 0; border: 1px solid var(--product-divider); border-radius: 12px; }
+.client-shell[data-form-factor="mobile"] .sound-preset-grid > button { min-height: 58px; padding: 9px 11px; border: 0; border-bottom: 1px solid var(--product-divider); border-radius: 0; background: transparent; box-shadow: none; }
+.client-shell[data-form-factor="mobile"] .sound-preset-grid > button:last-child { border-bottom: 0; }
+.client-shell[data-form-factor="mobile"] .sound-preset-grid > button.is-active { background: var(--product-selected); box-shadow: inset 2px 0 0 var(--theme-accent); }
+.client-shell[data-form-factor="mobile"] .sound-preset-detail { margin: 0 14px 14px; padding: 15px 0; border: 0; border-top: 1px solid var(--product-divider); border-radius: 0; background: transparent; box-shadow: none; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-browser {
+  padding: 12px 14px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-grid {
+  overflow: hidden;
+  margin-top: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  border: 1px solid var(--product-divider);
+  border-radius: 12px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-grid > button {
+  min-height: 54px;
+  height: auto;
+  padding: 8px 11px;
+  border: 0;
+  border-bottom: 1px solid var(--product-divider);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-grid > button:last-child {
+  border-bottom: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-grid > button.is-active {
+  border-color: var(--product-divider);
+  background: var(--product-selected);
+  box-shadow: inset 2px 0 0 var(--theme-accent);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-grid > button > i {
+  display: none;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-detail {
+  min-height: 0;
+  margin: 0 14px 14px;
+  padding: 16px 0 18px;
+  border: 0;
+  border-top: 1px solid var(--product-divider);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.client-shell[data-form-factor="mobile"] .source-panel-heading { min-height: 58px; border-bottom: 1px solid var(--product-divider); }
+.client-shell[data-form-factor="mobile"] .source-panel-heading > span > svg { display: none; }
+.client-shell[data-form-factor="mobile"] .source-runtime-state { min-height: 58px; }
+.client-shell[data-form-factor="mobile"] .source-provider-list { padding: 0 14px 12px; grid-template-columns: 1fr; gap: 0; }
+.client-shell[data-form-factor="mobile"] .source-provider-list > div { min-height: 58px; padding: 9px 2px; border: 0; border-bottom: 1px solid var(--product-divider); border-radius: 0; background: transparent; }
+.client-shell[data-form-factor="mobile"] .source-provider-list > div:last-child { border-bottom: 0; }
+
+.client-shell[data-form-factor="mobile"] .agent-preferences-backdrop { padding: 0; align-items: flex-end; }
+.client-shell[data-form-factor="mobile"] .agent-preferences-panel { width: var(--mobile-canvas-width); max-width: 100%; border: 0; border-radius: 20px 20px 0 0; background: color-mix(in srgb, var(--glass-floating) 92%, transparent); box-shadow: 0 -22px 64px rgba(0, 0, 0, .28); }
+.client-shell[data-form-factor="mobile"] .agent-preferences-panel > header { min-height: 58px; padding: 0 14px; border-bottom-color: var(--product-divider); }
+.client-shell[data-form-factor="mobile"] .agent-preferences-content { padding: 0 14px calc(14px + var(--safe-area-inset-bottom)); }
+.client-shell[data-form-factor="mobile"] .agent-preferences-content > section { min-height: 64px; padding: 11px 0; border-bottom-color: var(--product-divider); }
+
+/* Mobile music lists use restrained grouped rows and smaller action chrome. */
+.client-shell[data-form-factor="mobile"] .mobile-personal-library > section,
+.client-shell[data-form-factor="mobile"] .mobile-playlists-section > div {
+  border-color: var(--product-divider);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--theme-text) 2.5%, transparent);
+  box-shadow: none;
+}
+.client-shell[data-form-factor="mobile"] .mobile-personal-library > section > button,
+.client-shell[data-form-factor="mobile"] .mobile-playlists-section > div > article { border-bottom-color: var(--product-divider); }
+.client-shell[data-form-factor="mobile"] .mobile-playlists-section > header strong { font-size: 16px; }
+.client-shell[data-form-factor="mobile"] .mobile-playlists-section > header small { font-size: 11px; }
+.client-shell[data-form-factor="mobile"] .mobile-playlists-section > header > button { width: 34px; height: 34px; background: transparent; }
+.client-shell[data-form-factor="mobile"] .mobile-collection-actions { gap: 7px; }
+.client-shell[data-form-factor="mobile"] .mobile-collection-actions button { min-height: 38px; padding-inline: 13px; border-color: var(--product-divider); border-radius: 9px; background: var(--product-hover); }
+.client-shell[data-form-factor="mobile"] .mobile-collection-actions button.is-primary { border-color: transparent; background: var(--theme-accent); }
+.client-shell[data-form-factor="mobile"] .mobile-track-row:hover { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  .client-shell .settings-modal button,
+  .client-shell .header-popover button,
+  .client-shell .agent-preferences-panel button,
+  .client-shell .mobile-theme-sheet button { transition: none; }
+}
+
+/* Mobile sheets share one product-level shell. Content density may vary, but chrome never does. */
+.playback-variant-close,
+.mobile-playback-sheet-backdrop { display: none; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+    --mobile-product-sheet-radius: 26px;
+    --mobile-product-side-sheet-radius: 24px;
+    --mobile-product-sheet-border: color-mix(in srgb, var(--theme-text) 14%, transparent);
+    --mobile-product-sheet-divider: color-mix(in srgb, var(--theme-text) 10%, transparent);
+    --mobile-product-sheet-surface: rgba(250, 252, 255, .92);
+    --mobile-product-sheet-shadow: 0 -22px 68px rgba(0, 0, 0, .3);
+    --mobile-product-side-sheet-shadow: 22px 0 68px rgba(0, 0, 0, .3);
+    --mobile-product-sheet-scrim: rgba(9, 12, 17, .42);
+    --mobile-product-sheet-header-single: 62px;
+    --mobile-product-sheet-header-stacked: 72px;
+    --mobile-product-sheet-title: 18px;
+    --mobile-product-transaction-title: 17px;
+    --mobile-product-page-title: 20px;
+    --mobile-product-sheet-subtitle: 11px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style="dark"] {
+    --mobile-product-sheet-surface: rgba(31, 34, 41, .92);
+}
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .settings-modal,
+    .mobile-theme-sheet,
+    .effects-drawer-backdrop > .effects-panel,
+    .source-drawer-backdrop > .source-panel,
+    .global-queue-panel,
+    .playback-variant-panel,
+    .agent-preferences-panel,
+    .session-editor,
+    .memory-manager,
+    .playlist-editor,
+    .playlist-picker,
+    .track-share-panel
+  ) {
+    border: 0;
+    border-radius: var(--mobile-product-sheet-radius) var(--mobile-product-sheet-radius) 0 0;
+    background: var(--mobile-product-sheet-surface);
+    color: var(--theme-text);
+    box-shadow: var(--mobile-product-sheet-shadow);
+    backdrop-filter: blur(38px) saturate(145%);
+    -webkit-backdrop-filter: blur(38px) saturate(145%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-style] .settings-modal.is-mobile {
+    border: 0;
+    border-radius: 0 var(--mobile-product-side-sheet-radius) var(--mobile-product-side-sheet-radius) 0;
+    background: var(--mobile-product-sheet-surface);
+    box-shadow: var(--mobile-product-side-sheet-shadow);
+    backdrop-filter: blur(38px) saturate(145%);
+    -webkit-backdrop-filter: blur(38px) saturate(145%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .settings-modal,
+    .mobile-theme-sheet,
+    .effects-drawer-backdrop > .effects-panel,
+    .source-drawer-backdrop > .source-panel,
+    .agent-preferences-panel,
+    .session-editor,
+    .memory-manager,
+    .playlist-editor,
+    .playlist-picker,
+    .track-share-panel
+  ) { position: relative; }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .mobile-drawer-backdrop,
+    .settings-modal-backdrop,
+    .playlist-editor-backdrop,
+    .playlist-picker-backdrop,
+    .agent-preferences-backdrop,
+    .session-editor-backdrop,
+    .memory-manager-backdrop,
+    .track-share-backdrop
+  ) {
+    background: var(--mobile-product-sheet-scrim);
+    backdrop-filter: blur(12px) saturate(122%);
+    -webkit-backdrop-filter: blur(12px) saturate(122%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playback-sheet-backdrop {
+    position: fixed;
+    inset: auto auto 0 50%;
+    z-index: 1190;
+    width: 100vw;
+    height: 100dvh;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--mobile-product-sheet-scrim);
+    display: block;
+    backdrop-filter: blur(12px) saturate(122%);
+    -webkit-backdrop-filter: blur(12px) saturate(122%);
+    transform: translateX(-50%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-rail {
+    overflow: hidden;
+    border: 0;
+    border-radius: 0 var(--mobile-product-side-sheet-radius) var(--mobile-product-side-sheet-radius) 0;
+    background: var(--mobile-product-sheet-surface);
+    grid-template-rows: var(--mobile-product-sheet-header-stacked) minmax(0, 1fr) auto;
+    box-shadow: var(--mobile-product-side-sheet-shadow);
+    backdrop-filter: blur(38px) saturate(145%);
+    -webkit-backdrop-filter: blur(38px) saturate(145%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-session-drawer-header {
+    min-height: var(--mobile-product-sheet-header-stacked);
+    padding: 10px 4px 10px 8px;
+    border-bottom: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-session-drawer-backdrop {
+    background: var(--mobile-product-sheet-scrim);
+    backdrop-filter: blur(12px) saturate(122%);
+    -webkit-backdrop-filter: blur(12px) saturate(122%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .mobile-theme-sheet > header,
+    .source-panel-heading,
+    .global-queue-panel > header,
+    .playback-variant-panel > header,
+    .agent-preferences-panel > header,
+    .session-editor > header,
+    .memory-manager > header,
+    .playlist-editor > header,
+    .playlist-picker > header,
+    .track-share-panel > header
+  ) {
+    min-height: var(--mobile-product-sheet-header-single);
+    padding: 8px 16px 10px;
+    border-bottom: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .global-queue-panel > header,
+    .playback-variant-panel > header,
+    .agent-preferences-panel > header,
+    .session-editor > header,
+    .memory-manager > header,
+    .playlist-picker > header,
+    .track-share-panel > header
+  ) {
+    min-height: var(--mobile-product-sheet-header-stacked);
+    padding-block: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel {
+    grid-template-rows: var(--mobile-product-sheet-header-stacked) 44px minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor {
+    grid-template-rows: var(--mobile-product-sheet-header-single) auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .mobile-theme-sheet > header > span > strong,
+    .source-panel-heading > span > strong,
+    .global-queue-panel > header > span > strong,
+    .playback-variant-panel > header > span > strong,
+    .agent-preferences-panel > header > div > strong,
+    .session-editor > header > div > strong,
+    .memory-manager > header > div > strong,
+    .playlist-picker > header > div > strong,
+    .track-share-panel > header > span > span > strong
+  ) {
+    color: var(--theme-text);
+    font-size: var(--mobile-product-sheet-title);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .global-queue-panel > header > span > small,
+    .playback-variant-panel > header > span > small,
+    .agent-preferences-panel > header > div > small,
+    .session-editor > header > div > small,
+    .memory-manager > header > div > small,
+    .playlist-picker > header > div > small,
+    .track-share-panel > header > span > span > small
+  ) {
+    margin-top: 4px;
+    color: var(--theme-faint);
+    font-size: var(--mobile-product-sheet-subtitle);
+    line-height: 1.35;
+    letter-spacing: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-theme-sheet {
+    padding: 0 0 var(--safe-area-inset-bottom);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-panel-heading {
+    color: var(--theme-text);
+    background: var(--mobile-product-sheet-surface);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-panel-heading > span {
+    color: var(--theme-text);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .source-panel-heading > span > svg {
+    color: var(--theme-muted);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playlist-editor > header > div > strong {
+    color: var(--theme-text);
+    font-size: var(--mobile-product-transaction-title);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-navigation-brand strong,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-content-header h2 {
+    color: var(--theme-text);
+    font-size: var(--mobile-product-page-title);
+    font-weight: 720;
+    line-height: 1.18;
+    letter-spacing: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playback-variant-panel {
+    right: auto;
+    left: 50%;
+    width: var(--mobile-canvas-width);
+    padding: 0 0 var(--safe-area-inset-bottom);
+    transform: translateX(-50%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playback-variant-panel > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playback-variant-panel > header > span { min-width: 0; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playback-variant-close {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--theme-muted);
+    display: grid;
+    place-items: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop > .effects-panel {
+    height: min(86dvh, 760px);
+    max-height: 86dvh;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .effect-center-header {
+    min-height: 108px;
+    padding: 8px 16px 10px;
+    border-bottom: 0;
+    background: transparent;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .effect-brand strong {
+    color: var(--theme-text);
+    font-size: var(--mobile-product-sheet-title);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-panel > header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-panel > header > span { display: none; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-preferences-panel > header > .agent-preferences-mobile-done {
+    height: 36px;
+    min-width: 52px;
+    padding: 0 8px;
+    border-radius: 10px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .session-editor-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1450;
+    width: 100%;
+    height: 100dvh;
+    padding: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .session-editor {
+    width: var(--mobile-canvas-width);
+    max-width: none;
+    max-height: min(76dvh, 620px);
+    margin: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .session-editor > header > span {
+    display: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .session-editor > header {
+    grid-template-columns: minmax(0, 1fr) 36px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .session-editor > footer {
+    padding-bottom: calc(10px + var(--safe-area-inset-bottom));
+  }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(.playback-speed-popover, .volume-popover, .lyrics-type-popover, .context-menu) {
+    border: 1px solid var(--mobile-product-sheet-border);
+    border-radius: 16px;
+    background: var(--mobile-product-sheet-surface);
+    color: var(--theme-text);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, .28);
+    backdrop-filter: blur(32px) saturate(140%);
+    -webkit-backdrop-filter: blur(32px) saturate(140%);
+}
+
+/* Desktop lyrics use the same centered reading rhythm as mobile. */
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"] .lyric-line {
+  text-align: center;
+}
+html[data-ui-platform="desktop"] .client-shell[data-platform-entry="desktop"] .lyric-line > span {
+  width: 100%;
+}
+
+/* Mobile uses a point-like rem scale. Layout responds to the viewport while type stays readable. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  --type-micro: .75rem;
+  --type-caption: .8125rem;
+  --type-meta: .875rem;
+  --type-body: .875rem;
+  --type-primary: .9375rem;
+  --type-title: 1rem;
+  --type-section: 1.125rem;
+  --type-heading: 1.25rem;
+  --mobile-product-sheet-title: 1.1875rem;
+  --mobile-product-transaction-title: 1.125rem;
+  --mobile-product-page-title: 1.3125rem;
+  --mobile-product-sheet-subtitle: .8125rem;
+  font-size: var(--type-body);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-drawer-backdrop,
+  .playlist-editor-backdrop,
+  .playlist-picker-backdrop,
+  .agent-preferences-backdrop,
+  .session-editor-backdrop,
+  .memory-manager-backdrop,
+  .track-share-backdrop
+) {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-theme-sheet,
+  .effects-drawer-backdrop > .effects-panel,
+  .source-drawer-backdrop > .source-panel,
+  .global-queue-panel,
+  .playback-variant-panel,
+  .agent-preferences-panel,
+  .session-editor,
+  .memory-manager,
+  .playlist-editor,
+  .playlist-picker,
+  .track-share-panel
+) {
+  width: var(--mobile-canvas-width);
+  max-width: none;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-home-greeting > span > small,
+  .mobile-page-title small,
+  .mobile-daily-copy em,
+  .mobile-feature-card > small,
+  .mobile-theme-grid > button > small,
+  .mobile-chart-content > span > small,
+  .mobile-provider-section button small,
+  .mobile-profile-identity small,
+  .mobile-personal-list-section button small,
+  .mobile-playlists-section small,
+  .mobile-appearance-modes small,
+  .mobile-palette-grid > button,
+  .mobile-theme-follow small,
+  .mobile-bottom-chrome .global-player-track small,
+  .settings-navigation-brand small,
+  .settings-category-nav small,
+  .settings-navigation > footer,
+  .settings-page-section > header small,
+  .settings-page-row > span > small,
+  .mobile-session-drawer-header small,
+  .session-select small,
+  .mobile-arrangement-header small,
+  .mobile-arrangement-energy > small,
+  .mobile-arrangement-copy small,
+  .effect-brand small,
+  .sound-preset-browser > header small,
+  .sound-preset-detail > p,
+  .global-queue-panel > header small,
+  .appearance-options > button small,
+  .palette-section > span small,
+  .agent-mode-notice small,
+  .composer-suggestions button,
+  .conversation-intro p,
+  .sound-preset-grid > button small
+) {
+  font-size: var(--type-caption);
+  line-height: 1.4;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-preview-track-list strong,
+  .mobile-feature-card > strong,
+  .mobile-theme-grid > button > strong,
+  .mobile-provider-section button strong,
+  .mobile-source-summary strong,
+  .mobile-personal-list-section button strong,
+  .mobile-playlists-section article strong,
+  .mobile-create-playlist strong,
+  .mobile-appearance-modes strong,
+  .mobile-theme-follow strong,
+  .mobile-bottom-chrome .global-player-track strong,
+  .settings-page-row > span > strong,
+  .mobile-arrangement-copy strong,
+  .appearance-options > button strong,
+  .palette-section > span strong,
+  .sound-preset-grid > button strong
+) {
+  font-size: var(--type-body);
+  line-height: 1.35;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-content-section > header > strong,
+  .mobile-personal-list-section > header > strong,
+  .mobile-playlists-section > header strong
+) {
+  font-size: var(--type-section);
+  line-height: 1.25;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav strong {
+  font-size: var(--type-primary);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-page-section > header strong {
+  font-size: var(--type-meta);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .settings-choice button,
+  .content-limit-options button,
+  .agent-apply-options button,
+  .preference-track-options button,
+  .mobile-chart-filters button,
+  .effect-center-header nav button
+) {
+  font-size: var(--type-caption);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-chart-content em > :is(b, span, small) {
+  font-size: var(--type-micro);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact .playback-progress {
+  font-size: var(--type-micro);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button {
+  font-size: var(--type-primary);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .session-select time,
+  .mobile-arrangement-order,
+  .mobile-arrangement-track-main > time,
+  .agent-main-header .workspace-pane-title small,
+  .lyrics-scale-range output,
+  .playback-progress,
+  .mobile-chart-content em > b,
+  .mobile-chart-content em > span,
+  .mobile-chart-content em > small
+) {
+  font-size: var(--type-micro);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-arrangement-energy > span,
+  .agent-main-header .workspace-pane-title em,
+  .sound-signal-chain small,
+  .sound-intensity small,
+  .song-content-tabs button
+) {
+  font-size: var(--type-caption);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-toggle {
+  box-sizing: border-box;
+  width: 42px;
+  height: 24px;
+  flex: 0 0 42px;
+  padding: 2px;
+  border-radius: 12px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-toggle i {
+  width: 18px;
+  height: 18px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-toggle.is-on i {
+  transform: translateX(18px);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-theme-follow > i,
+  .effect-header-actions > .effect-power,
+  .effect-option > i
+) {
+  box-sizing: border-box;
+}
+
+/* Performance surfaces: preserve glass depth while bounding offscreen paint work. */
+.client-shell .now-playing-ambient {
+  inset: -6%;
+  contain: paint;
+  transform: translate3d(0, 0, 0);
+}
+
+.client-shell .now-playing-ambient img {
+  position: absolute;
+  inset: 25%;
+  width: 50%;
+  height: 50%;
+  filter: blur(36px) saturate(.58) brightness(.74);
+  transform: scale(2.45);
+  animation: none;
+}
+
+.client-shell .now-playing-workspace[data-playing="true"] .now-playing-ambient {
+  animation: echora-ambient-drift 24s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.client-shell[data-runtime="desktop"] .now-playing-workspace[data-playing="true"] .now-playing-ambient,
+.client-shell[data-runtime="mobile"] .now-playing-workspace[data-playing="true"] .now-playing-ambient,
+.client-shell[data-reduced-motion="true"] .now-playing-workspace[data-playing="true"] .now-playing-ambient {
+  animation: none;
+  will-change: auto;
+}
+
+.client-shell .now-playing-cover-stage {
+  contain: paint;
+  backface-visibility: hidden;
+  animation: none;
+  will-change: auto;
+}
+
+.client-shell .now-playing-cover-stage > img {
+  animation: vinyl-spin 22s linear infinite !important;
+  animation-play-state: paused !important;
+  backface-visibility: hidden;
+  will-change: auto;
+}
+
+.client-shell .now-playing-workspace[data-playing="true"] .now-playing-cover-stage > img {
+  animation-play-state: running !important;
+  will-change: transform;
+}
+
+@keyframes echora-ambient-drift {
+  from { transform: translate3d(-1%, -.8%, 0); }
+  to { transform: translate3d(1.2%, .8%, 0); }
+}
+
+.client-shell :is(
+  .track-table-body .track-row,
+  .global-queue-list > button,
+  .library-group-list > button,
+  .mobile-track-list > .mobile-track-row,
+  .mobile-chart-list > .mobile-chart-summary,
+  .mobile-playlists-section > div > article,
+  .lyrics-scroll > .lyric-line
+) {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 72px;
+}
+
+.client-shell .lyrics-scroll > .lyric-line {
+  contain-intrinsic-size: 0 var(--lyric-line-height, 56px);
+}
+
+.client-shell :is(.library-home-section, .mobile-home-section, .mobile-discovery-page > section) {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 320px;
+}
+
+.client-shell .mobile-collection-backdrop {
+  contain: paint;
+}
+
+/* Phone landscape has its own compact geometry instead of stacking portrait chrome. */
+@media (orientation: landscape) and (max-height: 600px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+    --mobile-bottom-clearance: calc(68px + var(--safe-area-inset-bottom));
+    --mobile-content-bottom: calc(76px + var(--safe-area-inset-bottom));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 70;
+    width: 100%;
+    height: calc(68px + var(--safe-area-inset-bottom));
+    padding: 6px max(16px, var(--safe-area-inset-right)) calc(6px + var(--safe-area-inset-bottom)) max(16px, var(--safe-area-inset-left));
+    display: grid;
+    grid-template-columns: minmax(420px, 1.35fr) minmax(350px, .85fr);
+    gap: 12px;
+    align-items: center;
+    background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--theme-stage) 92%, transparent) 24%);
+    transform: none;
+    pointer-events: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome > * {
+    pointer-events: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome:not(.has-player),
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome.is-subpage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome.is-subpage .global-player {
+    width: min(620px, 100%);
+    margin-inline: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome .global-player {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 56px;
+    margin: 0;
+    padding: 4px 7px;
+    border-radius: 17px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-height: 56px;
+    margin: 0;
+    padding: 0 5px;
+    border-radius: 17px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button {
+    min-height: 48px;
+    font-size: 15px;
+    font-weight: 680;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel {
+    height: min(82dvh, 352px);
+    grid-template-rows: 56px 40px minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel > header {
+    min-height: 56px;
+    padding: 8px 16px 6px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel > header > span > strong {
+    font-size: 15px !important;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-panel > header > span > small,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-list small,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-list > button > span:last-child {
+    font-size: 10px !important;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-toolbar {
+    min-height: 40px;
+    padding: 4px 16px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-list > button {
+    min-height: 48px;
+    padding-block: 4px;
+    grid-template-columns: 24px 36px minmax(0, 1fr) auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-list img {
+    width: 36px;
+    height: 36px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-queue-list strong {
+    font-size: 12px !important;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view {
+    padding-bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view > .agent-mode-notice {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto !important;
+    margin: 8px 18px 0 !important;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-stream {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    min-height: 0;
+    padding: 10px 20px 12px;
+    border-right: 1px solid var(--product-divider);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer-area {
+    grid-column: 2;
+    grid-row: 2;
+    width: auto;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 10px 18px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-top: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .agent-arrangement-view {
+    padding-bottom: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-modal-backdrop {
+    padding-left: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-modal.is-mobile {
+    width: min(88vw, 380px);
+    margin: 0;
+    transform-origin: left center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav {
+    min-height: 0;
+    overflow-y: auto;
+    contain: paint;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-navigation {
+    padding: calc(6px + var(--safe-area-inset-top)) 12px 8px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-navigation-brand {
+    min-height: 50px;
+    padding-bottom: 4px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav {
+    margin-top: 4px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav > button {
+    min-height: 44px;
+    padding-block: 5px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-category-nav small {
+    display: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-navigation > footer {
+    min-height: 34px;
+    margin-top: 4px;
+    padding-top: 6px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view > .agent-mode-notice {
+    width: auto !important;
+    min-height: 42px;
+    margin: 6px var(--mobile-gutter) 0 !important;
+    padding: 5px 8px;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-mode-notice > span {
+    width: 28px;
+    height: 28px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-mode-notice strong {
+    font-size: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-mode-notice small {
+    margin-top: 1px;
+    font-size: 10px !important;
+    line-height: 1.25;
+    -webkit-line-clamp: 1;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-mode-notice > button {
+    height: 28px;
+    padding-inline: 9px;
+    font-size: 10px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer > .composer-collapse-toggle {
+    top: 5px;
+    right: 7px;
+    width: 28px;
+    height: 26px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer > .composer-submit {
+    right: 7px;
+    bottom: 5px;
+    width: 28px;
+    height: 28px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer > .composer-voice {
+    right: 41px;
+    bottom: 5px;
+    width: 28px;
+    height: 28px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer-meta {
+    right: 76px;
+    bottom: 3px;
+    height: 30px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body:has(.is-session-drawer-open),
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .client-body:has(.agent-preferences-backdrop, .session-editor-backdrop, .memory-manager-backdrop) {
+    position: fixed;
+    inset: 0;
+    z-index: 1600;
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    transform: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-rail {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    height: 100dvh;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-session-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+  }
+}
+
+/* AI availability is a quiet workspace status, not a promotional card. */
+.agent-mode-notice {
+  width: fit-content;
+  max-width: calc(100% - 2 * var(--mobile-gutter, 24px));
+  min-height: 44px;
+  margin: 0 auto 12px;
+  padding: 6px 9px;
+  border: 0;
+  border-radius: 10px;
+  grid-template-columns: 28px minmax(0, auto) auto;
+  gap: 9px;
+  background: color-mix(in srgb, var(--theme-text) 4.5%, transparent);
+  box-shadow: none;
+}
+.agent-mode-notice > span {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--theme-text) 5%, transparent);
+  color: var(--theme-muted);
+}
+.agent-mode-notice > div { min-width: 0; }
+.agent-mode-notice strong { font-size: 14px; line-height: 1.25; font-weight: 660; }
+.agent-mode-notice small { margin-top: 2px; font-size: 12px; line-height: 1.3; white-space: nowrap; }
+.agent-mode-notice > em { display: none; }
+.agent-mode-notice > button {
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--theme-text) 6%, transparent);
+  color: var(--theme-muted);
+  font-size: 11.5px;
+  font-weight: 620;
+}
+.agent-mode-notice > button:hover { background: color-mix(in srgb, var(--theme-text) 9%, transparent); color: var(--theme-text); }
+.agent-mode-notice:is(.is-echora, .is-custom) > span { background: color-mix(in srgb, var(--theme-accent) 8%, transparent); color: var(--theme-accent); }
+.conversation-view > .agent-mode-notice { width: fit-content; min-height: 44px; margin: 8px clamp(34px, 5vw, 82px) 0; padding-block: 6px; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-view > .agent-mode-notice,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view > .agent-mode-notice {
+  width: fit-content !important;
+  min-height: 42px;
+  margin: 7px var(--mobile-gutter) 0 !important;
+  padding: 5px 8px;
+  grid-template-columns: 27px minmax(0, auto) auto;
+  gap: 8px;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-mode-notice > span { width: 27px; height: 27px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-mode-notice strong { font-size: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-mode-notice small { margin-top: 1px; font-size: 12px !important; line-height: 1.25; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .agent-mode-notice > button { height: 28px; padding-inline: 9px; font-size: 11.5px; }
+
+/* AI service state belongs to the composer toolbar and never reserves a row. */
+.conversation-view { grid-template-rows: minmax(0, 1fr) auto; }
+.conversation-composer-meta > .composer-meta-actions { overflow: visible; }
+.composer-meta-actions > .composer-preferences { min-width: 0; }
+.composer-preferences-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.conversation-composer-meta .composer-meta-actions > .composer-ai-state {
+  position: relative;
+  width: 24px;
+  min-width: 24px;
+  padding: 0;
+  justify-content: center;
+  overflow: visible;
+  color: var(--theme-muted);
+}
+.conversation-composer-meta .composer-meta-actions > .composer-ai-state:is(.is-echora, .is-custom) { color: var(--theme-accent); }
+.conversation-composer-meta .composer-meta-actions > .composer-ai-state::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 80;
+  width: max-content;
+  max-width: min(260px, 72vw);
+  padding: 7px 9px;
+  border: 1px solid var(--glass-stroke);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--theme-panel-strong) 94%, transparent);
+  color: var(--theme-text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .16), inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  font-size: 11px;
+  font-weight: 560;
+  line-height: 1.35;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(3px);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+.conversation-composer-meta .composer-meta-actions > .composer-ai-state:is(:hover, :focus-visible)::after { opacity: 1; transform: translateY(0); }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .composer-meta-actions > .composer-preferences { flex: 1 1 auto; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .conversation-composer-meta .composer-meta-actions > .composer-ai-state {
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+  flex: 0 0 32px;
+  overflow: visible;
+}
+
+/* Account is a workspace, not an application-settings category. */
+.client-body.is-account {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.client-body.is-account > :is(.intent-deck, .agent-deck) { display: none; }
+.client-body.is-account .spatial-stage { grid-template-rows: minmax(0, 1fr); }
+.client-body.is-account .spatial-stage > .agent-command { display: none; }
+
+.account-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  padding: 28px;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 11, 14, .38);
+  backdrop-filter: blur(12px) saturate(122%);
+  -webkit-backdrop-filter: blur(12px) saturate(122%);
+}
+
+.account-space {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  color: var(--theme-text);
+  background: var(--theme-stage);
+  scrollbar-width: none;
+}
+
+.account-space::-webkit-scrollbar { display: none; }
+
+.account-space.is-dialog {
+  width: min(560px, calc(100vw - 56px));
+  height: auto;
+  max-height: min(720px, calc(100dvh - 56px));
+  border: 1px solid var(--product-divider);
+  border-radius: 16px;
+  background: var(--desktop-product-panel-surface, var(--product-surface-strong));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .28), inset 0 1px 0 color-mix(in srgb, white 14%, transparent);
+  backdrop-filter: blur(38px) saturate(145%);
+  -webkit-backdrop-filter: blur(38px) saturate(145%);
+}
+
+.account-space.is-dialog:has(.account-auth-card),
+.account-space.is-dialog:has(.account-recovery-result) {
+  width: min(470px, calc(100vw - 56px));
+  height: auto;
+  max-height: calc(100dvh - 56px);
+}
+
+.account-space.is-dialog:has(.account-dashboard-page) > main { padding-block: 30px 38px; }
+
+.account-space.is-dialog > main { width: 100%; padding: 24px 28px 30px; }
+.account-space.is-dialog .account-auth-card,
+.account-space.is-dialog .account-recovery-result {
+  width: 100%;
+  padding: 6px 10px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.account-space-header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  min-height: 64px;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
+  border-bottom: 1px solid var(--product-divider);
+  background: var(--desktop-product-panel-surface, var(--product-surface-strong));
+}
+
+.account-space-header > button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--product-radius-control);
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--theme-muted);
+}
+
+.account-space-header > button:hover { background: var(--product-hover); color: var(--theme-text); }
+.account-space-header > strong { justify-self: center; font-size: 15px; font-weight: 680; }
+.account-space > main { width: min(100% - 48px, 760px); margin: 0 auto; padding: 20px 0 112px; }
+
+.account-auth-card,
+.account-recovery-result {
+  width: min(100%, 430px);
+  margin: 0 auto;
+  padding: 24px 32px;
+  border: 1px solid var(--product-divider);
+  border-radius: var(--product-radius-sheet);
+  background: var(--product-surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 13%, transparent), 0 18px 52px rgba(0, 0, 0, .12);
+  text-align: center;
+}
+
+.account-auth-avatar,
+.account-auth-mark,
+.account-result-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--product-selected);
+  color: var(--theme-text);
+}
+
+.account-auth-avatar .brand-mark {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.account-auth-card h1,
+.account-recovery-result h1 { margin: 0; font-size: 25px; line-height: 1.2; font-weight: 710; }
+.account-auth-card > p,
+.account-recovery-result > p { margin: 9px 0 0; color: var(--theme-muted); font-size: 14px; line-height: 1.55; }
+.account-auth-card form { margin-top: 22px; display: grid; gap: 14px; text-align: left; }
+.account-auth-card label { display: grid; gap: 7px; }
+.account-auth-card label > span { color: var(--theme-muted); font-size: 13px; font-weight: 620; }
+.account-auth-card input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--product-divider);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--product-control);
+  color: var(--theme-text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.account-auth-card input:focus { border-color: color-mix(in srgb, var(--theme-accent) 62%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 12%, transparent); }
+.account-auth-card input:disabled { opacity: .64; }
+.account-cloud-challenge { width: 100%; min-height: 92px; overflow: hidden; }
+.account-cloud-challenge iframe { width: 100%; height: 92px; border: 0; display: block; background: transparent; }
+
+.account-primary-action,
+.account-recovery-result > button {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--theme-accent);
+  color: var(--theme-accent-text);
+  font-size: 14px;
+  font-weight: 680;
+}
+
+.account-primary-action:disabled { opacity: .46; }
+.account-auth-actions { min-height: 40px; margin-top: 14px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.account-auth-actions i { width: 1px; height: 14px; background: var(--product-divider); }
+.account-auth-actions button,
+.account-text-action { border: 0; background: transparent; color: var(--theme-muted); font-size: 13px; font-weight: 620; }
+.account-auth-actions button:first-child { justify-self: end; padding-right: 16px; }
+.account-auth-actions button:last-child { justify-self: start; padding-left: 16px; }
+.account-text-action { min-height: 38px; margin-top: 8px; }
+.account-auth-actions button:hover,
+.account-text-action:hover { color: var(--theme-text); }
+.account-inline-status { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.account-inline-status.is-error { color: #d96172; }
+.account-pending-card .account-primary-action { margin-top: 24px; }
+
+.account-recovery-result > strong {
+  margin: 24px 0;
+  padding: 14px;
+  display: block;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--product-divider);
+  border-radius: 9px;
+  background: var(--product-control);
+  font: 650 17px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.account-dashboard-page { display: grid; gap: 24px; }
+.account-offline-banner,
+.account-page-status {
+  min-height: 42px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--product-hover);
+  color: var(--theme-muted);
+  font-size: 13px;
+}
+
+.account-identity-section { padding: 12px 2px 8px; display: flex; align-items: center; gap: 16px; }
+.account-profile-avatar { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: var(--theme-accent); color: var(--theme-accent-text); font-size: 23px; font-weight: 720; }
+.account-identity-section > div { min-width: 0; flex: 1; }
+.account-identity-section h1 { margin: 0; font-size: 27px; line-height: 1.2; font-weight: 710; }
+.account-identity-section p { margin: 5px 0 0; color: var(--theme-muted); font-size: 14px; }
+.account-profile-edit { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 9px; display: grid; place-items: center; background: transparent; color: var(--theme-muted); }
+.account-profile-edit:hover { background: var(--product-hover); color: var(--theme-text); }
+.account-profile-editor { padding: 13px; border: 1px solid var(--product-divider); border-radius: 11px; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; background: var(--product-surface); }
+.account-profile-editor input { min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--product-divider); border-radius: 8px; outline: 0; background: var(--product-control); color: var(--theme-text); font: inherit; font-size: 14px; }
+.account-profile-editor input:focus { border-color: color-mix(in srgb, var(--theme-accent) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-accent) 10%, transparent); }
+.account-profile-editor button { min-width: 60px; height: 38px; padding: 0 11px; border: 0; border-radius: 8px; background: var(--product-hover); color: var(--theme-muted); font-size: 13px; font-weight: 650; }
+.account-profile-editor button[type="submit"] { background: var(--theme-accent); color: var(--theme-accent-text); }
+.account-profile-editor button:disabled { opacity: .45; }
+.account-settings-group { overflow: hidden; border: 1px solid var(--product-divider); border-radius: var(--product-radius-group); background: var(--product-surface-strong); }
+.account-center-group > button { width: 100%; min-height: 64px; padding: 10px 14px; border: 0; display: grid; grid-template-columns: 32px minmax(0, 1fr) 20px; align-items: center; gap: 11px; background: transparent; color: var(--theme-text); text-align: left; }
+.account-center-group > button + button { border-top: 1px solid var(--product-divider); }
+.account-center-group > button:hover { background: var(--product-hover); }
+.account-center-group > button span { min-width: 0; }
+.account-center-group > button strong,
+.account-center-group > button small { display: block; }
+.account-center-group > button strong { font-size: 14px; }
+.account-center-group > button small { margin-top: 4px; color: var(--theme-muted); font-size: 12.5px; }
+.account-row-icon { width: 32px; height: 32px; border-radius: 8px; display: grid !important; place-items: center; background: var(--product-hover); color: var(--theme-muted); }
+.account-logout-action { justify-self: center; min-height: 38px; padding: 0 13px; border: 0; border-radius: 8px; display: inline-flex; align-items: center; gap: 7px; background: transparent; color: var(--theme-muted); font-size: 13px; font-weight: 630; }
+.account-logout-action:hover { background: var(--product-hover); color: var(--theme-text); }
+.account-logout-action:disabled { opacity: .48; }
+.settings-static-field .settings-inline-action { height: 30px; padding: 0 11px; border: 0; border-radius: 7px; background: var(--product-selected); color: var(--theme-text); font-size: 12px; font-weight: 650; }
+.settings-account-action-field {
+  width: 100%;
+  min-height: 48px;
+  padding: 7px 8px 7px 12px;
+  border: 1px solid var(--product-divider);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  background: var(--product-control);
+  color: var(--theme-muted);
+}
+.settings-account-action-field > svg { color: var(--theme-accent); }
+.settings-account-action-field > span { min-width: 0; }
+.settings-account-action-field strong,
+.settings-account-action-field small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.settings-account-action-field strong { color: var(--theme-text); font-size: var(--type-body); font-weight: 630; }
+.settings-account-action-field small { margin-top: 2px; color: var(--theme-faint); font-size: var(--type-caption); }
+.settings-account-action-field > button {
+  min-width: 58px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--product-selected);
+  color: var(--theme-text);
+  font-size: var(--type-caption);
+  font-weight: 650;
+}
+.settings-account-action-field > button:hover { background: var(--product-active); }
+
+@media (max-width: 520px) {
+  .settings-account-action-field { grid-template-columns: 18px minmax(0, 1fr) auto; }
+  .settings-account-action-field > button { min-width: 54px; padding-inline: 10px; }
+}
+
+/* Desktop account surfaces follow the same compact density as application settings. */
+.client-shell[data-form-factor="desktop"] .account-modal-backdrop { padding: 24px; }
+.client-shell[data-form-factor="desktop"] .account-space.is-dialog {
+  width: min(452px, calc(100vw - 48px));
+  max-height: min(620px, calc(100dvh - 48px));
+  border-radius: 14px;
+}
+.client-shell[data-form-factor="desktop"] .account-space.is-dialog:has(.account-auth-card),
+.client-shell[data-form-factor="desktop"] .account-space.is-dialog:has(.account-recovery-result) {
+  width: min(398px, calc(100vw - 48px));
+  max-height: calc(100dvh - 48px);
+}
+.client-shell[data-form-factor="desktop"] .account-space.is-dialog:has(.account-dashboard-page) > main { padding: 22px 24px 26px; }
+.client-shell[data-form-factor="desktop"] .account-space.is-dialog > main { padding: 18px 20px 22px; }
+.client-shell[data-form-factor="desktop"] .account-space.is-dialog .account-auth-card,
+.client-shell[data-form-factor="desktop"] .account-space.is-dialog .account-recovery-result { padding: 2px 4px 4px; }
+.client-shell[data-form-factor="desktop"] .account-space-header {
+  min-height: 54px;
+  padding: 0 17px;
+  grid-template-columns: 32px 1fr 32px;
+}
+.client-shell[data-form-factor="desktop"] .account-space-header > button { width: 30px; height: 30px; }
+.client-shell[data-form-factor="desktop"] .account-space-header > strong { font-size: 14px; }
+.client-shell[data-form-factor="desktop"] .account-auth-avatar,
+.client-shell[data-form-factor="desktop"] .account-auth-mark,
+.client-shell[data-form-factor="desktop"] .account-result-icon { width: 40px; height: 40px; margin-bottom: 12px; }
+.client-shell[data-form-factor="desktop"] .account-auth-avatar .brand-mark { width: 25px; height: 25px; }
+.client-shell[data-form-factor="desktop"] .account-auth-card h1,
+.client-shell[data-form-factor="desktop"] .account-recovery-result h1 { font-size: 21px; }
+.client-shell[data-form-factor="desktop"] .account-auth-card > p,
+.client-shell[data-form-factor="desktop"] .account-recovery-result > p { margin-top: 7px; font-size: 13px; }
+.client-shell[data-form-factor="desktop"] .account-auth-card form { margin-top: 18px; gap: 11px; }
+.client-shell[data-form-factor="desktop"] .account-auth-card label { gap: 5px; }
+.client-shell[data-form-factor="desktop"] .account-auth-card label > span { font-size: 12px; }
+.client-shell[data-form-factor="desktop"] .account-auth-card input { height: 40px; font-size: 14px; }
+.client-shell[data-form-factor="desktop"] .account-primary-action,
+.client-shell[data-form-factor="desktop"] .account-recovery-result > button { min-height: 40px; font-size: 13px; }
+.client-shell[data-form-factor="desktop"] .account-auth-actions { min-height: 36px; margin-top: 10px; }
+.client-shell[data-form-factor="desktop"] .account-auth-actions button,
+.client-shell[data-form-factor="desktop"] .account-text-action { font-size: 12px; }
+.client-shell[data-form-factor="desktop"] .account-dashboard-page { gap: 18px; }
+.client-shell[data-form-factor="desktop"] .account-identity-section { padding: 5px 2px 3px; gap: 13px; }
+.client-shell[data-form-factor="desktop"] .account-profile-avatar { width: 48px; height: 48px; font-size: 19px; }
+.client-shell[data-form-factor="desktop"] .account-identity-section h1 { font-size: 21px; }
+.client-shell[data-form-factor="desktop"] .account-identity-section p { font-size: 13px; }
+.client-shell[data-form-factor="desktop"] .account-center-group > button { min-height: 56px; }
+
+.mobile-profile-identity { width: 100%; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; }
+.mobile-profile-identity > svg { display: block; flex: 0 0 auto; margin-left: auto; color: var(--theme-faint); }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-space-header {
+  min-height: calc(50px + var(--safe-area-inset-top));
+  padding: var(--safe-area-inset-top) var(--mobile-gutter) 0;
+  grid-template-columns: 34px 1fr 34px;
+  border-bottom: 0;
+  background: color-mix(in srgb, var(--theme-stage) 84%, transparent);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--product-divider) 72%, transparent);
+  backdrop-filter: blur(22px) saturate(132%);
+  -webkit-backdrop-filter: blur(22px) saturate(132%);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-space-header > strong { font-size: 17px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-space > main { width: 100%; padding: 34px var(--mobile-gutter) calc(var(--mobile-player-clearance) + var(--safe-area-inset-bottom) + 28px); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-card,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-recovery-result { width: min(100%, 390px); padding: 12px 4px 20px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-card h1,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-recovery-result h1 { font-size: 23px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-card input,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-primary-action { min-height: 46px; font-size: 15px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-identity-section { padding-top: 4px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-profile-avatar { width: 54px; height: 54px; font-size: 21px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-identity-section h1 { font-size: 23px; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-card form { gap: 16px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-card label { gap: 8px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-card label > span { padding-left: 2px; font-size: 13px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-card input { height: 48px; padding-inline: 14px; border-radius: 11px; background: var(--product-surface-strong); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-avatar { width: 56px; height: 56px; margin-bottom: 20px; background: color-mix(in srgb, var(--theme-accent) 12%, var(--product-surface-strong)); color: var(--theme-accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-accent) 18%, transparent); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-auth-avatar .brand-mark { width: 34px; height: 34px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-dashboard-page { gap: 18px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-identity-section { min-height: 92px; padding: 8px 4px 16px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-profile-edit { width: 38px; height: 38px; border-radius: 10px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-profile-editor { grid-template-columns: minmax(0, 1fr) auto auto; padding: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-settings-group { border-radius: 14px; background: var(--product-surface); box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent); }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-center-group > button { min-height: 66px; padding-inline: 15px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-center-group > button strong { font-size: 15px; font-weight: 620; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-center-group > button small { font-size: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-logout-action { min-height: 42px; font-size: 14px; }
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-drawer-backdrop { z-index: 1210; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-drawer-backdrop .account-space.is-dialog {
+  width: var(--mobile-canvas-width);
+  height: auto;
+  max-height: min(80dvh, 640px);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--mobile-product-sheet-radius) var(--mobile-product-sheet-radius) 0 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--mobile-product-sheet-surface);
+  box-shadow: var(--mobile-product-sheet-shadow);
+  backdrop-filter: blur(38px) saturate(145%);
+  -webkit-backdrop-filter: blur(38px) saturate(145%);
+  animation: mobile-sheet-in 220ms cubic-bezier(.22, .78, .22, 1) both;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-space-header {
+  position: relative;
+  min-height: 52px;
+  padding: 5px 14px 7px;
+  grid-template-columns: 32px 1fr 32px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-space-header > strong {
+  font-size: 16px;
+  font-weight: 680;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog > main {
+  width: 100%;
+  min-height: 0;
+  padding: 4px 18px calc(18px + var(--safe-area-inset-bottom));
+  overflow-y: auto;
+}
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-recovery-result { padding: 2px 2px 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-avatar,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-mark { width: 44px; height: 44px; margin-bottom: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-avatar .brand-mark { width: 27px; height: 27px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card h1,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-recovery-result h1 { font-size: 20px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card > p,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-recovery-result > p { margin-top: 6px; font-size: 13px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card form { margin-top: 15px; gap: 11px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card label { gap: 5px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card input { height: 43px; min-height: 43px; font-size: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-primary-action,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-recovery-result > button { min-height: 43px; font-size: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-actions { min-height: 34px; margin-top: 8px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-actions button,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-text-action { font-size: 12.5px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-dashboard-page { gap: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-identity-section { min-height: 66px; padding: 0 3px 7px; gap: 12px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-profile-avatar { width: 46px; height: 46px; font-size: 18px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-identity-section h1 { font-size: 20px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-identity-section p { font-size: 12.5px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-center-group > button { min-height: 56px; padding-inline: 13px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-center-group > button strong { font-size: 14px; }
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-logout-action { min-height: 38px; font-size: 13px; }
+
+@media (orientation: landscape) and (max-height: 600px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-space-header {
+    min-height: 48px;
+    padding: 0 max(16px, var(--safe-area-inset-right)) 0 max(16px, var(--safe-area-inset-left));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-space > main {
+    width: min(100% - var(--safe-area-inset-left) - var(--safe-area-inset-right) - 32px, 820px);
+    padding: 22px 0 calc(var(--mobile-player-clearance) + 18px);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-dashboard-page {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-dashboard-page > :is(.account-offline-banner, .account-identity-section, .account-profile-editor, .account-page-status) { grid-column: 1 / -1; }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-drawer-backdrop .account-space.is-dialog { max-height: min(88dvh, 460px); }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-space-header { min-height: 46px; padding-block: 3px 5px; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog > main {
+    width: min(calc(100% - var(--safe-area-inset-left) - var(--safe-area-inset-right) - 36px), 560px);
+    margin-inline: auto;
+    padding: 2px 0 calc(12px + var(--safe-area-inset-bottom));
+  }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-dashboard-page { grid-template-columns: minmax(0, 1fr); gap: 9px; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-avatar,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-mark { width: 38px; height: 38px; margin-bottom: 7px; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card h1,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-recovery-result h1 { font-size: 18px; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card form { margin-top: 10px; gap: 8px; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-card input { height: 40px; min-height: 40px; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-primary-action { min-height: 40px; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .account-space.is-dialog .account-auth-actions { margin-top: 5px; }
+}
+
+@media (max-width: 430px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-profile-editor { grid-template-columns: 1fr 1fr; }
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .account-profile-editor input { grid-column: 1 / -1; }
+}
+
+/* Landscape content composition uses the wide axis instead of stretching portrait stacks. */
+@media (orientation: landscape) and (max-height: 600px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-library-scroll.mobile-collection-page {
+    min-height: 100dvh;
+    padding: 0 0 var(--mobile-content-bottom);
+    display: grid;
+    grid-template-columns: minmax(270px, 34vw) minmax(0, 1fr);
+    grid-auto-rows: auto;
+    align-items: start;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-hero {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 100%;
+    height: calc(100dvh - var(--mobile-bottom-clearance));
+    min-height: 0;
+    padding: max(54px, calc(var(--safe-area-inset-top) + 44px)) 18px 16px;
+    grid-template-columns: 96px minmax(0, 1fr);
+    column-gap: 14px;
+    row-gap: 14px;
+    align-content: center;
+    border-right: 1px solid var(--product-divider);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-cover {
+    width: 96px;
+    height: 96px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-copy h1 {
+    font-size: 22px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-copy p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-actions {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-artist-albums {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    margin-top: 8px;
+    padding: 0 20px 4px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-artist-albums > header {
+    min-height: 32px;
+    margin-bottom: 6px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-artist-albums .mobile-card-rail {
+    grid-auto-columns: 112px;
+    gap: 10px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-artist-albums .mobile-feature-card > strong {
+    margin-top: 6px;
+    font-size: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-tracks {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    padding: 16px 20px 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-artist-albums + .mobile-collection-tracks {
+    grid-row: 2;
+    padding-top: 4px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-collection-tracks > header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    min-height: 44px;
+    background: color-mix(in srgb, var(--theme-stage) 92%, transparent);
+    backdrop-filter: blur(18px) saturate(125%);
+    -webkit-backdrop-filter: blur(18px) saturate(125%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-page {
+    min-height: 100dvh;
+    padding: 8px var(--mobile-gutter) var(--mobile-content-bottom);
+    display: grid;
+    grid-template-columns: minmax(230px, .72fr) minmax(420px, 1.55fr);
+    grid-template-rows: 46px auto 1fr;
+    column-gap: 20px;
+    row-gap: 10px;
+    align-content: start;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-toolbar {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 46px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-profile-hero {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    height: 92px;
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--product-divider);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--glass-control) 46%, transparent);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-profile-identity {
+    min-height: 0;
+    height: 100%;
+    padding: 0;
+    grid-template-columns: 52px minmax(0, 1fr);
+    grid-template-rows: auto;
+    justify-items: start;
+    gap: 12px;
+    text-align: left;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-profile-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section {
+    grid-column: 1;
+    grid-row: 3;
+    margin: 0;
+    align-self: start;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button {
+    min-height: 48px;
+    padding: 5px 9px;
+    border: 1px solid var(--product-divider);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--glass-control) 58%, transparent);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button > span:first-child {
+    width: 32px;
+    height: 32px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button strong {
+    font-size: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div > button small {
+    margin-top: 2px;
+    font-size: 10px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    min-height: 0;
+    height: 100%;
+    margin-top: 0;
+    overflow: hidden;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > header {
+    min-height: 38px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section > div {
+    max-height: calc(100% - 38px);
+    overflow-y: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 10px var(--mobile-gutter) 8px;
+    display: grid;
+    grid-template-columns: minmax(190px, 23vw) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 10px 14px;
+    overflow: hidden;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-header {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 54px;
+    padding: 2px 4px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy {
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    height: 148px;
+    margin: 0;
+    padding: 12px;
+    align-content: start;
+    align-self: start;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy > div {
+    height: 52px;
+    margin-top: 8px;
+    align-items: end;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-list {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    min-height: 0;
+    height: 100%;
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track-content,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-track-main {
+    min-height: 54px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-cover {
+    width: 38px;
+    height: 38px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop {
+    padding: 8px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop > .effects-panel {
+    width: min(900px, calc(100vw - 16px));
+    height: calc(100dvh - 16px);
+    max-height: none;
+    border-radius: 24px;
+    grid-template-rows: 58px minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .effect-center-header {
+    min-height: 58px;
+    height: 58px;
+    padding: 8px 12px;
+    grid-template-columns: minmax(160px, auto) minmax(260px, 1fr) auto;
+    grid-template-rows: 42px;
+    gap: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .effect-brand small {
+    display: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .effect-center-header nav {
+    grid-column: 2;
+    grid-row: 1;
+    width: min(420px, 100%);
+    height: 38px;
+    justify-self: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .effect-header-actions {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .effects-content {
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-effects-layout {
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(250px, .75fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-browser {
+    min-height: 0;
+    padding: 12px 14px;
+    overflow-y: auto;
+    border-right: 1px solid var(--product-divider);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-grid > button {
+    min-height: 48px;
+    height: 48px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-detail {
+    min-height: 0;
+    height: 100%;
+    margin: 0;
+    padding: 16px;
+    overflow-y: auto;
+    border-top: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-detail h2 {
+    font-size: 20px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-detail .sound-curve {
+    height: 48px;
+    margin: 10px 0 8px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .device-adaptation {
+    height: 100%;
+    padding: 14px 16px;
+    overflow-y: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .device-adaptation section {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .device-adaptation section button {
+    min-height: 68px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .custom-eq-view {
+    height: 100%;
+    padding: 12px 16px;
+    overflow-y: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .equalizer {
+    height: 138px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .eq-band input[type="range"] {
+    height: 84px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .effects-drawer-backdrop .effect-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  /* Landscape uses task-sized dialogs; only navigation surfaces remain side drawers. */
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .theme-drawer-backdrop,
+    .source-drawer-backdrop,
+    .playlist-editor-backdrop,
+    .playlist-picker-backdrop,
+    .agent-preferences-backdrop,
+    .session-editor-backdrop,
+    .memory-manager-backdrop,
+    .track-share-backdrop
+  ) {
+    padding: 12px max(12px, var(--safe-area-inset-right)) 12px max(12px, var(--safe-area-inset-left));
+    align-items: center;
+    justify-content: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .mobile-theme-sheet,
+    .source-drawer-backdrop > .source-panel,
+    .playlist-editor,
+    .playlist-picker,
+    .agent-preferences-panel,
+    .session-editor,
+    .memory-manager,
+    .track-share-panel
+  ) {
+    width: calc(100vw - 24px);
+    max-width: 640px;
+    max-height: calc(100dvh - 24px);
+    margin: 0;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .playlist-editor,
+    .session-editor,
+    .track-share-panel
+  ) {
+    width: min(540px, calc(100vw - 24px));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .mobile-theme-sheet > header,
+    .source-panel-heading,
+    .agent-preferences-panel > header,
+    .session-editor > header,
+    .memory-manager > header,
+    .playlist-editor > header,
+    .playlist-picker > header,
+    .track-share-panel > header
+  ) {
+    min-height: 54px;
+    padding-block: 7px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-theme-sheet {
+    padding-bottom: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-theme-sheet .mobile-palette-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .global-player .global-player-variant-wrap > .playback-variant-panel {
+    position: fixed;
+    right: auto;
+    bottom: 12px;
+    left: 50%;
+    z-index: 1200;
+    width: calc(100vw - 24px);
+    max-width: 640px;
+    max-height: calc(100dvh - 24px);
+    padding-bottom: 0;
+    border-radius: 22px;
+    overflow-y: auto;
+    transform: translateX(-50%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .playback-variant-panel > header {
+    min-height: 58px;
+    padding-block: 8px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .context-menu {
+    position: fixed;
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: 50% !important;
+    width: min(320px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Landscape song mode is a reading-and-control surface, not a rotated portrait switcher. */
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-layout,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-layout {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 48% 52%;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    place-items: stretch;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-pane {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: max(38px, calc(30px + var(--safe-area-inset-top))) 18px 12px max(20px, var(--safe-area-inset-left));
+    display: grid;
+    align-self: stretch;
+    border-right: 1px solid color-mix(in srgb, var(--glass-stroke) 72%, transparent);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-pane > header,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyric-line {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-pane > header {
+    padding: 0 16px 6px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-song-header h1 {
+    font-size: 18px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-heading {
+    min-height: 34px;
+    margin-top: 10px;
+    padding-top: 6px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .song-content-tabs {
+    gap: 14px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .song-content-tabs button {
+    height: 26px;
+    padding-bottom: 5px;
+    font-size: 10px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-spacer.is-start {
+    height: 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-visual {
+    z-index: 2;
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    max-width: none;
+    height: 190px;
+    padding: max(24px, calc(16px + var(--safe-area-inset-top))) max(28px, var(--safe-area-inset-right)) 8px 28px;
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+    justify-items: stretch;
+    align-self: start;
+    transform: none;
+    pointer-events: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-record-button,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-record-meta {
+    pointer-events: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-cover-stage,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-cover-stage {
+    width: 132px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-record-meta {
+    width: 100%;
+    margin: 0;
+    text-align: left;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-record-meta h1 {
+    margin: 6px 0 5px;
+    font-size: 19px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player {
+    padding-top: 190px;
+    align-content: stretch;
+    pointer-events: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player::before {
+    top: 190px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] :is(.global-player-center, .global-player-tools) {
+    pointer-events: auto;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact {
+    height: 100%;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-tools {
+    bottom: max(55px, calc(47px + var(--safe-area-inset-bottom)));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-speed-popover,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .volume-popover {
+    right: auto;
+    bottom: 16px;
+    left: 74%;
+    transform: translateX(-50%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace {
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-layout,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-visual,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-record-meta,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-entities {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-entities > button {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* Mobile player tools are one visual group. Touch focus must not leave one
+   control looking like a separate filled button. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .playback-secondary > button,
+  .playback-secondary .playback-speed-trigger,
+  .playback-volume > button,
+  .global-player-effects,
+  .global-player-variant,
+  .global-player-more,
+  .global-player-queue
+),
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .playback-secondary > button,
+  .playback-secondary .playback-speed-trigger,
+  .playback-volume > button,
+  .global-player-effects,
+  .global-player-variant,
+  .global-player-more,
+  .global-player-queue
+):is(:hover, :active, :focus, :focus-visible, .is-active) {
+  border-color: transparent;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .playback-secondary > button.is-active,
+  .playback-secondary > button.is-liked,
+  .playback-secondary > button[aria-pressed="true"],
+  .playback-secondary .playback-speed-trigger.is-active,
+  .playback-volume > button.is-active,
+  .global-player-effects.is-active,
+  .global-player-variant.is-active,
+  .global-player-more.is-active,
+  .global-player-queue.is-active,
+  [aria-expanded="true"].global-player-effects,
+  [aria-expanded="true"].global-player-variant,
+  [aria-expanded="true"].global-player-more,
+  [aria-expanded="true"].global-player-queue
+) {
+  color: var(--theme-accent);
+}
+
+/* Mobile navigation uses typography for state; touch must not paint a tile. */
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-navigation > button:is(:hover, :active, :focus, :focus-visible, .is-active) {
+  border-color: transparent;
+  outline: 0;
+  background: transparent !important;
+  box-shadow: none;
+  filter: none;
+  transform: none;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-bottom-chrome {
+  z-index: 120;
+  isolation: isolate;
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  /* The song view keeps one compact control stack on the record side. */
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+    --landscape-song-visual-height: clamp(208px, 63dvh, 270px);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-pane {
+    padding: max(20px, calc(14px + var(--safe-area-inset-top))) 18px 12px max(20px, var(--safe-area-inset-left));
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-pane > header {
+    padding: 0 16px 4px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-pane > header > :is(.now-playing-state, h1, .now-playing-entities) {
+    display: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .lyrics-heading {
+    min-height: 38px;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+    align-items: flex-start;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .song-content-tabs {
+    gap: 18px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .song-content-tabs button {
+    height: 34px;
+    padding: 0 0 10px;
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-visual {
+    height: var(--landscape-song-visual-height);
+    padding: max(18px, calc(10px + var(--safe-area-inset-top))) max(28px, var(--safe-area-inset-right)) 8px 28px;
+    grid-template-columns: min(220px, 52dvh) minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-cover-stage,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-cover-stage {
+    width: min(220px, 52dvh);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player {
+    padding-top: calc(var(--landscape-song-visual-height) + 6px);
+    align-content: start;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player::before {
+    top: var(--landscape-song-visual-height);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-center,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact {
+    height: 100%;
+    min-height: 0;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact {
+    grid-template-rows: 18px minmax(0, 1fr);
+    gap: 6px;
+    align-content: stretch;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact .playback-toolbar {
+    min-height: 0;
+    height: 100%;
+    display: block;
+    position: relative;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-primary {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    height: 48px;
+    transform: translateX(-50%);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-play {
+    width: 48px;
+    height: 48px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] :is(.playback-secondary, .playback-volume) {
+    height: 34px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-tools {
+    top: auto;
+    bottom: max(18px, var(--safe-area-inset-bottom));
+    height: 34px;
+  }
+
+  /* Conversation and arrangement use the wide axis without stretching cards. */
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view {
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer-area {
+    padding: 10px 16px 12px;
+    background: transparent;
+    justify-content: flex-end;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer {
+    height: 92px;
+    min-height: 92px;
+    padding: 10px 44px 38px 12px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-composer textarea {
+    height: 36px;
+    min-height: 36px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement {
+    grid-template-columns: minmax(250px, 32vw) minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-header {
+    position: relative;
+    top: auto;
+    width: 100%;
+    margin: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy {
+    width: 100%;
+    height: 76px;
+    min-height: 76px;
+    padding: 10px 12px;
+    align-content: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-arrangement-energy > div {
+    height: 30px;
+    margin-top: 0;
+  }
+
+  /* Personal content: identity on the left, library actions and playlists on the right. */
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-page {
+    grid-template-rows: 46px auto minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-personal-list-section > div {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-profile-hero {
+    grid-row: 2 / span 2;
+    min-height: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    display: grid;
+    place-items: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-profile-identity {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 64px auto;
+    justify-items: center;
+    align-content: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-profile-avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 23px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-playlists-section {
+    grid-column: 2;
+    grid-row: 3;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 350px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+    --landscape-song-visual-height: clamp(184px, 60dvh, 200px);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace .now-playing-visual {
+    grid-template-columns: min(170px, 46dvh) minmax(0, 1fr);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="record"] .now-playing-cover-stage,
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .now-playing-workspace[data-display-mode="lyrics"] .now-playing-cover-stage {
+    width: min(170px, 46dvh);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-transport.is-compact {
+    gap: 4px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-primary {
+    top: 0;
+    height: 42px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .playback-play {
+    width: 42px;
+    height: 42px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] :is(.playback-secondary, .playback-volume),
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"][data-workspace="nowPlaying"] .global-player-tools {
+    height: 30px;
+  }
+}
+
+/* Landscape safe areas are structural gutters, not optional page decoration. */
+@media (orientation: landscape) and (max-height: 600px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] {
+    --landscape-safe-left: var(--safe-area-inset-left);
+    --landscape-safe-right: var(--safe-area-inset-right);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .agent-main-header {
+    padding-left: max(10px, var(--landscape-safe-left));
+    padding-right: max(10px, var(--landscape-safe-right));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .conversation-view {
+    padding-left: var(--landscape-safe-left);
+    padding-right: var(--landscape-safe-right);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .is-mobile-agent .session-rail {
+    left: 0;
+    padding-left: max(12px, var(--landscape-safe-left));
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .settings-modal-backdrop {
+    padding-right: var(--landscape-safe-right);
+    padding-left: var(--landscape-safe-left);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"]:is([data-navigation-level="detail"], [data-navigation-level="search"]) .client-body.is-library {
+    box-sizing: border-box;
+    padding-right: var(--landscape-safe-right);
+    padding-left: var(--landscape-safe-left);
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"]:is([data-navigation-level="detail"], [data-navigation-level="search"]) .mobile-library-scroll {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-now-playing-dismiss {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Lyric sizing belongs to the player's More menu, not to a persistent lyric-side tool. */
+.client-shell > .lyrics-type-controls.is-menu-open,
+.now-playing-workspace > .lyrics-type-controls.is-menu-open {
+  position: fixed;
+  top: auto;
+  right: 24px;
+  bottom: 112px;
+  z-index: 760;
+  width: 246px;
+  padding: 0;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.client-shell > .lyrics-type-controls.is-menu-open .lyrics-type-popover,
+.now-playing-workspace > .lyrics-type-controls.is-menu-open .lyrics-type-popover {
+  position: static;
+  width: 100%;
+  transform: none;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] > .lyrics-type-controls.is-menu-open {
+  right: 16px;
+  bottom: calc(190px + var(--safe-area-inset-bottom));
+  left: 16px;
+  width: auto;
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] > .lyrics-type-controls.is-menu-open {
+    right: max(16px, var(--landscape-safe-right));
+    bottom: 76px;
+    left: auto;
+    width: min(246px, calc(50vw - max(16px, var(--landscape-safe-right)) - 16px));
+  }
+}
