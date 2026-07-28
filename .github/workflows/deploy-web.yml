@@ -57,7 +57,7 @@ jobs:
         if: steps.configuration.outputs.ready == 'true'
       - name: Verify production
         if: steps.configuration.outputs.ready == 'true'
-        run: curl --fail --silent --show-error --retry 5 --retry-all-errors --retry-delay 5 https://echora-web.lili.uno/ > /dev/null
+        run: curl --fail --silent --show-error --max-time 20 --retry 5 --retry-all-errors --retry-delay 5 https://echora-web.bearstozawa.workers.dev/ > /dev/null
       - name: Read version
         if: steps.configuration.outputs.ready == 'true'
         id: version
