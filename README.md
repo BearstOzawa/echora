@@ -1,95 +1,120 @@
-# Echora
+<div align="center">
+  <img src="public/brand-mark.svg" width="72" height="72" alt="Echora" />
+  <h1>Echora</h1>
+  <p>跨 Web、桌面与移动端的音乐发现、播放与 AI 编排应用。</p>
+  <p>
+    <a href="https://echora-web.lili.uno">Web 应用</a>
+    · <a href="https://echora-cloud.lili.uno">产品网站</a>
+    · <a href="docs/platform-architecture.md">技术架构</a>
+    · <a href="https://github.com/BearstOzawa/echora-cloud">云端服务</a>
+  </p>
+  <p>
+    <a href="https://github.com/BearstOzawa/echora/actions/workflows/ci.yml"><img src="https://github.com/BearstOzawa/echora/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  </p>
+</div>
 
-Echora 是面向 Web、桌面与移动端的音乐应用。它将在线音乐、本地音乐、播放管理与 AI 编排统一在同一套产品体验中。
+## 关于 Echora
 
-- Web：[echora-web.lili.uno](https://echora-web.lili.uno)
-- 官网与账户：[echora-cloud.lili.uno](https://echora-cloud.lili.uno)
-- 云端服务：[BearstOzawa/echora-cloud](https://github.com/BearstOzawa/echora-cloud)
+Echora 将跨平台音乐发现、个人收藏、播放队列与自然语言编排整合在一套应用中。用户可以从搜索、精选、榜单或本地音乐开始播放，也可以直接描述场景、节奏和偏好，由音乐场生成并持续调整队列。
 
-## 产品能力
+账户、歌单、收藏、设置和会话由 Echora Cloud 管理；下载、导入音乐和播放缓存保留在设备上。原生客户端在离线时仍可使用本地音乐、已下载内容和最近的账户快照。
 
-- 搜索、发现、精选、榜单、歌单、收藏与播放队列
-- 通过对话生成并调整音乐编排
-- Web、桌面和移动端使用各自的交互界面，共享核心业务能力
-- 账户、歌单、收藏、设置和会话保存在 Echora Cloud
-- 桌面与移动客户端支持本地音乐、下载和离线播放
-- 支持 EchoraAI，也支持用户配置自己的 AI 服务
-- 桌面媒体控制、系统托盘、移动端媒体会话与应用快捷入口
+## 核心体验
+
+| 能力 | 说明 |
+| --- | --- |
+| 发现 | 聚合搜索、精选、榜单和音乐平台内容，统一进入播放与收藏流程 |
+| 编排 | 通过 EchoraAI 或自定义 AI，根据意图、时长和能量变化生成队列 |
+| 播放 | 提供队列、歌词、音质、播放速度、音效和系统媒体控制 |
+| 音乐库 | 管理收藏、歌单、本地音乐、下载内容与离线播放 |
+| 多端账户 | 在 Web、桌面和移动端使用同一账户数据，并保留原生端离线能力 |
+
+在线音乐解析由 Echora Cloud 发起，终端获得可播放地址后直接连接内容源。Cloud 不转发持续音频流量。
+
+## 产品组成
+
+| 产品 | 职责 |
+| --- | --- |
+| Echora Web | 面向桌面和移动浏览器的在线应用 |
+| Echora Desktop | 提供本地音乐、下载、系统托盘和桌面媒体能力 |
+| Echora Mobile | 提供移动布局、系统媒体会话、文件导入和离线播放 |
+| Echora Cloud | 提供账户、在线音乐、EchoraAI、官网与版本管理 |
+
+桌面与移动端拥有独立的导航和交互结构，共享播放、歌单、账户与音乐场等核心业务能力。
 
 ## 平台状态
 
-| 平台 | 界面 | 当前状态 |
-| --- | --- | --- |
-| Web | 桌面与移动浏览器 | 可部署 |
-| macOS | Tauri 桌面客户端 | 可构建 |
-| Android | Tauri 移动客户端 | 可构建与调试 |
-| iOS | Tauri 移动客户端 | 支持模拟器验证，正式签名发布尚未启用 |
+| 平台 | 状态 |
+| --- | --- |
+| Web | 已部署，支持桌面与移动浏览器 |
+| macOS | 客户端可构建，正式安装包发布链路已建立 |
+| Android | 客户端可构建与调试，正式安装包发布链路已建立 |
+| iOS | 支持模拟器验证，正式签名与分发暂未启用 |
 
-在线音乐解析由 Echora Cloud 发起，音频地址返回后由终端直接播放。下载与导入的音乐保存在设备本地，不上传至账户。原生客户端在离线时可继续使用本地音乐、已下载内容和账户快照。
+项目处于 `0.1.x` 开发阶段。数据模型和客户端接口在正式版前可能调整。
 
 ## 开发
 
-需要 Node.js 22。构建原生客户端时，还需要 Rust stable 和对应平台的原生 SDK。
+前端开发需要 Node.js 22。原生客户端还需要 Rust stable 和对应平台 SDK。
 
 ```bash
+git clone https://github.com/BearstOzawa/echora.git
+cd echora
 npm ci
 npm run dev
 ```
 
-固定界面入口：
+固定平台入口：
 
 ```bash
 npm run dev:desktop
 npm run dev:mobile
 ```
 
-常用验证：
-
-```bash
-npm test
-npm run build:desktop
-npm run build:mobile
-npm run performance:budget
-cargo check --manifest-path src-tauri/Cargo.toml
-```
-
-默认连接生产 Echora Cloud。本地联调时，在 `.env.development.local` 中设置：
+默认连接生产 Echora Cloud。本地联调时，在 `.env.development.local` 设置：
 
 ```bash
 VITE_ECHORA_CLOUD_URL=http://127.0.0.1:8787
 ```
 
-## 原生客户端
+## 原生构建
 
 ```bash
+# macOS
 npm run client:desktop:dev
 npm run client:desktop:build
 
+# Android
 npm run client:mobile:android:init
 npm run client:mobile:android:dev
 
+# iOS
 npm run client:mobile:ios:init
 npm run client:mobile:ios:dev
 ```
 
-Android 需要 JDK 17、Android SDK 与 NDK `27.2.12479018`。iOS 需要 Xcode；没有开发者签名时仍可构建模拟器版本。
+Android 使用 JDK 17 和 NDK `27.2.12479018`。iOS 构建依赖 Xcode；没有开发者签名时可以运行模拟器版本。
 
-## 项目结构
+## 架构与质量
 
-```text
-src/                  React 应用、业务状态与平台界面
-src/platforms/        桌面与移动端界面入口
-src/components/       共享交互组件
-src-tauri/            桌面与移动端原生能力
-scripts/              构建、图标和稳定性工具
-docs/                 架构与维护文档
+React 应用按桌面和移动端拆分界面层，Tauri 提供文件、下载、媒体会话、窗口和系统集成。平台边界、数据归属与构建目标见 [平台架构](docs/platform-architecture.md)。
+
+提交前运行：
+
+```bash
+npm test
+npm run build
+npm run build:desktop
+npm run build:mobile
+npm run performance:budget
+cargo check --locked --manifest-path src-tauri/Cargo.toml
 ```
 
-架构边界见 [docs/platform-architecture.md](docs/platform-architecture.md)。
+`main` 分支由 GitHub Actions 验证。版本标签会生成 macOS 与 Android 安装包草稿，正式发布后由 Echora Cloud 接管版本策略。
 
-## 贡献与安全
+## 参与项目
 
-提交代码前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请按 [SECURITY.md](SECURITY.md) 中的方式私下报告，不要公开提交包含凭据、个人数据或可复现攻击细节的 Issue。
+开发约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请通过 GitHub Security Advisories 私下报告，处理范围见 [SECURITY.md](SECURITY.md)。
 
 ## 许可证
 
