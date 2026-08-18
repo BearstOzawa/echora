@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { initialTracks } from './testFixtures'
-import { buildDailyRecommendations, loadSourceDiscovery, readSourceDiscoveryCache, sourceDiscoveryDefinitions, sourceDiscoveryMaxStaleMs, writeSourceDiscoveryCache, type SourceChart } from './sourceDiscovery'
+import { buildDailyRecommendations, loadSourceDiscovery, readCompatibleSourceDiscoveryCache, readSourceDiscoveryCache, sourceDiscoveryDefinitions, sourceDiscoveryMaxStaleMs, writeSourceDiscoveryCache, type SourceChart } from './sourceDiscovery'
 
 describe('source discovery', () => {
   it('builds a stable daily mix from live shelves and personal signals', () => {
@@ -72,6 +72,40 @@ describe('source discovery', () => {
       return initialTracks
     })
     expect(maximum).toBe(5)
+  })
+
+  it('publishes usable discovery before chart detail enrichment finishes', async () => {
+    let finishDetail: ((tracks: typeof initialTracks) => void) | undefined
+    const detail = new Promise<typeof initialTracks>((resolve) => { finishDetail = resolve })
+    const progress = vi.fn()
+    const request = loadSourceDiscovery(
+      async () => initialTracks,
+      async () => [{ id: 'official:tx:26', boardId: '26', source: 'tx', name: 'QQ 热歌榜', eyebrow: 'QQ 音乐', description: '官方榜单', category: 'platform', cover: initialTracks[0].cover, preview: [], tracks: [] }],
+      async () => detail,
+      20,
+      ['tx'],
+      progress,
+    )
+
+    await vi.waitFor(() => expect(progress).toHaveBeenCalled())
+    expect(progress.mock.calls.some(([catalog]) => catalog.shelves.length > 0 && catalog.tracks.length > 0)).toBe(true)
+    finishDetail?.(initialTracks)
+    await expect(request).resolves.toMatchObject({ hotTracks: expect.any(Array), charts: expect.any(Array) })
+  })
+
+  it('publishes the two startup shelves before secondary searches finish', async () => {
+    let releaseSecondary: (() => void) | undefined
+    const secondary = new Promise<void>((resolve) => { releaseSecondary = resolve })
+    const progress = vi.fn()
+    const request = loadSourceDiscovery(async (query) => {
+      if (query !== '华语流行' && query !== '新歌') await secondary
+      return initialTracks
+    }, undefined, undefined, 20, [], progress)
+
+    await vi.waitFor(() => expect(progress).toHaveBeenCalled())
+    expect(progress.mock.calls[0][0].shelves.filter((shelf: { kind: string }) => shelf.kind !== 'quality').map((shelf: { kind: string }) => shelf.kind)).toEqual(['trend', 'fresh'])
+    releaseSecondary?.()
+    await expect(request).resolves.toMatchObject({ shelves: expect.any(Array) })
   })
 
   it('uses the configured size for source-backed featured collections', async () => {
@@ -165,13 +199,18 @@ describe('source discovery', () => {
     }
     const catalog = await loadSourceDiscovery(async () => initialTracks)
     const cachedCatalog = { ...catalog, charts: [{ id: 'official:tx:26', boardId: '26', source: 'tx' as const, name: 'QQ 热歌榜', eyebrow: 'QQ 音乐', description: '官方榜单', category: 'platform' as const, cover: initialTracks[0].cover, preview: [], tracks: [], provenance: 'live' as const }] }
-    writeSourceDiscoveryCache('v1.2.0:tx,wy', cachedCatalog, storage)
-    expect(readSourceDiscoveryCache('v1.2.0:tx,wy', storage, catalog.loadedAt + 31 * 60 * 1000, 30 * 60 * 1000)).toBeNull()
-    expect(readSourceDiscoveryCache('v1.2.0:tx,wy', storage, catalog.loadedAt + sourceDiscoveryMaxStaleMs)).toEqual({
+    writeSourceDiscoveryCache('tx,wy:v1.2.0', cachedCatalog, storage)
+    expect(readSourceDiscoveryCache('tx,wy:v1.2.0', storage, catalog.loadedAt + 31 * 60 * 1000, 30 * 60 * 1000)).toBeNull()
+    expect(readSourceDiscoveryCache('tx,wy:v1.2.0', storage, catalog.loadedAt + sourceDiscoveryMaxStaleMs)).toEqual({
       ...cachedCatalog,
       charts: [{ ...cachedCatalog.charts[0], provenance: 'cached' }],
     })
     expect(readSourceDiscoveryCache('v1.2.0:tx,wy', storage, catalog.loadedAt + sourceDiscoveryMaxStaleMs + 1)).toBeNull()
     expect(readSourceDiscoveryCache('another-source-set', storage, catalog.loadedAt)).toBeNull()
+    expect(readCompatibleSourceDiscoveryCache('v1.2.0', storage, catalog.loadedAt + 31 * 60 * 1000)).toEqual({
+      ...cachedCatalog,
+      charts: [{ ...cachedCatalog.charts[0], provenance: 'cached' }],
+    })
+    expect(readCompatibleSourceDiscoveryCache('another-content-version', storage, catalog.loadedAt)).toBeNull()
   })
 })

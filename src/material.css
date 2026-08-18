@@ -8983,22 +8983,7 @@ textarea { font-size: var(--type-body); }
   }
 
   /* Sound Space shows more choices per screen and removes nonessential status chrome. */
-  .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop > .effects-panel {
-    height: min(90dvh, 760px);
-    max-height: 90dvh;
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-  .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .effect-center-header {
-    min-height: 92px;
-    padding: 9px 12px 8px;
-    grid-template-rows: 38px 36px;
-  }
-  .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .effect-brand strong { font-size: 16px; }
   .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .effect-header-actions > button { width: 36px; height: 36px; }
-  .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .effect-center-header nav { height: 36px; }
-  .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .effect-center-header nav button { height: 32px; font-size: 12px; }
-  .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .sound-signal-chain { display: none; }
-  .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .effects-content { grid-row: 2; }
   .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .sound-effects-layout { min-height: 0; }
   .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-browser { padding: 12px; }
   .client-shell[data-form-factor="mobile"] .effects-drawer-backdrop .sound-preset-browser > header { min-height: 34px; }

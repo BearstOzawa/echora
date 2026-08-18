@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { deriveAudioEffectParameters, equalizerFrequencies, requiresAudioProcessing } from './audioEffects'
-import type { AudioEffectsSettings } from './audioEffects'
+import type { AudioEffectsProcessingState, AudioEffectsSettings } from './audioEffects'
 import type { PlaybackMode, PlaybackRate, Track } from './types'
 
 type Options = {
@@ -81,19 +81,38 @@ type EffectsGraph = {
   preamp: GainNode
   filters: BiquadFilterNode[]
   bass: BiquadFilterNode
+  clarity: BiquadFilterNode
+  stereoDirect: GainNode[]
   stereoCrossfeed: GainNode[]
   dry: GainNode
   wet: GainNode
   compressor: DynamicsCompressorNode
+  limiter: DynamicsCompressorNode
+  makeup: GainNode
   output: GainNode
 }
 
 const createRoomImpulse = (context: AudioContext) => {
-  const length = Math.max(1, Math.floor(context.sampleRate * .38))
+  const length = Math.max(1, Math.floor(context.sampleRate * .56))
   const impulse = context.createBuffer(2, length, context.sampleRate)
+  let seed = 0x4f1bbcdc
+  const noise = () => {
+    seed ^= seed << 13
+    seed ^= seed >>> 17
+    seed ^= seed << 5
+    return ((seed >>> 0) / 0xffffffff) * 2 - 1
+  }
+  const earlyReflections = [0.011, 0.019, 0.031, 0.047, 0.071]
   for (let channel = 0; channel < impulse.numberOfChannels; channel += 1) {
     const data = impulse.getChannelData(channel)
-    for (let index = 0; index < length; index += 1) data[index] = (Math.random() * 2 - 1) * Math.pow(1 - index / length, 3.4)
+    for (let index = 0; index < length; index += 1) {
+      const progress = index / length
+      data[index] = noise() * Math.pow(1 - progress, 4.2) * .18
+    }
+    earlyReflections.forEach((seconds, index) => {
+      const offset = Math.min(length - 1, Math.floor(context.sampleRate * (seconds + channel * .0025)))
+      data[offset] += (index % 2 === channel ? 1 : -1) * (.34 - index * .045)
+    })
   }
   return impulse
 }
@@ -107,7 +126,7 @@ const createEffectsGraph = (audio: HTMLAudioElement): EffectsGraph | null => {
     const preamp = context.createGain()
     const bass = context.createBiquadFilter()
     bass.type = 'lowshelf'
-    bass.frequency.value = 90
+    bass.frequency.value = 96
     const filters = equalizerFrequencies.map((frequency) => {
       const filter = context.createBiquadFilter()
       filter.type = 'peaking'
@@ -115,11 +134,24 @@ const createEffectsGraph = (audio: HTMLAudioElement): EffectsGraph | null => {
       filter.Q.value = frequency < 100 ? .7 : 1.05
       return filter
     })
+    const clarity = context.createBiquadFilter()
+    clarity.type = 'highshelf'
+    clarity.frequency.value = 4800
     const dry = context.createGain()
+    const reverbLowCut = context.createBiquadFilter()
+    reverbLowCut.type = 'highpass'
+    reverbLowCut.frequency.value = 180
+    reverbLowCut.Q.value = .72
+    const reverbHighCut = context.createBiquadFilter()
+    reverbHighCut.type = 'lowpass'
+    reverbHighCut.frequency.value = 6800
+    reverbHighCut.Q.value = .7
     const convolver = context.createConvolver()
     convolver.buffer = createRoomImpulse(context)
     const wet = context.createGain()
     const compressor = context.createDynamicsCompressor()
+    const limiter = context.createDynamicsCompressor()
+    const makeup = context.createGain()
     const output = context.createGain()
     const splitter = context.createChannelSplitter(2)
     const merger = context.createChannelMerger(2)
@@ -135,6 +167,8 @@ const createEffectsGraph = (audio: HTMLAudioElement): EffectsGraph | null => {
       previous.connect(filter)
       previous = filter
     })
+    previous.connect(clarity)
+    previous = clarity
     previous.connect(splitter)
     splitter.connect(leftDirect, 0)
     splitter.connect(rightDirect, 1)
@@ -145,13 +179,31 @@ const createEffectsGraph = (audio: HTMLAudioElement): EffectsGraph | null => {
     leftCross.connect(merger, 0, 1)
     rightCross.connect(merger, 0, 0)
     merger.connect(dry)
-    merger.connect(convolver)
+    merger.connect(reverbLowCut)
+    reverbLowCut.connect(reverbHighCut)
+    reverbHighCut.connect(convolver)
     convolver.connect(wet)
     dry.connect(compressor)
     wet.connect(compressor)
-    compressor.connect(output)
+    compressor.connect(limiter)
+    limiter.connect(makeup)
+    makeup.connect(output)
     output.connect(context.destination)
-    return { context, preamp, filters, bass, stereoCrossfeed: [leftCross, rightCross], dry, wet, compressor, output }
+    return {
+      context,
+      preamp,
+      filters,
+      bass,
+      clarity,
+      stereoDirect: [leftDirect, rightDirect],
+      stereoCrossfeed: [leftCross, rightCross],
+      dry,
+      wet,
+      compressor,
+      limiter,
+      makeup,
+      output,
+    }
   } catch {
     return null
   }
@@ -163,7 +215,9 @@ const applyAudioEffects = (graph: EffectsGraph, settings: AudioEffectsSettings) 
   graph.preamp.gain.setTargetAtTime(parameters.preampGain, now, .025)
   graph.filters.forEach((filter, index) => filter.gain.setTargetAtTime(parameters.bandGains[index] ?? 0, now, .025))
   graph.bass.gain.setTargetAtTime(parameters.bassGain, now, .025)
-  graph.dry.gain.setTargetAtTime(1, now, .025)
+  graph.clarity.gain.setTargetAtTime(parameters.clarityGain, now, .025)
+  graph.stereoDirect.forEach((gain) => gain.gain.setTargetAtTime(parameters.stereoDirect, now, .04))
+  graph.dry.gain.setTargetAtTime(parameters.dryGain, now, .025)
   graph.wet.gain.setTargetAtTime(parameters.wetGain, now, .04)
   graph.stereoCrossfeed.forEach((gain) => gain.gain.setTargetAtTime(parameters.stereoCrossfeed, now, .04))
   graph.compressor.threshold.setTargetAtTime(parameters.compressor ? -12 - parameters.compressorAmount * 12 : 0, now, .03)
@@ -171,6 +225,32 @@ const applyAudioEffects = (graph: EffectsGraph, settings: AudioEffectsSettings) 
   graph.compressor.ratio.setTargetAtTime(parameters.compressor ? 1.4 + parameters.compressorAmount * 3.2 : 1, now, .03)
   graph.compressor.attack.setTargetAtTime(parameters.compressor ? .012 : 0, now, .03)
   graph.compressor.release.setTargetAtTime(parameters.compressor ? .24 : .01, now, .03)
+  graph.limiter.threshold.setTargetAtTime(parameters.limiterThreshold, now, .02)
+  graph.limiter.knee.setTargetAtTime(0, now, .02)
+  graph.limiter.ratio.setTargetAtTime(20, now, .02)
+  graph.limiter.attack.setTargetAtTime(.003, now, .02)
+  graph.limiter.release.setTargetAtTime(.08, now, .02)
+  graph.makeup.gain.setTargetAtTime(parameters.makeupGain, now, .03)
+}
+
+export const resolveAudioEffectsProcessingState = ({ audioUrl, enabled, nativeIos, audioContextAvailable, origin }: {
+  audioUrl: string
+  enabled: boolean
+  nativeIos: boolean
+  audioContextAvailable: boolean
+  origin: string
+}): AudioEffectsProcessingState => {
+  if (!audioUrl) return 'idle'
+  if (nativeIos) return 'system'
+  if (!audioContextAvailable) return 'bypassed'
+  if (/^https?:\/\//i.test(audioUrl)) {
+    try {
+      if (new URL(audioUrl).origin !== origin) return 'bypassed'
+    } catch {
+      return 'bypassed'
+    }
+  }
+  return enabled ? 'active' : 'ready'
 }
 
 export const useAudioPlayback = ({ track, isPlaying, progress, volume, muted, playbackRate, playbackMode, audioEffects, onProgress, onEnded, onStarted, onError }: Options) => {
@@ -184,10 +264,18 @@ export const useAudioPlayback = ({ track, isPlaying, progress, volume, muted, pl
   const hasRealAudio = Boolean(track?.audioUrl)
   const processingRequired = requiresAudioProcessing(audioEffects)
   const processingUrl = track?.audioUrl ?? ''
-  const canProcessAudio = processingRequired && Boolean(processingUrl) && (() => {
-    if (!/^https?:\/\//i.test(processingUrl)) return true
-    try { return new URL(processingUrl).origin === window.location.origin } catch { return false }
-  })()
+  const iosNativeRuntime = typeof window !== 'undefined'
+    && '__TAURI_INTERNALS__' in window
+    && /iPad|iPhone|iPod/i.test(navigator.userAgent)
+  const audioContextAvailable = Boolean(window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)
+  const audioEffectsProcessingState = resolveAudioEffectsProcessingState({
+    audioUrl: processingUrl,
+    enabled: processingRequired,
+    nativeIos: iosNativeRuntime,
+    audioContextAvailable,
+    origin: window.location.origin,
+  })
+  const canProcessAudio = audioEffectsProcessingState === 'active'
   callbacksRef.current = { onProgress, onEnded, onStarted, onError }
   audioEffectsRef.current = audioEffects
 
@@ -206,6 +294,8 @@ export const useAudioPlayback = ({ track, isPlaying, progress, volume, muted, pl
   useEffect(() => {
     if (!hasRealAudio) return
     const audio = new Audio()
+    audio.preservesPitch = true
+    audio.defaultPlaybackRate = playbackRate
     if (canProcessAudio) audio.crossOrigin = 'anonymous'
     audio.preload = 'metadata'
     if (audio instanceof Node) {
@@ -381,7 +471,11 @@ export const useAudioPlayback = ({ track, isPlaying, progress, volume, muted, pl
   }, [muted, volume])
 
   useEffect(() => {
-    if (audioRef.current) audioRef.current.playbackRate = playbackRate
+    const audio = audioRef.current
+    if (!audio || audio.playbackRate === playbackRate) return
+    audio.preservesPitch = true
+    audio.defaultPlaybackRate = playbackRate
+    audio.playbackRate = playbackRate
   }, [playbackRate])
 
   useEffect(() => {
@@ -399,5 +493,5 @@ export const useAudioPlayback = ({ track, isPlaying, progress, volume, muted, pl
     callbacksRef.current.onProgress(boundedProgress)
   }, [])
 
-  return { isRealAudio: hasRealAudio, seek }
+  return { isRealAudio: hasRealAudio, seek, audioEffectsProcessingState }
 }

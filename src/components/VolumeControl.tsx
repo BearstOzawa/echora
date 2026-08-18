@@ -12,6 +12,9 @@ type Props = {
 }
 
 export default function VolumeControl({ volume, muted, onVolumeChange, onToggleMute, inline = false, className = '' }: Props) {
+  const systemManaged = typeof window !== 'undefined'
+    && '__TAURI_INTERNALS__' in window
+    && /iPad|iPhone|iPod/i.test(navigator.userAgent)
   const level = muted ? 0 : volume
   const VolumeIcon = level === 0 ? VolumeX : level < 45 ? Volume1 : Volume2
   const [open, setOpen] = useState(false)
@@ -32,6 +35,8 @@ export default function VolumeControl({ volume, muted, onVolumeChange, onToggleM
       document.removeEventListener('keydown', closeOnEscape)
     }
   }, [open])
+
+  if (systemManaged) return null
 
   if (inline) {
     return (

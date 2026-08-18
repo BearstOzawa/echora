@@ -193,6 +193,7 @@ private final class EchoraSpeechRecognitionBridge {
     private func restorePlaybackSession() {
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .default)
+        try? session.setActive(true)
     }
 
     private func emit(_ payload: [String: Any], generation: Int64) {

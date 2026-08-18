@@ -29,6 +29,9 @@ private final class EchoraMediaSessionBridge {
 
     func install(_ handler: @escaping EchoraMediaSessionHandler) {
         self.handler = handler
+        let audioSession = AVAudioSession.sharedInstance()
+        try? audioSession.setCategory(.playback, mode: .default, options: [.allowAirPlay, .allowBluetoothA2DP])
+        try? audioSession.setActive(true)
         installLiveActivityCommandHandler { [weak self] command in
             self?.handleLiveActivityCommand(command)
         }

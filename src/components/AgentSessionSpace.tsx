@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import { agentConstraintLimit, agentTargetTrackCountPresets, sortAgentSessions } from '../agentSessions'
 import type { AgentPreferences, AgentSession } from '../agentSessions'
+import '../product-ui.css?echora-css=agent'
 import { agentMemoryLimit, createAgentMemory } from '../agentMemories'
 import type { AgentMemory } from '../agentMemories'
 import type { Track } from '../types'
@@ -309,6 +310,11 @@ export default function AgentSessionSpace({
   const activeTrack = sessionTracks.find((track) => track.id === activeTrackId)
   const suggestions = contextualSuggestions({ session: activeSession, tracks: sessionTracks, activeTrack, intensity: activeSession.intensity, novelty: activeSession.novelty, memories })
   const updatePreferences = (patch: Partial<AgentPreferences>) => onPreferencesChange(activeSession.id, { ...activeSession.preferences, ...patch })
+  const collapseMobileComposer = () => {
+    if (!mobile || composerCollapsed || document.activeElement === composerInputRef.current) return
+    setSuggestionsExpanded(false)
+    setComposerCollapsed(true)
+  }
   const addMemory = (event: FormEvent) => {
     event.preventDefault()
     const title = memoryDraft.trim()
@@ -375,7 +381,7 @@ export default function AgentSessionSpace({
       </header>
 
       <aside className="session-rail">
-        {mobile && <header className="mobile-session-drawer-header"><span><strong>音乐会话</strong><small>按最近使用排序</small></span><div><button onClick={onCreateSession} aria-label="新建音乐会话"><Plus size={19} /></button><button onClick={() => setSessionDrawerOpen(false)} aria-label="关闭会话列表"><X size={19} /></button></div></header>}
+        {mobile && <header className="mobile-session-drawer-header"><span><strong>会话</strong></span><div><button onClick={onCreateSession} aria-label="新建音乐会话"><Plus size={19} /></button><button onClick={() => setSessionDrawerOpen(false)} aria-label="关闭会话列表"><X size={19} /></button></div></header>}
         <div className="session-list" aria-label="音乐会话">
           {orderedSessions.map((session) => (
             <div key={session.id} className={`session-item supports-long-press ${session.id === activeSession.id ? 'is-active' : ''}`} data-session-id={session.id} {...sessionLongPress} onContextMenu={(event) => {
@@ -409,7 +415,7 @@ export default function AgentSessionSpace({
       <main className="session-main">
         {view === 'conversation' ? (
           <div className="conversation-view">
-            <div className={`conversation-stream ${activeSession.messages.some((message) => message.role === 'user') ? 'has-user-turns' : 'is-pristine'}`} ref={conversationRef}>
+            <div className={`conversation-stream ${activeSession.messages.some((message) => message.role === 'user') ? 'has-user-turns' : 'is-pristine'}`} ref={conversationRef} onTouchMove={collapseMobileComposer} onWheel={collapseMobileComposer}>
               <div className="conversation-intro selectable-copy">
                 <span>本次目标</span>
                 <h1>{activeSession.goal}</h1>
@@ -637,10 +643,9 @@ export default function AgentSessionSpace({
         <div className="agent-preferences-backdrop" onPointerDown={() => setPreferencesOpen(false)}>
           <section className="agent-preferences-panel" role="dialog" aria-label="会话偏好" onPointerDown={(event) => event.stopPropagation()}>
             <header>
-              <span><SlidersHorizontal size={19} /></span>
+              {!mobile && <span><SlidersHorizontal size={19} /></span>}
               <div><strong>会话偏好</strong><small>只影响“{activeSession.title}”</small></div>
-              {mobile && <button className="agent-preferences-mobile-done" onClick={() => setPreferencesOpen(false)}>完成</button>}
-              <button onClick={() => setPreferencesOpen(false)} title="关闭" aria-label="关闭会话偏好"><X size={18} /></button>
+              {mobile ? <button className="agent-preferences-mobile-done" onClick={() => setPreferencesOpen(false)}>完成</button> : <button onClick={() => setPreferencesOpen(false)} title="关闭" aria-label="关闭会话偏好"><X size={18} /></button>}
             </header>
             <div className="agent-preferences-content">
               <section className="preference-apply-mode">

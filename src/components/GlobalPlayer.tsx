@@ -12,6 +12,7 @@ import type { ContextMenuItem } from './ContextMenu'
 import TrackSharePanel from './TrackSharePanel'
 import { downloadStateLabel } from '../downloadManager'
 import type { TrackDownloadState } from '../downloadManager'
+import SwipeActionRow from './SwipeActionRow'
 
 type Props = {
   track: Track
@@ -39,6 +40,7 @@ type Props = {
   onOpenEffects?: () => void
   onOpenArrangement: () => void
   onPlayTrack: (id: number) => void
+  onRemoveFromQueue?: (track: Track) => void
   onCyclePlaybackMode: () => void
   onPlaybackRateChange: (rate: PlaybackRate) => void
   onToggleLike: () => void
@@ -55,7 +57,7 @@ type Props = {
 
 const qualityLabels: Record<LxQuality, string> = { '128k': '标准 128K', '320k': '高品 320K', flac: '无损 FLAC', flac24bit: 'Hi-Res' }
 
-export default function GlobalPlayer({ track, isPlaying, progressStore, volume, muted, queue, playbackContext = defaultPlaybackContext, playbackMode, playbackRate, liked, nowPlayingOpen, effectsOpen = false, sourceVariants, variantBusy, onTogglePlay, onNext, onPrevious, onSeek, onVolumeChange, onToggleMute, onOpenNowPlaying, onOpenEffects, onOpenArrangement, onPlayTrack, onCyclePlaybackMode, onPlaybackRateChange, onToggleLike, onSourceChange, onQualityChange, onDownloadTrack, onCancelDownload, onExportTrack, onShareTrack, onOpenLyricSettings, downloadBusy = false, downloadState }: Props) {
+export default function GlobalPlayer({ track, isPlaying, progressStore, volume, muted, queue, playbackContext = defaultPlaybackContext, playbackMode, playbackRate, liked, nowPlayingOpen, effectsOpen = false, sourceVariants, variantBusy, onTogglePlay, onNext, onPrevious, onSeek, onVolumeChange, onToggleMute, onOpenNowPlaying, onOpenEffects, onOpenArrangement, onPlayTrack, onRemoveFromQueue, onCyclePlaybackMode, onPlaybackRateChange, onToggleLike, onSourceChange, onQualityChange, onDownloadTrack, onCancelDownload, onExportTrack, onShareTrack, onOpenLyricSettings, downloadBusy = false, downloadState }: Props) {
   const [queueOpen, setQueueOpen] = useState(false)
   const [variantOpen, setVariantOpen] = useState(false)
   const [moreMenu, setMoreMenu] = useState<{ x: number; y: number } | null>(null)
@@ -155,14 +157,17 @@ export default function GlobalPlayer({ track, isPlaying, progressStore, volume, 
                 <header><span><strong>播放队列</strong><small>{queue.length} 首</small></span><div className="global-queue-header-actions"><button className="global-queue-mobile-arrangement" aria-label="编排队列" onClick={() => { onOpenArrangement(); setQueueOpen(false) }}><ListMusic size={15} /> 编排</button><button onClick={() => setQueueOpen(false)} title="关闭" aria-label="关闭播放队列"><X size={17} /></button></div></header>
                 <nav className="global-queue-toolbar" aria-label="队列选项"><button onClick={onCyclePlaybackMode} title={queueModeLabel}><QueueModeIcon size={15} />{queueModeLabel}</button><span>{activeOutsideQueue ? '当前歌曲结束后进入此队列' : '正在播放此队列'}</span></nav>
                 <div className="global-queue-list">
-                  {queue.map((item, index) => (
-                    <button key={item.id} data-music-source={sourceBrandKey(item.source)} className={item.id === track.id ? 'is-active' : ''} onClick={() => { onPlayTrack(item.id); setQueueOpen(false) }}>
+                  {queue.map((item, index) => {
+                    const queueButton = <button key={item.id} data-music-source={sourceBrandKey(item.source)} className={item.id === track.id ? 'is-active' : ''} onClick={() => { onPlayTrack(item.id); setQueueOpen(false) }}>
                       <span className="global-queue-index">{item.id === track.id ? <span className={`mini-levels ${isPlaying ? 'is-playing' : ''}`} aria-hidden="true"><i /><i /><i /></span> : String(index + 1).padStart(2, '0')}</span>
                       <ArtworkImage src={item.cover} alt="" />
                       <span><strong>{item.title}</strong><small>{item.artist} · {trackQualityLabel(item)}</small></span>
                       <span>{item.duration}</span>
                     </button>
-                  ))}
+                    return onRemoveFromQueue
+                      ? <SwipeActionRow key={item.id} enabled={queue.length > 1} ariaLabel={`从播放队列移除 ${item.title}`} onAction={() => onRemoveFromQueue(item)} className="global-queue-swipe-row">{queueButton}</SwipeActionRow>
+                      : queueButton
+                  })}
                 </div>
                 <footer><button onClick={() => { onOpenArrangement(); setQueueOpen(false) }} aria-label="编排"><ListMusic size={16} /> 编排</button></footer>
               </div>

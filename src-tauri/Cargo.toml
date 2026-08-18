@@ -36,4 +36,4 @@ objc2 = "0.6"
 objc2-avf-audio = { version = "0.3", default-features = false, features = ["std", "AVAudioSession", "AVAudioSessionTypes"] }
 objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSData", "NSDictionary", "NSObject", "NSString", "NSValue"] }
 objc2-media-player = { version = "0.3", default-features = false, features = ["std", "MPMediaItem", "MPNowPlayingInfoCenter"] }
-objc2-ui-kit = { version = "0.3", default-features = false, features = ["std", "UIImage", "UIScrollView", "UIView", "UIViewController"] }
+objc2-ui-kit = { version = "0.3", default-features = false, features = ["std", "UIGestureRecognizer", "UIImage", "UIPinchGestureRecognizer", "UIScrollView", "UIView", "UIViewController"] }

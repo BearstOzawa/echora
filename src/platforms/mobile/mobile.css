@@ -19,6 +19,82 @@ html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data
   overflow: hidden;
 }
 
+@media (max-width: 820px) {
+  .effects-drawer-backdrop > .effects-panel {
+    grid-template-rows: auto minmax(0, 1fr) !important;
+  }
+
+  .effects-drawer-backdrop .effect-center-header {
+    min-height: 98px !important;
+    height: auto !important;
+    padding: 8px 14px !important;
+    grid-template-rows: 40px 36px !important;
+    gap: 4px 8px !important;
+  }
+
+  .effects-drawer-backdrop .effect-brand {
+    min-width: 0;
+    gap: 0;
+  }
+
+  .effects-drawer-backdrop .effect-brand > svg { display: none; }
+
+  .effects-drawer-backdrop .effect-brand strong {
+    font-size: var(--mobile-product-sheet-title) !important;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .effects-drawer-backdrop .effect-runtime { display: none; }
+
+  .effects-drawer-backdrop .effect-center-header nav,
+  .effects-drawer-backdrop .effect-center-header nav button { height: 36px !important; }
+
+  .effects-drawer-backdrop .effects-content {
+    grid-row: 2 !important;
+  }
+
+  .effects-drawer-backdrop .equalizer {
+    padding-inline: 10px !important;
+    grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+    gap: 2px !important;
+    overflow-x: hidden !important;
+  }
+
+  .effects-drawer-backdrop .sound-processing-options {
+    padding: 10px 12px calc(14px + var(--safe-area-inset-bottom));
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .effects-drawer-backdrop .loudness-control {
+    width: 100%;
+    min-width: 0;
+    padding: 11px;
+    grid-column: auto;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .effects-drawer-backdrop .loudness-control > div > button {
+    height: 44px;
+    padding-inline: 4px;
+  }
+
+  .effects-drawer-backdrop .loudness-control > div > button strong,
+  .effects-drawer-backdrop .loudness-control > div > button small {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .effects-drawer-backdrop .sound-processing-options > .effect-option,
+  .effects-drawer-backdrop .sound-processing-options > .effect-range {
+    width: 100%;
+    min-height: 58px;
+  }
+}
+
 html[data-ui-platform="mobile"] .client-shell[data-mobile-os="android"] {
   --safe-area-inset-top: max(env(safe-area-inset-top, 0px), var(--native-safe-area-top, 0px), 28px);
   --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-bottom, 0px), 28px);
@@ -86,6 +162,7 @@ html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] :is(
 }
 html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .mobile-chart-list > * { content-visibility: auto; contain-intrinsic-size: auto 130px; }
 html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"] .mobile-track-list > * { content-visibility: auto; contain-intrinsic-size: auto 64px; }
+
 html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"].has-global-player {
   --mobile-player-clearance: 70px;
 }
@@ -226,6 +303,144 @@ html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data
   color: var(--source-color, var(--theme-accent));
   display: grid;
   place-items: center;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-page,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-platform-page {
+  display: grid;
+  gap: 26px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+  .mobile-new-release-page,
+  .mobile-platform-page
+) > .mobile-content-section,
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-platform-lane {
+  margin-top: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead {
+  min-width: 0;
+  min-height: 112px;
+  padding: 2px 0 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--glass-stroke) 72%, transparent);
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) 40px;
+  gap: 14px;
+  align-items: center;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead > img {
+  width: 104px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--source-color, var(--theme-accent)) 16%, transparent);
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead > span {
+  min-width: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead :is(small, strong, em) {
+  display: flex;
+  min-width: 0;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead small {
+  align-items: center;
+  gap: 5px;
+  color: var(--source-color, var(--theme-accent));
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 650;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead strong {
+  margin-top: 9px;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 720;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead em {
+  margin-top: 7px;
+  overflow: hidden;
+  align-items: center;
+  gap: 5px;
+  color: var(--theme-faint);
+  font-size: 12px;
+  font-style: normal;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead em i {
+  font-style: normal;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-lead > button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--source-color, var(--theme-accent)) 24%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--source-color, var(--theme-accent)) 12%, transparent);
+  color: var(--source-color, var(--theme-accent));
+  display: grid;
+  place-items: center;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-hot-section > header > span {
+  color: var(--theme-faint);
+  display: grid;
+  place-items: center;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-platform-lanes {
+  display: grid;
+  gap: 26px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-platform-lane > header > span {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-platform-lane > header > span > i {
+  width: 4px;
+  height: 18px;
+  flex: 0 0 4px;
+  border-radius: 2px;
+  background: var(--source-color, var(--theme-accent));
+}
+
+html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-platform-lane > header > span > strong {
+  overflow: hidden;
+  font-size: var(--type-section);
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] :is(
+    .mobile-new-release-page,
+    .mobile-platform-lanes
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    column-gap: 28px;
+  }
+
+  html[data-ui-platform="mobile"] .client-shell[data-platform-entry="mobile"][data-form-factor="mobile"] .mobile-new-release-section {
+    grid-row: span 2;
+  }
 }
 
 /* The player and navigation share one edge-to-edge glass dock. */

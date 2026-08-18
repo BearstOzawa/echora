@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { Readable } from 'node:stream'
+import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import postcss from 'postcss'
@@ -1017,6 +1018,19 @@ const platformCssBoundaries = (): Plugin => ({
 })
 
 const configuredUiPlatform = process.env.VITE_ECHORA_UI_PLATFORM
+const configuredApplicationEntry = configuredUiPlatform === 'mobile'
+  ? fileURLToPath(new URL('./src/platforms/mobile/MobileApplication.tsx', import.meta.url))
+  : configuredUiPlatform === 'desktop'
+    ? fileURLToPath(new URL('./src/platforms/desktop/DesktopApplication.tsx', import.meta.url))
+    : null
+const platformApplicationEntry = (): Plugin => ({
+  name: 'echora-platform-application-entry',
+  enforce: 'pre',
+  resolveId(source, importer) {
+    if (!configuredApplicationEntry || source !== './platforms/Application' || !importer?.endsWith('/src/main.tsx')) return null
+    return configuredApplicationEntry
+  },
+})
 const selectorPlatform = (selector: string): 'desktop' | 'mobile' | null => {
   const hasDesktop = /data-(?:ui-platform|platform-entry|form-factor)=["']desktop["']/.test(selector)
   const hasMobile = /data-(?:ui-platform|platform-entry|form-factor)=["']mobile["']/.test(selector)
@@ -1024,14 +1038,66 @@ const selectorPlatform = (selector: string): 'desktop' | 'mobile' | null => {
   return hasDesktop ? 'desktop' : 'mobile'
 }
 
+const requestedCssPlatform = (id: string): 'desktop' | 'mobile' | null => {
+  const queryIndex = id.indexOf('?')
+  if (queryIndex < 0) return null
+  const platform = new URLSearchParams(id.slice(queryIndex + 1)).get('echora-platform')
+  return platform === 'desktop' || platform === 'mobile' ? platform : null
+}
+
+type CssPartition = 'base' | 'settings' | 'account' | 'agent' | 'now-playing' | 'effects' | 'source'
+
+const requestedCssPartition = (id: string): CssPartition | null => {
+  const queryIndex = id.indexOf('?')
+  if (queryIndex < 0) return null
+  const partition = new URLSearchParams(id.slice(queryIndex + 1)).get('echora-css')
+  return partition === 'base' || partition === 'settings' || partition === 'account' || partition === 'agent'
+    || partition === 'now-playing' || partition === 'effects' || partition === 'source'
+    ? partition
+    : null
+}
+
+const selectorCssPartition = (selector: string): Exclude<CssPartition, 'base'> | null => {
+  if (/\.(?:settings-|data-settings|data-action|configuration-|application-update|ai-settings|local-folder|local-source|content-limit|playback-cache|storage-|credential-)/.test(selector)) return 'settings'
+  if (/\.account-/.test(selector)) return 'account'
+  if (/\.(?:agent-|session-|memory-|conversation-|field-|arrangement-|mobile-arrangement|composer-|inspector-|proposal-|change-track|energy-|output-panel)/.test(selector)) return 'agent'
+  if (/\.(?:now-playing|lyrics-|lyric-|song-display|song-related)/.test(selector)) return 'now-playing'
+  if (/\.(?:effects-panel|effects-drawer|effect-|sound-|custom-eq|equalizer|eq-band|device-|loudness-)/.test(selector)) return 'effects'
+  if (/\.(?:source-panel|source-provider|source-drawer)/.test(selector)) return 'source'
+  return null
+}
+
 const platformCssPruning = (): Plugin => ({
   name: 'echora-platform-css-pruning',
   enforce: 'pre',
   transform(code, id) {
-    const platform = process.env.VITE_ECHORA_UI_PLATFORM
+    const platform = configuredUiPlatform === 'desktop' || configuredUiPlatform === 'mobile'
+      ? configuredUiPlatform
+      : requestedCssPlatform(id)
     const file = id.split('?', 1)[0]
-    if ((platform !== 'desktop' && platform !== 'mobile') || !file.endsWith('.css')) return null
+    if (!file.endsWith('.css')) return null
     const root = postcss.parse(code, { from: file })
+    const partition = file.endsWith('/product-ui.css') ? requestedCssPartition(id) : null
+    if (partition) {
+      root.walkRules((rule) => {
+        if (isInsideKeyframes(rule)) return
+        const selectors = rule.selectors.filter((selector) => partition === 'base'
+          ? selectorCssPartition(selector) === null
+          : selectorCssPartition(selector) === partition)
+        if (!selectors.length) rule.remove()
+        else rule.selectors = selectors
+      })
+      if (partition !== 'base') {
+        root.walkAtRules((rule) => {
+          if (/keyframes$/i.test(rule.name) || rule.name === 'font-face' || rule.name === 'property') rule.remove()
+        })
+      }
+    }
+    if (platform !== 'desktop' && platform !== 'mobile' && !partition) return null
+    if (platform !== 'desktop' && platform !== 'mobile') {
+      root.walkAtRules((rule) => { if (!rule.nodes?.length) rule.remove() })
+      return { code: root.toString(), map: null }
+    }
     root.walkRules((rule) => {
       if (isInsideKeyframes(rule)) return
       const selectors = rule.selectors.filter((selector) => selectorPlatform(selector) !== (platform === 'desktop' ? 'mobile' : 'desktop'))
@@ -1061,7 +1127,7 @@ const versionManifest = (): Plugin => ({
 })
 
 export default defineConfig({
-  plugins: [react(), platformCssBoundaries(), platformCssPruning(), musicGateway(), versionManifest()],
+  plugins: [platformApplicationEntry(), react(), platformCssBoundaries(), platformCssPruning(), musicGateway(), versionManifest()],
   define: {
     __ECHORA_VERSION__: JSON.stringify(applicationPackage.version),
     __ECHORA_BUILD_ID__: JSON.stringify(applicationBuildId),

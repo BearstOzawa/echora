@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { initialTracks } from './testFixtures'
 import { defaultAudioEffects } from './audioEffects'
 import type { AudioEffectsSettings } from './audioEffects'
-import { playbackProgressTimeoutMs, playbackStartTimeoutMs, readAudioPlaybackDiagnostics, useAudioPlayback } from './useAudioPlayback'
+import { playbackProgressTimeoutMs, playbackStartTimeoutMs, readAudioPlaybackDiagnostics, resolveAudioEffectsProcessingState, useAudioPlayback } from './useAudioPlayback'
 import type { AudioPlaybackIssue } from './useAudioPlayback'
 import type { Track } from './types'
 
@@ -15,6 +15,8 @@ class MockAudio extends EventTarget {
   volume = 1
   muted = false
   playbackRate = 1
+  defaultPlaybackRate = 1
+  preservesPitch = false
   loop = false
   paused = true
   preload = ''
@@ -53,7 +55,7 @@ class MockAudioContext {
   destination = new MockAudioNode()
   filters: MockBiquadFilter[] = []
   gains: Array<MockAudioNode & { gain: MockAudioParam }> = []
-  compressor: (MockAudioNode & { threshold: MockAudioParam; knee: MockAudioParam; ratio: MockAudioParam; attack: MockAudioParam; release: MockAudioParam }) | null = null
+  compressors: Array<MockAudioNode & { threshold: MockAudioParam; knee: MockAudioParam; ratio: MockAudioParam; attack: MockAudioParam; release: MockAudioParam }> = []
   resume = vi.fn(async () => { this.state = 'running' })
   suspend = vi.fn(async () => { this.state = 'suspended' })
   close = vi.fn(async () => undefined)
@@ -72,14 +74,15 @@ class MockAudioContext {
   createChannelMerger = vi.fn(() => new MockAudioNode())
   createConvolver = vi.fn(() => Object.assign(new MockAudioNode(), { buffer: null }))
   createDynamicsCompressor = vi.fn(() => {
-    this.compressor = Object.assign(new MockAudioNode(), {
+    const compressor = Object.assign(new MockAudioNode(), {
       threshold: new MockAudioParam(),
       knee: new MockAudioParam(),
       ratio: new MockAudioParam(),
       attack: new MockAudioParam(),
       release: new MockAudioParam(),
     })
-    return this.compressor
+    this.compressors.push(compressor)
+    return compressor
   })
   createBuffer = vi.fn((channels: number, length: number) => ({ numberOfChannels: channels, getChannelData: () => new Float32Array(length) }))
 }
@@ -92,6 +95,15 @@ afterEach(() => {
 })
 
 describe('real audio playback', () => {
+  it('reports whether the current playback path can use real-time effects', () => {
+    const common = { enabled: true, nativeIos: false, audioContextAvailable: true, origin: 'https://echora-web.lili.uno' }
+    expect(resolveAudioEffectsProcessingState({ ...common, audioUrl: '' })).toBe('idle')
+    expect(resolveAudioEffectsProcessingState({ ...common, audioUrl: 'blob:local-track' })).toBe('active')
+    expect(resolveAudioEffectsProcessingState({ ...common, enabled: false, audioUrl: '/audio/local.mp3' })).toBe('ready')
+    expect(resolveAudioEffectsProcessingState({ ...common, audioUrl: 'https://media.example.com/song.flac' })).toBe('bypassed')
+    expect(resolveAudioEffectsProcessingState({ ...common, nativeIos: true, audioUrl: 'blob:local-track' })).toBe('system')
+  })
+
   it('drives a local file with real media time, volume, rate, and seek', () => {
     const audio = new MockAudio()
     vi.stubGlobal('Audio', function Audio() { return audio })
@@ -120,6 +132,8 @@ describe('real audio playback', () => {
     expect(audio.play).toHaveBeenCalled()
     expect(audio.volume).toBe(0.64)
     expect(audio.playbackRate).toBe(1.5)
+    expect(audio.defaultPlaybackRate).toBe(1.5)
+    expect(audio.preservesPitch).toBe(true)
     expect(audio.loop).toBe(true)
 
     fireEvent.click(screen.getByRole('button', { name: '跳转' }))
@@ -154,13 +168,20 @@ describe('real audio playback', () => {
     const view = render(<Harness effects={boosted} />)
     expect(audios[0].crossOrigin).toBe('anonymous')
     expect(context.createMediaElementSource).toHaveBeenCalledWith(audios[0])
-    expect(context.filters).toHaveLength(11)
+    expect(context.filters).toHaveLength(14)
     expect(context.createChannelSplitter).toHaveBeenCalledWith(2)
     expect(context.createChannelMerger).toHaveBeenCalledWith(2)
     expect(context.filters[1].gain.setTargetAtTime).toHaveBeenLastCalledWith(6, 1, .025)
-    expect(context.gains.some((gain) => gain.gain.setTargetAtTime.mock.calls.some(([value]) => value === .16))).toBe(true)
-    expect(context.gains.filter((gain) => gain.gain.setTargetAtTime.mock.calls.some(([value]) => value === -.18))).toHaveLength(2)
-    expect(context.compressor?.ratio.setTargetAtTime).toHaveBeenLastCalledWith(2.424, 1, .03)
+    expect(context.filters[11].gain.setTargetAtTime).toHaveBeenLastCalledWith(.688, 1, .025)
+    expect(context.gains[5].gain.setTargetAtTime).toHaveBeenLastCalledWith(1.0506, 1, .04)
+    expect(context.gains[6].gain.setTargetAtTime).toHaveBeenLastCalledWith(1.0506, 1, .04)
+    expect(context.gains[7].gain.setTargetAtTime).toHaveBeenLastCalledWith(-.0506, 1, .04)
+    expect(context.gains[8].gain.setTargetAtTime).toHaveBeenLastCalledWith(-.0506, 1, .04)
+    expect(context.compressors[0].ratio.setTargetAtTime).toHaveBeenLastCalledWith(expect.any(Number), 1, .03)
+    expect(context.compressors[0].ratio.value).toBeCloseTo(2.552)
+    expect(context.compressors[1].threshold.setTargetAtTime).toHaveBeenLastCalledWith(-1.2, 1, .02)
+    expect(context.compressors[1].ratio.setTargetAtTime).toHaveBeenLastCalledWith(20, 1, .02)
+    expect(context.gains[3].gain.setTargetAtTime).toHaveBeenLastCalledWith(1.02, 1, .03)
     expect(context.resume).toHaveBeenCalledOnce()
 
     view.rerender(<Harness effects={boosted} playing={false} />)
@@ -170,8 +191,10 @@ describe('real audio playback', () => {
     expect(context.resume).toHaveBeenCalledTimes(2)
 
     view.rerender(<Harness effects={{ ...boosted, spatial: false, normalize: false }} />)
-    expect(context.gains.filter((gain) => gain.gain.setTargetAtTime.mock.calls.some(([value]) => value === -.18)).every((gain) => gain.gain.setTargetAtTime.mock.calls.at(-1)?.[0] === 0)).toBe(true)
-    expect(context.compressor?.ratio.setTargetAtTime).toHaveBeenLastCalledWith(1, 1, .03)
+    expect(context.gains[7].gain.setTargetAtTime).toHaveBeenLastCalledWith(0, 1, .04)
+    expect(context.gains[8].gain.setTargetAtTime).toHaveBeenLastCalledWith(0, 1, .04)
+    expect(context.compressors[0].ratio.setTargetAtTime).toHaveBeenLastCalledWith(1, 1, .03)
+    expect(context.compressors[1].ratio.setTargetAtTime).toHaveBeenLastCalledWith(20, 1, .02)
 
     view.rerender(<Harness effects={{ ...boosted, enabled: false }} />)
     expect(context.close).toHaveBeenCalledOnce()
@@ -193,6 +216,27 @@ describe('real audio playback', () => {
     expect(contextFactory).not.toHaveBeenCalled()
     expect(audio.src).toBe('blob:direct')
     expect(audio.play).toHaveBeenCalledOnce()
+  })
+
+  it('keeps native iOS playback on the background-safe media path', () => {
+    const audio = new MockAudio()
+    const contextFactory = vi.fn(() => new MockAudioContext())
+    vi.stubGlobal('Audio', function Audio() { return audio })
+    vi.stubGlobal('AudioContext', contextFactory)
+    vi.stubGlobal('navigator', { userAgent: 'iPhone' })
+    ;(window as Window & { __TAURI_INTERNALS__?: object }).__TAURI_INTERNALS__ = {}
+    const localTrack = { ...initialTracks[0], id: -12, source: '本地' as const, audioUrl: 'blob:ios-effects', localFileId: 'ios-effects-file' }
+    const effects = { ...defaultAudioEffects, enabled: true, bands: [3, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
+
+    const Harness = () => {
+      useAudioPlayback({ track: localTrack, isPlaying: true, progress: 0, volume: 72, muted: false, playbackRate: 1, playbackMode: 'sequence', audioEffects: effects, onProgress: vi.fn(), onEnded: vi.fn(), onError: vi.fn() })
+      return null
+    }
+    render(<Harness />)
+
+    expect(contextFactory).not.toHaveBeenCalled()
+    expect(audio.src).toBe('blob:ios-effects')
+    delete (window as Window & { __TAURI_INTERNALS__?: object }).__TAURI_INTERNALS__
   })
 
   it('keeps cross-origin music playable when the remote server does not expose CORS headers', () => {

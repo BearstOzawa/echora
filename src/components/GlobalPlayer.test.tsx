@@ -20,6 +20,7 @@ const renderPlayer = () => {
     onOpenEffects: vi.fn(),
     onOpenArrangement: vi.fn(),
     onPlayTrack: vi.fn(),
+    onRemoveFromQueue: vi.fn(),
     onCyclePlaybackMode: vi.fn(),
     onPlaybackRateChange: vi.fn(),
     onToggleLike: vi.fn(),
@@ -97,8 +98,19 @@ describe('GlobalPlayer', () => {
   it('plays a selected item from the expanded queue', () => {
     const actions = renderPlayer()
     fireEvent.click(screen.getByRole('button', { name: /播放队列/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Glass Hours/ }))
+    fireEvent.click(screen.getByText('Glass Hours').closest('button')!)
     expect(actions.onPlayTrack).toHaveBeenCalledWith(initialTracks[1].id)
+  })
+
+  it('exposes a mobile swipe removal action for queue items', () => {
+    const actions = renderPlayer()
+    fireEvent.click(screen.getByRole('button', { name: /播放队列/ }))
+    const row = screen.getByText(initialTracks[1].title).closest('button')?.parentElement as HTMLElement
+    fireEvent.touchStart(row, { touches: [{ clientX: 240, clientY: 40 }] })
+    fireEvent.touchMove(row, { touches: [{ clientX: 164, clientY: 42 }] })
+    fireEvent.touchEnd(row)
+    fireEvent.click(screen.getByRole('button', { name: `从播放队列移除 ${initialTracks[1].title}` }))
+    expect(actions.onRemoveFromQueue).toHaveBeenCalledWith(initialTracks[1])
   })
 
   it('exposes playback mode and current-track favorite controls', () => {

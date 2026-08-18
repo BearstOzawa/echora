@@ -37,6 +37,19 @@ describe('NowPlayingSpace', () => {
     expect(screen.queryByRole('region', { name: '同步歌词' })).toBeNull()
   })
 
+  it('closes mobile song mode after a deliberate downward pull on the song surface', () => {
+    const onClose = vi.fn()
+    render(<NowPlayingSpace mobile track={initialTracks[2]} isPlaying={false} progressStore={createPlaybackProgressStore()} lyrics={[{ time: 0, text: '第一句' }]} lyricsStatus="ready" lyricsMessage="" relatedTracks={[]} reducedMotion onSeek={vi.fn()} onPlayTrack={vi.fn()} onOpenArtist={vi.fn()} onOpenAlbum={vi.fn()} onClose={onClose} />)
+    const songSurface = screen.getByRole('button', { name: '显示歌词' }).closest('.now-playing-workspace') as HTMLElement
+    Object.defineProperty(songSurface, 'setPointerCapture', { configurable: true, value: vi.fn() })
+
+    fireEvent.pointerDown(songSurface, { button: 0, pointerId: 1, clientX: 180, clientY: 180 })
+    fireEvent.pointerMove(songSurface, { pointerId: 1, clientX: 182, clientY: 272 })
+    fireEvent.pointerUp(songSurface, { pointerId: 1, clientX: 182, clientY: 272 })
+
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
   it('seeks directly from an interactive lyric line', () => {
     const actions = renderNowPlaying()
     fireEvent.click(screen.getByRole('button', { name: /真实歌词/ }))

@@ -40,6 +40,13 @@ const replaceProjectAnchor = (anchor, replacement, message) => {
   projectSpecChanged = true
 }
 
+// XcodeGen otherwise treats the Rust archive directory as app resources and
+// tries to copy both debug and release libapp.a files into the same bundle.
+if (projectSpec.includes('      - path: Externals\n') && !projectSpec.includes('      - path: Externals\n        buildPhase: none')) {
+  projectSpec = projectSpec.replace('      - path: Externals\n', '      - path: Externals\n        buildPhase: none\n')
+  projectSpecChanged = true
+}
+
 const applicationSourcesAnchor = '    sources:\n      - path: Sources\n      - path: Assets.xcassets'
 if (!projectSpec.includes('../../ios/EchoraLiveActivityBridge.swift')) {
   replaceProjectAnchor(
@@ -78,6 +85,14 @@ if (!projectSpec.includes('../../ios/EchoraSpeechRecognitionBridge.swift')) {
     '      - path: ../../ios/EchoraLiveActivityBridge.swift\n',
     '      - path: ../../ios/EchoraLiveActivityBridge.swift\n      - path: ../../ios/EchoraSpeechRecognitionBridge.swift\n',
     'Unable to locate iOS speech-recognition bridge sources',
+  )
+}
+
+if (!projectSpec.includes('../../ios/EchoraExternalNavigationBridge.swift')) {
+  replaceProjectAnchor(
+    '      - path: ../../ios/EchoraLiveActivityBridge.swift\n',
+    '      - path: ../../ios/EchoraLiveActivityBridge.swift\n      - path: ../../ios/EchoraExternalNavigationBridge.swift\n',
+    'Unable to locate iOS native bridge sources',
   )
 }
 

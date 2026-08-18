@@ -30,6 +30,9 @@
       body { background: var(--boot-background); }
       .echora-boot {
         box-sizing: border-box;
+        position: fixed;
+        z-index: 10000;
+        inset: 0;
         width: 100%;
         min-height: 100dvh;
         padding: env(safe-area-inset-top, 0) 24px env(safe-area-inset-bottom, 0);
@@ -40,7 +43,14 @@
         justify-items: center;
         gap: 13px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 220ms ease;
       }
+      .echora-boot.is-visible { opacity: 1; visibility: visible; }
+      .echora-boot.is-leaving { opacity: 0; visibility: visible; }
+      .echora-boot.is-failed { pointer-events: auto; }
       .echora-boot > i {
         width: 54px;
         height: 54px;
@@ -51,17 +61,62 @@
       .echora-boot > i::before { background: color-mix(in srgb, currentColor 62%, #15171c); opacity: .56; transform: translateY(1.4px); }
       .echora-boot > i::after { background: linear-gradient(155deg, color-mix(in srgb, currentColor 70%, white), currentColor 48%, color-mix(in srgb, currentColor 80%, black)); filter: drop-shadow(0 4px 7px color-mix(in srgb, currentColor 22%, transparent)); }
       .echora-boot > strong { font-size: 18px; font-weight: 680; letter-spacing: 0; }
+      .echora-boot > p { max-width: 300px; margin: 1px 0 0; color: color-mix(in srgb, var(--boot-foreground) 62%, transparent); font-size: 13px; line-height: 1.55; text-align: center; }
+      .echora-boot > button { min-height: 36px; margin-top: 5px; padding: 0 16px; border: 1px solid color-mix(in srgb, var(--boot-foreground) 14%, transparent); border-radius: 18px; background: color-mix(in srgb, var(--boot-foreground) 7%, transparent); color: inherit; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+      .echora-boot > button:hover { background: color-mix(in srgb, var(--boot-foreground) 11%, transparent); }
       .echora-boot > span { height: 14px; display: flex; align-items: flex-end; gap: 3px; color: var(--boot-accent); }
       .echora-boot > span > i { width: 3px; border-radius: 3px; background: currentColor; animation: echora-boot-level 780ms ease-in-out infinite alternate; }
       .echora-boot > span > i:nth-child(1) { height: 6px; }
       .echora-boot > span > i:nth-child(2) { height: 13px; animation-delay: -260ms; }
       .echora-boot > span > i:nth-child(3) { height: 9px; animation-delay: -520ms; }
       @keyframes echora-boot-level { to { height: 4px; opacity: .55; } }
-      @media (prefers-reduced-motion: reduce) { .echora-boot > span > i { animation: none; } }
+      @media (prefers-reduced-motion: reduce) { .echora-boot { transition: none; } .echora-boot > span > i { animation: none; } }
     </style>
   </head>
   <body>
-    <div id="root"><div class="echora-boot" role="status" aria-label="正在启动 Echora"><i aria-hidden="true"></i><strong>Echora</strong><span aria-hidden="true"><i></i><i></i><i></i></span></div></div>
+    <div id="root"></div>
+    <div class="echora-boot" role="status" aria-label="正在启动 Echora"><i aria-hidden="true"></i><strong>Echora</strong><span aria-hidden="true"><i></i><i></i><i></i></span></div>
+    <script>
+      (() => {
+        const boot = document.querySelector('.echora-boot')
+        const revealTimer = window.setTimeout(() => boot?.classList.add('is-visible'), 700)
+        let failed = false
+        const showFailure = () => {
+          if (failed) return
+          failed = true
+          window.clearTimeout(revealTimer)
+          window.clearTimeout(failureTimer)
+          if (!boot) return
+          boot.classList.add('is-visible', 'is-failed')
+          boot.setAttribute('role', 'alert')
+          boot.setAttribute('aria-label', 'Echora 启动失败')
+          const levels = boot.querySelector('span')
+          if (levels) levels.remove()
+          const message = document.createElement('p')
+          message.textContent = '应用资源未能载入，请检查网络后重试。'
+          const retry = document.createElement('button')
+          retry.type = 'button'
+          retry.textContent = '重新加载'
+          retry.addEventListener('click', () => window.location.reload())
+          boot.append(message, retry)
+        }
+        const failureTimer = window.setTimeout(showFailure, 20000)
+        window.__ECHORA_BOOT__ = {
+          ready() {
+            window.clearTimeout(revealTimer)
+            window.clearTimeout(failureTimer)
+            if (!boot) return
+            if (!boot.classList.contains('is-visible')) {
+              boot.remove()
+              return
+            }
+            boot.classList.add('is-leaving')
+            window.setTimeout(() => boot.remove(), 220)
+          },
+          fail: showFailure,
+        }
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

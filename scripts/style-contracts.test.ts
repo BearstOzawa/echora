@@ -17,8 +17,8 @@ describe('platform style contracts', () => {
     const desktopEntry = readSource('src/platforms/desktop/DesktopApplication.tsx')
     const mobileEntry = readSource('src/platforms/mobile/MobileApplication.tsx')
 
-    expect(desktopEntry.indexOf("import '../../product-ui.css'")).toBeGreaterThan(desktopEntry.indexOf("import './desktop.css'"))
-    expect(mobileEntry.indexOf("import '../../product-ui.css'")).toBeGreaterThan(mobileEntry.indexOf("import './mobile.css'"))
+    expect(desktopEntry.indexOf("import '../../product-ui.css?")).toBeGreaterThan(desktopEntry.indexOf("import './desktop.css'"))
+    expect(mobileEntry.indexOf("import '../../product-ui.css?")).toBeGreaterThan(mobileEntry.indexOf("import './mobile.css'"))
   })
 
   it('preserves the centered desktop settings layout after the final cascade layer', () => {

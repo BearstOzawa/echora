@@ -81,6 +81,20 @@ export const readSourceDiscoveryCache = (signature: string, storage: Pick<Storag
   }
 }
 
+export const readCompatibleSourceDiscoveryCache = (contentSignature: string, storage: Pick<Storage, 'getItem'> = localStorage, now = Date.now()): SourceDiscoveryCatalog | null => {
+  try {
+    const cached = JSON.parse(storage.getItem(discoveryCacheKey) ?? 'null') as Partial<DiscoveryCacheEntry> | null
+    if (!cached || typeof cached.signature !== 'string' || !cached.signature.endsWith(`:${contentSignature}`) || !isCachedCatalog(cached.catalog)) return null
+    if (now - cached.catalog.loadedAt > sourceDiscoveryMaxStaleMs) return null
+    return {
+      ...cached.catalog,
+      charts: cached.catalog.charts.map((chart) => ({ ...chart, provenance: chart.provenance === 'fallback' ? 'fallback' as const : 'cached' as const })),
+    }
+  } catch {
+    return null
+  }
+}
+
 export const writeSourceDiscoveryCache = (signature: string, catalog: SourceDiscoveryCatalog, storage: Pick<Storage, 'setItem'> = localStorage) => {
   try {
     storage.setItem(discoveryCacheKey, JSON.stringify({ signature, catalog } satisfies DiscoveryCacheEntry))
@@ -92,6 +106,7 @@ export const writeSourceDiscoveryCache = (signature: string, catalog: SourceDisc
 type SearchCatalog = (query: string) => Promise<Track[]>
 type LoadCharts = () => Promise<SourceChart[]>
 type LoadChartDetail = (chart: SourceChart) => Promise<Track[]>
+type DiscoveryProgress = (catalog: SourceDiscoveryCatalog) => void
 
 const shelfDefinitions: Array<Omit<SourceDiscoveryShelf, 'tracks'>> = [
   {
@@ -310,50 +325,30 @@ const rotateByDay = <T,>(items: T[], offset = 0) => {
 
 const isLossless = (track: Track) => track.remote?.availableQualities.some((quality) => quality === 'flac' || quality === 'flac24bit')
 
-const settleSearches = async (definitions: typeof shelfDefinitions, searchCatalog: SearchCatalog) => {
+const settleSearches = async (definitions: typeof shelfDefinitions, searchCatalog: SearchCatalog, onBatch?: (settled: PromiseSettledResult<Track[]>[]) => void) => {
   const settled: PromiseSettledResult<Track[]>[] = []
-  for (let index = 0; index < definitions.length; index += 5) {
-    const batch = definitions.slice(index, index + 5)
+  for (let index = 0; index < definitions.length;) {
+    const batchSize = index === 0 ? 2 : 5
+    const batch = definitions.slice(index, index + batchSize)
     settled.push(...await Promise.allSettled(batch.map((definition) => searchCatalog(definition.query))))
+    onBatch?.(settled)
+    index += batch.length
   }
   return settled
 }
 
-export const loadSourceDiscovery = async (searchCatalog: SearchCatalog, loadCharts?: LoadCharts, loadChartDetail?: LoadChartDetail, trackLimit = 20, providerSources: OnlineSource[] = []): Promise<SourceDiscoveryCatalog> => {
-  const boundedTrackLimit = Math.min(50, Math.max(1, Math.round(trackLimit)))
-  const dailyDefinitions = rotateByDay(shelfDefinitions)
-  const [settled, chartResult] = await Promise.all([
-    settleSearches(dailyDefinitions, searchCatalog),
-    loadCharts ? loadCharts().catch(() => []) : Promise.resolve([]),
-  ])
-  const shelves = dailyDefinitions.flatMap((definition, index): SourceDiscoveryShelf[] => {
-    const result = settled[index]
-    if (result.status !== 'fulfilled') return []
-    const tracks = balanceTracksBySource(rotateByDay(uniqueCrossPlatformTracks(result.value), index + 1), providerSources).slice(0, boundedTrackLimit)
-    return tracks.length ? [{ ...definition, tracks }] : []
-  })
-  if (!shelves.length) throw new Error('音乐内容暂时无法加载')
+const shelvesFromSearches = (definitions: typeof shelfDefinitions, settled: PromiseSettledResult<Track[]>[], trackLimit: number, providerSources: OnlineSource[]) => definitions.flatMap((definition, index): SourceDiscoveryShelf[] => {
+  const result = settled[index]
+  if (!result || result.status !== 'fulfilled') return []
+  const tracks = balanceTracksBySource(rotateByDay(uniqueCrossPlatformTracks(result.value), index + 1), providerSources).slice(0, trackLimit)
+  return tracks.length ? [{ ...definition, tracks }] : []
+})
 
-  const charts = chartResult
-  const hotCharts = selectPlatformHotCharts(charts)
-  const freshCharts = selectPlatformFreshCharts(charts)
-  const aggregateCharts = Array.from(new Map([...hotCharts, ...freshCharts].map((chart) => [chart.id, chart])).values())
-  const aggregateResults = loadChartDetail
-    ? await Promise.allSettled(aggregateCharts.map((chart) => loadChartDetail(chart)))
-    : []
-  const loadedChartTracks = new Map(aggregateCharts.flatMap((chart, index): Array<[string, Track[]]> => {
-    const result = aggregateResults[index]
-    return result?.status === 'fulfilled' && result.value.length ? [[chart.id, result.value]] : []
-  }))
-  const hotGroups = hotCharts.flatMap((chart): Track[][] => loadedChartTracks.has(chart.id) ? [loadedChartTracks.get(chart.id)!] : [])
-  const freshGroups = freshCharts.flatMap((chart): Track[][] => loadedChartTracks.has(chart.id) ? [loadedChartTracks.get(chart.id)!] : [])
-  const fallbackHotTracks = shelves.find((shelf) => shelf.kind === 'trend')?.tracks ?? []
-  const fallbackFreshTracks = shelves.find((shelf) => shelf.kind === 'fresh')?.tracks ?? []
-  const hotTracks = uniqueCrossPlatformTracks(hotGroups.length ? interleaveTracks(hotGroups) : fallbackHotTracks).slice(0, boundedTrackLimit)
-  const freshTracks = uniqueCrossPlatformTracks(freshGroups.length ? interleaveTracks(freshGroups) : fallbackFreshTracks).slice(0, boundedTrackLimit)
-  const tracks = uniqueTracks([...shelves.flatMap((shelf) => shelf.tracks), ...charts.flatMap((chart) => chart.tracks), ...hotTracks, ...freshTracks])
-  const losslessTracks = tracks.filter(isLossless).slice(0, boundedTrackLimit)
-  if (losslessTracks.length) shelves.push({
+const buildDiscoveryCatalog = (shelves: SourceDiscoveryShelf[], charts: SourceChart[], hotTracks: Track[], freshTracks: Track[], trackLimit: number, providerSources: OnlineSource[]): SourceDiscoveryCatalog => {
+  const enrichedShelves = [...shelves]
+  const tracks = uniqueTracks([...enrichedShelves.flatMap((shelf) => shelf.tracks), ...charts.flatMap((chart) => chart.tracks), ...hotTracks, ...freshTracks])
+  const losslessTracks = tracks.filter(isLossless).slice(0, trackLimit)
+  if (losslessTracks.length) enrichedShelves.push({
     id: 'source-lossless',
     name: '无损优选',
     eyebrow: '高规格音质',
@@ -369,8 +364,45 @@ export const loadSourceDiscovery = async (searchCatalog: SearchCatalog, loadChar
     const providerTracks = tracks.filter((track) => track.remote?.source === provider.source).slice(0, 8)
     return [{ ...provider, tracks: providerTracks, available: providerTracks.length > 0 }]
   })
+  return { shelves: enrichedShelves, providers, charts, hotTracks, freshTracks, tracks, loadedAt: Date.now() }
+}
 
-  return { shelves, providers, charts, hotTracks, freshTracks, tracks, loadedAt: Date.now() }
+export const loadSourceDiscovery = async (searchCatalog: SearchCatalog, loadCharts?: LoadCharts, loadChartDetail?: LoadChartDetail, trackLimit = 20, providerSources: OnlineSource[] = [], onProgress?: DiscoveryProgress): Promise<SourceDiscoveryCatalog> => {
+  const boundedTrackLimit = Math.min(50, Math.max(1, Math.round(trackLimit)))
+  const criticalDefinitions = shelfDefinitions.filter((definition) => definition.kind === 'trend' || definition.kind === 'fresh')
+  const dailyDefinitions = [...criticalDefinitions, ...rotateByDay(shelfDefinitions.filter((definition) => !criticalDefinitions.includes(definition)))]
+  const chartRequest = loadCharts ? loadCharts().catch(() => []) : Promise.resolve([])
+  const settled = await settleSearches(dailyDefinitions, searchCatalog, (partialResults) => {
+    if (!onProgress || partialResults.length >= dailyDefinitions.length) return
+    const partialShelves = shelvesFromSearches(dailyDefinitions, partialResults, boundedTrackLimit, providerSources)
+    if (!partialShelves.length) return
+    const partialHotTracks = partialShelves.find((shelf) => shelf.kind === 'trend')?.tracks ?? partialShelves[0].tracks
+    const partialFreshTracks = partialShelves.find((shelf) => shelf.kind === 'fresh')?.tracks ?? partialShelves.at(-1)?.tracks ?? []
+    onProgress(buildDiscoveryCatalog(partialShelves, [], partialHotTracks, partialFreshTracks, boundedTrackLimit, providerSources))
+  })
+  const shelves = shelvesFromSearches(dailyDefinitions, settled, boundedTrackLimit, providerSources)
+  if (!shelves.length) throw new Error('音乐内容暂时无法加载')
+
+  const chartResult = await chartRequest
+  const charts = chartResult
+  const hotCharts = selectPlatformHotCharts(charts)
+  const freshCharts = selectPlatformFreshCharts(charts)
+  const aggregateCharts = Array.from(new Map([...hotCharts, ...freshCharts].map((chart) => [chart.id, chart])).values())
+  const fallbackHotTracks = shelves.find((shelf) => shelf.kind === 'trend')?.tracks ?? []
+  const fallbackFreshTracks = shelves.find((shelf) => shelf.kind === 'fresh')?.tracks ?? []
+  onProgress?.(buildDiscoveryCatalog(shelves, charts, fallbackHotTracks, fallbackFreshTracks, boundedTrackLimit, providerSources))
+  const aggregateResults = loadChartDetail
+    ? await Promise.allSettled(aggregateCharts.map((chart) => loadChartDetail(chart)))
+    : []
+  const loadedChartTracks = new Map(aggregateCharts.flatMap((chart, index): Array<[string, Track[]]> => {
+    const result = aggregateResults[index]
+    return result?.status === 'fulfilled' && result.value.length ? [[chart.id, result.value]] : []
+  }))
+  const hotGroups = hotCharts.flatMap((chart): Track[][] => loadedChartTracks.has(chart.id) ? [loadedChartTracks.get(chart.id)!] : [])
+  const freshGroups = freshCharts.flatMap((chart): Track[][] => loadedChartTracks.has(chart.id) ? [loadedChartTracks.get(chart.id)!] : [])
+  const hotTracks = uniqueCrossPlatformTracks(hotGroups.length ? interleaveTracks(hotGroups) : fallbackHotTracks).slice(0, boundedTrackLimit)
+  const freshTracks = uniqueCrossPlatformTracks(freshGroups.length ? interleaveTracks(freshGroups) : fallbackFreshTracks).slice(0, boundedTrackLimit)
+  return buildDiscoveryCatalog(shelves, charts, hotTracks, freshTracks, boundedTrackLimit, providerSources)
 }
 
 export const sourceDiscoveryDefinitions = shelfDefinitions

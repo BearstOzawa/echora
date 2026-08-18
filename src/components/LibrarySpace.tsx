@@ -1,5 +1,5 @@
 import { Album, BarChart3, CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, CloudDownload, Compass, Copy, Disc3, Download, Flame, Globe2, HardDrive, Headphones, Heart, House, ListEnd, ListMusic, ListPlus, LoaderCircle, MoreHorizontal, Music2, Palette, PencilLine, Play, Plus, RadioTower, RefreshCw, Search, Settings2, Sparkles, Trash2, Trophy, UserRound, Waves, X } from 'lucide-react'
-import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { collapseTrackVariants, groupAlbums, groupArtists } from '../libraryDiscovery'
@@ -20,9 +20,10 @@ import ContextMenu from './ContextMenu'
 import type { ContextMenuItem } from './ContextMenu'
 import ArtworkImage from './ArtworkImage'
 import GlassSelect from './GlassSelect'
-import { brandMarkPath } from '../brandAssets'
+import { brandMarkPath, isBrandArtwork } from '../brandAssets'
 import { downloadStateLabel } from '../downloadManager'
 import type { TrackDownloadState } from '../downloadManager'
+import SwipeActionRow from './SwipeActionRow'
 import { queueCloudSnapshot } from '../cloudSync'
 
 type Playlist = {
@@ -32,7 +33,7 @@ type Playlist = {
   trackSnapshots: Track[]
 }
 
-type Collection = 'home' | 'featured' | 'charts' | 'liked' | 'local' | 'queue' | string
+type Collection = 'home' | 'new' | 'featured' | 'charts' | 'providers' | 'liked' | 'local' | 'queue' | string
 type ResultMode = 'tracks' | 'albums' | 'artists'
 type PlaylistEditor = { mode: 'create' | 'rename'; playlistId?: string } | null
 type PlaylistPicker = { trackIds: number[]; trackTitle: string } | null
@@ -73,7 +74,7 @@ type Props = {
   onRemoveFromQueue: (track: Track) => void
   onNotice: (message: string) => void
   onSearchCatalog?: (query: string) => Promise<Track[]>
-  onLoadDiscovery?: (force?: boolean) => Promise<SourceDiscoveryCatalog>
+  onLoadDiscovery?: (force?: boolean, onProgress?: (discovery: SourceDiscoveryCatalog) => void) => Promise<SourceDiscoveryCatalog>
   onLoadChart?: (chart: SourceChart) => Promise<Track[]>
   busyTrackIds?: number[]
   downloadStates?: Record<number, TrackDownloadState>
@@ -99,6 +100,29 @@ const legacyDemoPlaylists = new Map([
 ])
 
 const orderChartsForDisplay = (charts: SourceChart[]) => charts
+
+const discoveryTrackKey = (track: Track) => `${track.title}\u0000${track.artist}`
+  .toLocaleLowerCase()
+  .replace(/[\s·・,.，。'"“”‘’()（）\[\]【】_-]/g, '')
+
+const withoutSeenTracks = (tracks: Track[], seen: Set<string>, limit = Number.POSITIVE_INFINITY) => {
+  const result: Track[] = []
+  collapseTrackVariants(tracks).forEach((track) => {
+    const key = discoveryTrackKey(track)
+    if (seen.has(key) || result.length >= limit) return
+    seen.add(key)
+    result.push(track)
+  })
+  return result
+}
+
+const fillDiscoveryTracks = (preferred: Track[], fallback: Track[], excluded: Set<string>, limit: number) => {
+  const result = withoutSeenTracks(preferred, new Set(excluded), limit)
+  if (result.length >= limit) return result
+
+  const sectionKeys = new Set(result.map(discoveryTrackKey))
+  return [...result, ...withoutSeenTracks(fallback, sectionKeys, limit - result.length)]
+}
 
 const isTrackSnapshot = (value: unknown): value is Track => {
   if (!value || typeof value !== 'object') return false
@@ -160,9 +184,15 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
   const [entityError, setEntityError] = useState('')
   const [chartSource, setChartSource] = useState<'all' | SourceChart['source']>('all')
   const [chartTrackCache, setChartTrackCache] = useState<Record<string, Track[]>>({})
+  const [personalHeaderCondensed, setPersonalHeaderCondensed] = useState(false)
+  const [mobileHeaderCondensed, setMobileHeaderCondensed] = useState(false)
+  const [mobileHeaderRaised, setMobileHeaderRaised] = useState(false)
+  const [mobileHomeSection, setMobileHomeSection] = useState<'recommended' | 'new' | 'collections' | 'providers'>('recommended')
+  const [mobileNewFeed, setMobileNewFeed] = useState<'trending' | 'latest'>('trending')
+  const [mobileProviderSource, setMobileProviderSource] = useState<SourceProviderLane['source'] | null>(null)
   const [sourceDiscovery, setSourceDiscovery] = useState<SourceDiscoveryCatalog | null>(null)
-  const [discoveryStatus, setDiscoveryStatus] = useState<'loading' | 'ready' | 'error'>(onLoadDiscovery ? 'loading' : 'error')
-  const [discoveryError, setDiscoveryError] = useState(onLoadDiscovery ? '' : '音乐内容暂时无法加载')
+  const [discoveryStatus, setDiscoveryStatus] = useState<'loading' | 'ready' | 'error'>(sourcePhase === 'checking' || onLoadDiscovery ? 'loading' : 'error')
+  const [discoveryError, setDiscoveryError] = useState(sourcePhase === 'checking' || onLoadDiscovery ? '' : '音乐内容暂时无法加载')
   const discoveryRequestRef = useRef(0)
   const discoveryLoadedAtRef = useRef(0)
   const searchRequestRef = useRef(0)
@@ -188,6 +218,11 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
     return () => window.removeEventListener('echora:cloud-data-applied', applyCloudPlaylists)
   }, [])
   useEffect(() => setSelectedIds([]), [activeCollection, activeEntity, resultMode, query])
+  useEffect(() => {
+    setMobileHeaderCondensed(false)
+    setMobileHeaderRaised(false)
+  }, [activeCollection, activeEntity?.id, mobileSearchMode])
+  useEffect(() => setMobileHomeSection('recommended'), [activeCollection])
   useEffect(() => {
     const section: MobileLibrarySection = mobileSearchMode
       ? 'search'
@@ -218,13 +253,22 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
     discoveryRequestRef.current = requestId
     setDiscoveryStatus('loading')
     setDiscoveryError('')
-    void onLoadDiscovery(force).then((discovery) => {
+    void onLoadDiscovery(force, (discovery) => {
+      if (discoveryRequestRef.current !== requestId) return
+      setSourceDiscovery(discovery)
+      discoveryLoadedAtRef.current = discovery.loadedAt
+    }).then((discovery) => {
       if (discoveryRequestRef.current !== requestId) return
       setSourceDiscovery(discovery)
       discoveryLoadedAtRef.current = discovery.loadedAt
       setDiscoveryStatus('ready')
     }).catch((error: unknown) => {
       if (discoveryRequestRef.current !== requestId) return
+      if (sourcePhase === 'checking') {
+        setDiscoveryStatus('loading')
+        setDiscoveryError('')
+        return
+      }
       setDiscoveryStatus('error')
       setDiscoveryError(error instanceof Error ? error.message : '音乐内容暂时无法加载')
     })
@@ -240,15 +284,15 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
       discoveryRequestRef.current += 1
       document.removeEventListener('visibilitychange', refreshWhenVisible)
     }
-  }, [onLoadDiscovery])
+  }, [onLoadDiscovery, sourcePhase])
   useEffect(() => {
-    if (!sourceDiscovery) return
+    if (!sourceDiscovery || discoveryStatus !== 'ready') return
     const remaining = sourceDiscoveryFreshnessMs - (Date.now() - sourceDiscovery.loadedAt)
     const timer = window.setTimeout(() => {
       if (document.visibilityState === 'visible') refreshDiscovery(true)
     }, Math.max(1000, remaining))
     return () => window.clearTimeout(timer)
-  }, [sourceDiscovery?.loadedAt, onLoadDiscovery])
+  }, [discoveryStatus, sourceDiscovery?.loadedAt, onLoadDiscovery])
   useEffect(() => {
     const catalogById = new Map(catalog.map((track) => [track.id, track]))
     setPlaylists((current) => {
@@ -297,7 +341,7 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
   const collectionTracks = useMemo(() => {
     if (activeEntity) return activeEntity.tracks
     if (activeCollection === 'home') return normalizedQuery && onSearchCatalog ? remoteSearchDisplayTracks : catalog
-    if (activeCollection === 'featured' || activeCollection === 'charts') return sourceTracks
+    if (activeCollection === 'new' || activeCollection === 'featured' || activeCollection === 'charts' || activeCollection === 'providers') return sourceTracks
     if (activeCollection === 'liked') return catalog.filter((track) => likedIds.includes(track.id))
     if (activeCollection === 'local') return catalog.filter((track) => downloadedTrackIds.includes(track.id))
     if (activeCollection === 'downloads') return Array.from(new Map<number, Track>([
@@ -348,22 +392,60 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
   const groupingSource = activeCollection === 'home' && query && !activeEntity ? visibleTracks : catalog
   const albumGroups = useMemo(() => groupAlbums(groupingSource), [groupingSource])
   const artistGroups = useMemo(() => groupArtists(groupingSource), [groupingSource])
-  const sourceAlbumGroups = useMemo(() => groupAlbums(sourceTracks), [sourceTracks])
-  const sourceArtistGroups = useMemo(() => groupArtists(sourceTracks), [sourceTracks])
   const sourceShelves = sourceDiscovery?.shelves ?? []
   const sourceProviders = sourceDiscovery?.providers ?? []
   const sourceCharts = sourceDiscovery?.charts ?? []
   const hotTracks = sourceDiscovery?.hotTracks ?? []
   const freshTracks = sourceDiscovery?.freshTracks ?? []
+  const freshTimeline = useMemo(() => collapseTrackVariants(freshTracks), [freshTracks])
+  const hotTimeline = useMemo(() => collapseTrackVariants(hotTracks), [hotTracks])
+  const newReleaseLeadTrack = freshTimeline[0] ?? hotTimeline[0]
+  const newReleaseRailTracks = newReleaseLeadTrack ? freshTimeline.filter((track) => discoveryTrackKey(track) !== discoveryTrackKey(newReleaseLeadTrack)).slice(0, 6) : freshTimeline.slice(0, 6)
+  const newReleaseRailKeys = new Set(newReleaseRailTracks.map(discoveryTrackKey))
+  if (newReleaseLeadTrack) newReleaseRailKeys.add(discoveryTrackKey(newReleaseLeadTrack))
+  const recentReleaseTracks = freshTimeline.filter((track) => !newReleaseRailKeys.has(discoveryTrackKey(track))).slice(0, 8)
+  const latestFeedTracks = recentReleaseTracks.length ? recentReleaseTracks : newReleaseRailTracks
+  const trendingTracks = withoutSeenTracks(hotTimeline, new Set(freshTimeline.map(discoveryTrackKey)), 8)
+  const availableSourceProviders = sourceProviders.filter((provider) => provider.available !== false && provider.tracks.length > 0)
+  const activeProvider = availableSourceProviders.find((provider) => provider.source === mobileProviderSource) ?? availableSourceProviders[0]
+  const activeMobileProvider = activeProvider
   const spotlightShelf = sourceShelves.find((shelf) => shelf.kind !== 'quality')
   const spotlightTrack = spotlightShelf?.tracks[0]
   const moodShelves = sourceShelves.filter((shelf) => shelf.kind === 'mood' || shelf.kind === 'live')
-  const qualityShelf = sourceShelves.find((shelf) => shelf.kind === 'quality')
   const featuredShelves = sourceShelves.filter((shelf) => shelf.kind !== 'quality')
+  const curatedCollectionGroups = [
+    { id: 'current', label: '新鲜策划', kinds: ['trend', 'fresh', 'global'] },
+    { id: 'scene', label: '场景与情绪', kinds: ['mood', 'live'] },
+    { id: 'lasting', label: '经典与风格', kinds: ['classic', 'style', 'soundtrack'] },
+  ].map((group) => ({ ...group, shelves: featuredShelves.filter((shelf) => shelf.id !== spotlightShelf?.id && group.kinds.includes(shelf.kind) && shelf.tracks.length) })).filter((group) => group.shelves.length)
+  const visibleMobileNewFeed = trendingTracks.length ? mobileNewFeed : 'latest'
   const likedCatalogTracks = useMemo(() => catalog.filter((track) => likedIds.includes(track.id)), [catalog, likedIds])
   const recommendationSignals = contentSettings.personalizedRecommendations ? likedCatalogTracks : []
+  const hasPersonalizationSignals = recommendationSignals.length > 0
   const dailyTracks = useMemo(() => buildDailyRecommendations(sourceShelves, recommendationSignals, new Date(), contentSettings.featuredTrackLimit, sourceProviders.map((provider) => provider.source)), [contentSettings.featuredTrackLimit, contentSettings.personalizedRecommendations, likedCatalogTracks, sourceProviders, sourceShelves])
-  const dailyRecommendationCopy = contentSettings.personalizedRecommendations ? '随收藏与日期更新' : '随日期更新'
+  const homeFreshPreviewTracks = useMemo(() => {
+    const seen = new Set(dailyTracks.slice(0, 6).map(discoveryTrackKey))
+    const candidates = [...freshTimeline, ...hotTimeline]
+    return fillDiscoveryTracks(candidates, candidates, seen, 6)
+  }, [dailyTracks, freshTimeline, hotTimeline])
+  const homeRecommendationTracks = useMemo(() => {
+    const seen = new Set([...dailyTracks.slice(0, 6), ...homeFreshPreviewTracks].map(discoveryTrackKey))
+    const candidates = [...featuredShelves.flatMap((shelf) => shelf.tracks), ...sourceTracks]
+    return fillDiscoveryTracks(candidates, candidates, seen, 6)
+  }, [dailyTracks, featuredShelves, homeFreshPreviewTracks, sourceTracks])
+  const homeFeaturedShelves = featuredShelves.filter((shelf) => shelf.id !== spotlightShelf?.id).slice(0, 8)
+  const homeAlbumPicks = useMemo(() => groupAlbums(collapseTrackVariants([
+    ...homeRecommendationTracks,
+    ...freshTimeline,
+    ...dailyTracks,
+    ...sourceTracks,
+  ])).slice(0, 8), [dailyTracks, freshTimeline, homeRecommendationTracks, sourceTracks])
+  const collectionListeningTracks = useMemo(() => {
+    const spotlightKeys = new Set((spotlightShelf?.tracks ?? []).slice(0, 4).map(discoveryTrackKey))
+    const candidates = featuredShelves.filter((shelf) => shelf.id !== spotlightShelf?.id).flatMap((shelf) => shelf.tracks)
+    return fillDiscoveryTracks(candidates, candidates, spotlightKeys, 8)
+  }, [featuredShelves, spotlightShelf])
+  const dailyRecommendationCopy = hasPersonalizationSignals ? '随收藏与日期更新' : '随日期更新'
   const chartSourceNames: Record<SourceChart['source'], string> = { tx: 'QQ 音乐', wy: '网易云音乐', kw: '酷我音乐', kg: '酷狗音乐', mg: '咪咕音乐' }
   const chartSectionDefinitions = [...new Set(sourceCharts.map((chart) => chart.source))].map((id) => ({ id, name: chartSourceNames[id] }))
   const availableChartSections = chartSectionDefinitions.flatMap((section) => {
@@ -377,9 +459,47 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
     return [{ ...section, charts: chartSource === 'all' ? section.charts.slice(0, 4) : section.charts }]
   })
   const activeLeadingChart = chartSource === 'all' ? leadingChart : availableChartSections.find((section) => section.id === chartSource)?.charts[0]
+  const activeProviderAlbums = useMemo(() => groupAlbums(activeProvider?.tracks ?? []).slice(0, 8), [activeProvider])
+  const activeProviderCharts = useMemo(() => activeProvider ? orderChartsForDisplay(sourceCharts.filter((chart) => chart.source === activeProvider.source)).slice(0, 4) : [], [activeProvider, sourceCharts])
 
-  const collectionTitle = activeEntity?.name ?? (activeCollection === 'home' ? (query ? `“${query}”的结果` : '音乐首页') : activeCollection === 'featured' ? '精选' : activeCollection === 'charts' ? '榜单' : activeCollection === 'personal' ? '我的音乐' : activeCollection === 'liked' ? '喜欢的音乐' : activeCollection === 'local' ? '本地音乐' : activeCollection === 'downloads' ? '下载管理' : activeCollection === 'queue' ? '播放队列' : activePlaylist?.name ?? '歌单')
-  const collectionKind = activeEntity?.eyebrow ?? (activeCollection === 'home' ? (query ? '音乐搜索' : '发现') : activeCollection === 'featured' ? '主题浏览' : activeCollection === 'charts' ? '平台榜单' : activeCollection === 'personal' ? '个人音乐' : activeCollection === 'liked' ? '个人收藏' : activeCollection === 'local' ? '离线音乐' : activeCollection === 'downloads' ? '离线任务' : activeCollection === 'queue' ? '' : '我的歌单')
+  const chartArtworkTracks = (chart: SourceChart, overrideTracks?: Track[]) => {
+    const cacheKey = `${chart.id}:${contentSettings.chartTrackLimit}`
+    const chartTracks = overrideTracks?.length
+      ? overrideTracks
+      : chartTrackCache[cacheKey]?.length
+        ? chartTrackCache[cacheKey]
+        : chart.tracks
+    const providerTracks = sourceProviders.find((provider) => provider.source === chart.source)?.tracks ?? []
+    const platformTracks = sourceTracks.filter((track) => sourceBrandKey(track.source) === chart.source)
+    const candidates = chartTracks.length ? chartTracks : providerTracks.length ? providerTracks : platformTracks
+    const siblingIndex = Math.max(0, sourceCharts.filter((item) => item.source === chart.source).findIndex((item) => item.id === chart.id))
+    const rotated = chartTracks.length || candidates.length < 2
+      ? candidates
+      : [...candidates.slice(siblingIndex % candidates.length), ...candidates.slice(0, siblingIndex % candidates.length)]
+    return Array.from(new Map(rotated
+      .filter((track) => !isBrandArtwork(track.cover))
+      .map((track) => [track.cover, track])).values()).slice(0, 3)
+  }
+
+  const chartCover = (chart: SourceChart, overrideTracks?: Track[]) => !isBrandArtwork(chart.cover)
+    ? chart.cover
+    : chartArtworkTracks(chart, overrideTracks)[0]?.cover ?? brandMarkPath
+
+  const renderChartArtwork = (chart: SourceChart, eager = false, overrideTracks?: Track[]) => {
+    if (!isBrandArtwork(chart.cover)) {
+      return <span className="chart-artwork-composition is-count-1"><ArtworkImage src={chart.cover} alt="" loading={eager ? 'eager' : 'lazy'} /></span>
+    }
+    const artworkTracks = chartArtworkTracks(chart, overrideTracks)
+    if (artworkTracks.length) {
+      return <span className={`chart-artwork-composition is-count-${artworkTracks.length}`}>{artworkTracks.map((track, index) => <ArtworkImage key={`${chart.id}:artwork:${track.cover}`} src={track.cover} alt="" loading={eager && index === 0 ? 'eager' : 'lazy'} />)}</span>
+    }
+    const providerLabel = chart.eyebrow.replace(/\s*音乐$/, '') || '榜单'
+    const chartLabel = chart.name.replace(/QQ|网易云|酷我|酷狗|咪咕|音乐|榜单/g, '').trim().slice(0, 4) || '排行'
+    return <span className="chart-artwork-placeholder" aria-hidden="true"><i>{providerLabel}</i><b>{chartLabel}</b></span>
+  }
+
+  const collectionTitle = activeEntity?.name ?? (activeCollection === 'home' ? (query ? `“${query}”的结果` : '推荐') : activeCollection === 'new' ? '新热' : activeCollection === 'featured' ? '选集' : activeCollection === 'charts' ? '榜单' : activeCollection === 'providers' ? '平台' : activeCollection === 'personal' ? '我的音乐' : activeCollection === 'liked' ? '喜欢的音乐' : activeCollection === 'local' ? '本地音乐' : activeCollection === 'downloads' ? '下载管理' : activeCollection === 'queue' ? '播放队列' : activePlaylist?.name ?? '歌单')
+  const collectionKind = activeEntity?.eyebrow ?? (activeCollection === 'home' ? (query ? '音乐搜索' : '音乐首页') : activeCollection === 'new' ? '新作与趋势' : activeCollection === 'featured' ? '主题选集' : activeCollection === 'charts' ? '平台榜单' : activeCollection === 'providers' ? '音乐来源' : activeCollection === 'personal' ? '个人音乐' : activeCollection === 'liked' ? '个人收藏' : activeCollection === 'local' ? '离线音乐' : activeCollection === 'downloads' ? '离线任务' : activeCollection === 'queue' ? '' : '我的歌单')
   useEffect(() => onMobileTitleChange?.(mobileSearchMode ? '搜索' : collectionTitle), [collectionTitle, mobileSearchMode, onMobileTitleChange])
   const currentPlaybackContext: PlaybackContext = activeCollection === 'queue'
     ? playbackContext
@@ -435,7 +555,10 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
     setEntityLoading(false)
     setEntityError('')
     setActiveCollection(collection)
+    if (collection === 'home') setMobileHomeSection('recommended')
     setMobileSearchMode(false)
+    setMobileHeaderCondensed(false)
+    setMobileHeaderRaised(false)
     setResultMode('tracks')
     setQuery('')
   }
@@ -578,7 +701,7 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
       name: chart.name,
       eyebrow: chart.eyebrow,
       description: `由${chart.eyebrow}维护，曲目与排序随平台榜单更新。`,
-      cover: chart.cover,
+      cover: chartCover(chart, cachedTracks),
       tracks: cachedTracks,
     })
     if (cachedTracks.length || !onLoadChart) return
@@ -587,7 +710,7 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
     void onLoadChart(chart).then((tracks) => {
       if (entityRequestRef.current !== requestId) return
       setChartTrackCache((current) => ({ ...current, [cacheKey]: tracks }))
-      setActiveEntity((current) => current?.id === chart.id ? { ...current, tracks } : current)
+      setActiveEntity((current) => current?.id === chart.id ? { ...current, cover: chartCover(chart, tracks), tracks } : current)
       if (!tracks.length) setEntityError('这个榜单暂时没有返回歌曲')
     }).catch((error: unknown) => {
       if (entityRequestRef.current !== requestId) return
@@ -726,12 +849,35 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
   const renderSourceChart = (chart: SourceChart) => (
     <article className="library-chart-card" key={chart.id} data-music-source={sourceBrandKey(chart.source)}>
       <button onClick={() => openSourceChart(chart)}>
-        <span className="library-chart-cover"><ArtworkImage src={chart.cover} alt="" /></span>
+        <span className="library-chart-cover">{renderChartArtwork(chart)}</span>
         <span className="library-chart-copy"><small>{chart.eyebrow} · 平台榜单</small><strong>{chart.name}</strong><em>{chart.updatedAt ? `更新于 ${chart.updatedAt}` : chart.updateFrequency || '随平台更新'}</em></span>
         <ChevronRight size={18} />
       </button>
     </article>
   )
+
+  const renderDesktopTrackGrid = (items: Track[], id: string, title: string, limit = 10) => {
+    const context: PlaybackContext = { kind: 'discovery', id, title }
+    return <div className="library-source-track-grid">
+      {items.slice(0, limit).map((track, index) => <button key={`${id}:${track.id}`} data-track-id={track.id} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: items, context })} onClick={() => onPlayTrack(track, { tracks: items, context })}>
+        <span className="library-source-track-cover"><ArtworkImage src={track.cover} alt="" /><i><Play size={16} fill="currentColor" /></i><b>{String(index + 1).padStart(2, '0')}</b></span>
+        <strong>{track.title}</strong><small>{track.artist}</small><em>{track.source}</em>
+      </button>)}
+    </div>
+  }
+
+  const renderDesktopTrackRows = (items: Track[], id: string, title: string, limit = 6) => {
+    const context: PlaybackContext = { kind: 'discovery', id, title }
+    return <div className="library-discovery-track-list">
+      {items.slice(0, limit).map((track, index) => <button key={`${id}:${track.id}`} data-track-id={track.id} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: items, context })} onClick={() => onPlayTrack(track, { tracks: items, context })}>
+        <b>{String(index + 1).padStart(2, '0')}</b>
+        <ArtworkImage src={track.cover} alt="" loading={index < 2 ? 'eager' : 'lazy'} />
+        <span><strong>{track.title}</strong><small>{track.artist} · {track.album}</small></span>
+        <em><i />{track.source}</em>
+        <Play size={14} fill="currentColor" />
+      </button>)}
+    </div>
+  }
 
   const chartGridClass = (count: number) => `library-chart-grid is-count-${Math.min(4, Math.max(1, count))}`
 
@@ -782,10 +928,11 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
     const displayTracks = typeof limit === 'number' ? items.slice(0, limit) : items
     return (
       <div className="mobile-track-list">
-        {displayTracks.map((track, index) => (
-          <article
-            className={`mobile-track-row supports-long-press ${track.id === activeTrackId ? 'is-playing' : ''}`}
-            key={track.id}
+        {displayTracks.map((track) => {
+          const task = activeCollection === 'downloads' ? downloadStates[track.id] : undefined
+          const taskActive = Boolean(task && ['queued', 'downloading', 'retrying'].includes(task.phase))
+          const row = <article
+            className={`mobile-track-row supports-long-press ${track.id === activeTrackId ? 'is-playing' : ''} ${task ? `is-download-task is-${task.phase}` : ''}`}
             data-music-source={sourceBrandKey(track.source)}
             data-track-id={track.id}
             {...trackLongPress}
@@ -797,12 +944,15 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
           >
             <button className="mobile-track-play" onClick={() => onPlayTrack(track, { tracks: items, context: currentPlaybackContext })} aria-label={`播放 ${track.title}`}>
               <span className="mobile-track-artwork"><ArtworkImage src={track.cover} alt="" />{track.id === activeTrackId ? <span className={`mini-levels ${isPlaying ? 'is-playing' : ''}`} aria-hidden="true"><i /><i /><i /></span> : <Play size={14} fill="currentColor" />}</span>
-              <span className="mobile-track-copy"><strong>{track.title}</strong><small><span className="mobile-source-dot" />{track.artist}<i>·</i>{track.album}</small></span>
+              <span className="mobile-track-copy"><strong>{track.title}</strong><small>{task ? <>{downloadStateLabel(task)}{task.failureReason && task.phase === 'failed' ? ` · ${task.failureReason}` : ''}</> : <><span className="mobile-source-dot" />{track.artist}<i>·</i>{track.album}</>}</small>{task && typeof task.progress === 'number' && <span className="mobile-download-progress" aria-label={`下载进度 ${task.progress}%`}><i style={{ width: `${task.progress}%` }} /></span>}</span>
             </button>
-            <time>{track.duration}</time>
+            {task ? <button className="mobile-download-task-action" onClick={() => taskActive && onCancelDownload ? onCancelDownload(track.id) : onDownloadTrack(track)} aria-label={taskActive ? `取消下载 ${track.title}` : `重试下载 ${track.title}`}>{taskActive ? <X size={17} /> : <RefreshCw size={16} />}</button> : <time>{track.duration}</time>}
             <button className="mobile-track-more" onClick={(event) => { setPlaylistMenu(null); setTrackMenu({ ...menuPosition(event.currentTarget), track }) }} aria-label={`更多操作 ${track.title}`}><MoreHorizontal size={19} /></button>
           </article>
-        ))}
+          return activeCollection === 'queue'
+            ? <SwipeActionRow key={track.id} enabled={queueTracks.length > 1} ariaLabel={`从播放队列移除 ${track.title}`} onAction={() => onRemoveFromQueue(track)} className="mobile-track-swipe-row">{row}</SwipeActionRow>
+            : <Fragment key={track.id}>{row}</Fragment>
+        })}
         {!displayTracks.length && <div className={`mobile-library-empty ${searchStatus === 'loading' ? 'is-loading' : ''}`}>{searchStatus === 'loading' ? <LoaderCircle size={25} /> : <Music2 size={24} />}<strong>{emptyTitle}</strong><span>{emptyDetail}</span></div>}
       </div>
     )
@@ -821,9 +971,18 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
   const renderMobileChart = (chart: SourceChart) => {
     const preview = chart.preview.length ? chart.preview.slice(0, 3) : chart.tracks.slice(0, 3).map((track) => ({ title: track.title, artist: track.artist }))
     return <button className="mobile-chart-summary" key={chart.id} data-music-source={sourceBrandKey(chart.source)} onClick={() => openSourceChart(chart)}>
-      <span className="mobile-chart-cover"><ArtworkImage src={chart.cover} alt="" /></span>
+      <span className="mobile-chart-cover">{renderChartArtwork(chart)}</span>
       <span className="mobile-chart-content"><span><strong>{chart.name}</strong><small>{chart.updatedAt ? `更新于 ${chart.updatedAt}` : chart.updateFrequency || '随平台更新'}</small></span>{preview.map((item, index) => <em key={`${item.title}-${index}`}><b>{index + 1}</b><span>{item.title}</span><small>{item.artist}</small></em>)}</span>
       <ChevronRight size={18} />
+    </button>
+  }
+
+  const renderMobileHomeChart = (chart: SourceChart) => {
+    const lead = chart.preview[0] ?? chart.tracks[0]
+    return <button className="mobile-home-chart-card" key={`home:${chart.id}`} data-music-source={sourceBrandKey(chart.source)} onClick={() => openSourceChart(chart)}>
+      {renderChartArtwork(chart)}
+      <span><small>{chart.eyebrow}</small><strong>{chart.name}</strong><em>{lead ? lead.title : chart.updateFrequency || '随平台更新'}</em></span>
+      <ChevronRight size={16} />
     </button>
   }
 
@@ -836,11 +995,33 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
     }
     if (activeEntity) return closeEntity()
     if (activeCollection === 'featured' || activeCollection === 'charts') return selectCollection('home')
-    if (activeCollection === 'liked' || activeCollection === 'local' || activeCollection === 'queue' || activePlaylist) return selectCollection('personal')
+    if (activeCollection === 'liked' || activeCollection === 'local' || activeCollection === 'downloads' || activeCollection === 'queue' || activePlaylist) return selectCollection('personal')
     setMobileSearchMode(false)
   }
 
+  const updateMobileHeader = (scrollTop: number, threshold = 72) => {
+    const nextRaised = scrollTop > 4
+    const nextCondensed = scrollTop > threshold
+    setMobileHeaderRaised((current) => current === nextRaised ? current : nextRaised)
+    setMobileHeaderCondensed((current) => current === nextCondensed ? current : nextCondensed)
+  }
+
+  const selectMobileHomeSection = (section: 'recommended' | 'new' | 'collections' | 'providers') => {
+    const scroller = mobileViewRef.current?.querySelector<HTMLElement>('.mobile-home-page')
+    setMobileHomeSection(section)
+    setMobileHeaderCondensed(false)
+    setMobileHeaderRaised(false)
+    if (scroller) scroller.scrollTop = 0
+  }
+
   const mobileCollectionCover = activeEntity?.cover ?? activePlaylist?.trackSnapshots[0]?.cover ?? visibleTracks[0]?.cover ?? brandMarkPath
+  const isPersonalDetail = !activeEntity && (
+    activeCollection === 'liked' ||
+    activeCollection === 'local' ||
+    activeCollection === 'downloads' ||
+    activeCollection === 'queue' ||
+    Boolean(activePlaylist)
+  )
   const entityAlbums = activeEntity?.type === 'artist' ? groupAlbums(activeEntity.tracks) : []
   const previousEntity = entityHistory[entityHistory.length - 1]
   const entityReturnLabel = previousEntity
@@ -859,13 +1040,13 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
             ? '返回本地音乐'
             : activeEntity && activePlaylist
               ? `返回${activePlaylist.name}`
-              : activePlaylist || activeCollection === 'liked' || activeCollection === 'local' || activeCollection === 'queue'
+              : activePlaylist || activeCollection === 'liked' || activeCollection === 'local' || activeCollection === 'downloads' || activeCollection === 'queue'
                 ? '返回我的'
                 : '返回首页'
   const overlayPortalTarget = document.querySelector<HTMLElement>('.client-shell') ?? document.body
 
   return (
-    <section className={`library-workspace ${mobile ? 'is-mobile' : ''}`} data-collection={activeCollection === 'personal' ? 'personal' : 'standard'} data-mobile-navigation-level={mobile ? mobileNavigationLevel : undefined} data-mobile-header={mobileSearchMode || (!activeEntity && (activeCollection === 'liked' || activeCollection === 'local' || activeCollection === 'queue' || Boolean(activePlaylist))) ? 'search' : 'none'}>
+    <section className={`library-workspace ${mobile ? 'is-mobile' : ''}`} data-collection={activeCollection === 'personal' ? 'personal' : 'standard'} data-mobile-layout={mobile && isPersonalDetail ? 'personal-detail' : undefined} data-mobile-navigation-level={mobile ? mobileNavigationLevel : undefined} data-mobile-header={mobileSearchMode || isPersonalDetail ? 'search' : 'none'}>
       {mobile && <div ref={mobileViewRef} className="mobile-library-view">
         {mobileSearchMode ? <>
           <header className="mobile-search-header">
@@ -880,42 +1061,88 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
           <main className="mobile-library-scroll mobile-search-results">
             {!query ? <section className="mobile-search-start"><header><div><strong>搜索音乐</strong><p>查找歌曲、专辑与艺人</p></div></header>{hotTracks.length > 0 && <div className="mobile-search-trending"><strong>当前热听</strong><div>{hotTracks.slice(0, 6).map((track, index) => <button key={`hot-${track.id}-${index}`} onClick={() => setQuery(track.title)}><b>{index + 1}</b><span>{track.title}</span></button>)}</div></div>}{freshTracks.length > 0 && <div className="mobile-search-trending is-fresh"><strong>最新发布</strong><div>{freshTracks.slice(0, 6).map((track, index) => <button key={`fresh-${track.id}-${index}`} onClick={() => setQuery(track.title)}><b>{index + 1}</b><span>{track.title}</span></button>)}</div></div>}{!hotTracks.length && !freshTracks.length && <div className="mobile-search-live-state"><LoaderCircle size={18} /><span>{discoveryStatus === 'error' ? '实时内容暂时不可用' : '正在更新实时内容'}</span></div>}</section> : resultMode === 'tracks' ? renderMobileTrackList() : resultMode === 'albums' ? <div className="mobile-entity-grid">{albumGroups.map((album) => <button key={album.id} onClick={() => openAlbum(album)}><ArtworkImage src={album.cover} alt="" /><strong>{album.name}</strong><small>{album.artist}</small></button>)}</div> : <div className="mobile-artist-grid">{artistGroups.map((artist) => <button key={artist.id} onClick={() => openArtist(artist)}><ArtworkImage src={artist.cover} alt="" /><strong>{artist.name}</strong><small>{artist.tracks.length} 首作品</small></button>)}</div>}
           </main>
-        </> : activeCollection === 'home' && !activeEntity ? <main className="mobile-library-scroll mobile-home-page">
-          <section className="mobile-home-greeting"><span><small>音乐首页</small><h1>今天想听什么？</h1></span><button onClick={() => { setMobileSearchMode(true); window.setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label="搜索"><Search size={21} /></button></section>
-          {dailyTracks.length > 0 && <button className="mobile-daily-card" onClick={() => onPlayTracks(dailyTracks, { kind: 'discovery', id: 'daily', title: '每日推荐' })}>
-            <span className="mobile-daily-art"><ArtworkImage src={dailyTracks[0].cover} alt="" loading="eager" />{dailyTracks.slice(1, 4).map((track) => <ArtworkImage key={track.id} src={track.cover} alt="" />)}</span>
-            <span className="mobile-daily-copy"><small><CalendarDays size={14} /> 每日推荐</small><strong>为今天挑选的声音</strong><em>{dailyTracks.length} 首 · {dailyRecommendationCopy}</em></span><i><Play size={18} fill="currentColor" /></i>
-          </button>}
-          {discoveryStatus === 'loading' && !sourceDiscovery && <section className="mobile-source-loading"><LoaderCircle size={24} /><strong>正在更新音乐内容</strong><span>聚合已接入平台的最新内容</span></section>}
-          {discoveryStatus === 'error' && !sourceDiscovery && <section className="mobile-source-loading"><RadioTower size={24} /><strong>内容暂时不可用</strong><span>{discoveryError}</span><button onClick={() => refreshDiscovery(true)}>重新加载</button></section>}
-          {featuredShelves.length > 0 && <section className="mobile-content-section">
-            <header><strong>为你推荐</strong><button onClick={() => selectCollection('featured')}>查看全部 <ChevronRight size={15} /></button></header>
-            <div className="mobile-card-rail">{featuredShelves.slice(0, 6).map((shelf) => <button className="mobile-feature-card" key={shelf.id} onClick={() => openSourceShelf(shelf)}><span><ArtworkImage src={shelf.tracks[0]?.cover} alt="" /><em>{shelf.eyebrow}</em></span><strong>{shelf.name}</strong><small>{shelf.description}</small></button>)}</div>
-          </section>}
-          {(hotTracks.length > 0 || freshTracks.length > 0) && <section className="mobile-content-section mobile-new-hot">
-            <header><strong>此刻值得听</strong><button onClick={() => selectCollection('featured')}>更多 <ChevronRight size={15} /></button></header>
-            <div>{hotTracks.length > 0 && <section><span><Flame size={16} /><strong>热门</strong></span>{renderMobilePreviewTracks(hotTracks)}</section>}{freshTracks.length > 0 && <section><span><Sparkles size={16} /><strong>新作</strong></span>{renderMobilePreviewTracks(freshTracks)}</section>}</div>
-          </section>}
-          {homeCharts.length > 0 && <section className="mobile-content-section mobile-rankings-section">
-            <header><strong>榜单速览</strong><button onClick={() => selectCollection('charts')}>全部榜单 <ChevronRight size={15} /></button></header>
-            <div className="mobile-chart-rail">{homeCharts.slice(0, 5).map(renderMobileChart)}</div>
-          </section>}
-          {sourceProviders.length > 0 && <section className="mobile-content-section mobile-provider-section"><header><strong>音乐平台</strong></header><div>{sourceProviders.map((provider) => <button key={provider.source} data-music-source={sourceBrandKey(provider.source)} onClick={() => openProviderLane(provider)} disabled={!provider.available}><span className="mobile-provider-mark"><RadioTower size={16} /></span><span><strong>{provider.name}</strong><small>{provider.available ? `${provider.tracks.length} 首精选` : '暂未返回内容'}</small></span><ChevronRight size={16} /></button>)}</div></section>}
-        </main> : activeCollection === 'featured' && !activeEntity ? <main className="mobile-library-scroll mobile-discovery-page">
-          <header className="mobile-page-title"><span><small>探索音乐</small><h1>发现</h1></span></header>
-          <nav className="mobile-discovery-tabs"><button className="is-active">精选</button><button onClick={() => selectCollection('charts')}>榜单</button></nav>
+        </> : activeCollection === 'home' && !activeEntity ? <main className="mobile-library-scroll mobile-home-page" data-home-section={mobileHomeSection} onScroll={(event) => updateMobileHeader(event.currentTarget.scrollTop)}>
+          <header className={`mobile-scroll-header mobile-root-toolbar ${mobileHeaderRaised ? 'is-raised' : ''} ${mobileHeaderCondensed ? 'is-condensed' : ''}`}><nav className="mobile-root-tabs" aria-label="首页内容"><button className={mobileHomeSection === 'recommended' ? 'is-active' : ''} aria-current={mobileHomeSection === 'recommended' ? 'page' : undefined} onClick={() => selectMobileHomeSection('recommended')}>推荐</button><button className={mobileHomeSection === 'new' ? 'is-active' : ''} aria-current={mobileHomeSection === 'new' ? 'page' : undefined} onClick={() => selectMobileHomeSection('new')}>新热</button><button className={mobileHomeSection === 'collections' ? 'is-active' : ''} aria-current={mobileHomeSection === 'collections' ? 'page' : undefined} onClick={() => selectMobileHomeSection('collections')}>选集</button><button className={mobileHomeSection === 'providers' ? 'is-active' : ''} aria-current={mobileHomeSection === 'providers' ? 'page' : undefined} onClick={() => selectMobileHomeSection('providers')}>平台</button></nav><button onClick={() => { setMobileSearchMode(true); window.setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label="搜索"><Search size={20} /></button></header>
+          {mobileHomeSection === 'recommended' && <>
+            {dailyTracks.length > 0 && <button className="mobile-daily-card" onClick={() => onPlayTracks(dailyTracks, { kind: 'discovery', id: 'daily', title: '每日推荐' })}>
+              <span className="mobile-daily-art"><ArtworkImage src={dailyTracks[0].cover} alt="" loading="eager" />{dailyTracks.slice(1, 4).map((track) => <ArtworkImage key={track.id} src={track.cover} alt="" />)}</span>
+              <span className="mobile-daily-copy"><small><CalendarDays size={14} /> 每日推荐</small><strong>今日 {dailyTracks.length} 首</strong><em>{dailyRecommendationCopy}</em></span><i><Play size={18} fill="currentColor" /></i>
+            </button>}
+            {discoveryStatus === 'loading' && !sourceDiscovery && <section className="mobile-source-loading is-loading" aria-live="polite"><LoaderCircle size={24} /><strong>正在更新音乐内容</strong><span>聚合已接入平台的最新内容</span></section>}
+            {discoveryStatus === 'error' && !sourceDiscovery && <section className="mobile-source-loading"><RadioTower size={24} /><strong>内容暂时不可用</strong><span>{discoveryError}</span><button onClick={() => refreshDiscovery(true)}>重新加载</button></section>}
+            {homeRecommendationTracks.length > 0 && <section className="mobile-content-section mobile-home-track-picks"><header><span><strong>为你精选</strong><small>{hasPersonalizationSignals ? '结合你的收藏' : '跨平台挑选'}</small></span><button onClick={() => onPlayTracks(homeRecommendationTracks, { kind: 'discovery', id: 'home-picks', title: '为你精选' })}>播放 <Play size={14} fill="currentColor" /></button></header>{renderMobilePreviewTracks(homeRecommendationTracks, 5)}</section>}
+            {homeAlbumPicks.length > 0 && <section className="mobile-content-section mobile-home-albums"><header><span><strong>专辑推荐</strong><small>从今日内容继续发现</small></span></header><div className="mobile-card-rail mobile-home-album-rail">{homeAlbumPicks.map((album) => <button className="mobile-feature-card" key={`home-album:${album.id}`} onClick={() => openAlbum(album)}><span><ArtworkImage src={album.cover} alt="" /></span><strong>{album.name}</strong><small>{album.artist}</small></button>)}</div></section>}
+            {homeFeaturedShelves.length > 0 && <section className="mobile-content-section mobile-home-recommendations">
+              <header><span><strong>适合此刻</strong><small>按场景与状态整理</small></span><button onClick={() => selectMobileHomeSection('collections')}>全部 <ChevronRight size={15} /></button></header>
+              <div className="mobile-home-scene-rail">{homeFeaturedShelves.map((shelf) => <button key={shelf.id} onClick={() => openSourceShelf(shelf)}><ArtworkImage src={shelf.tracks[0]?.cover} alt="" /><span><strong>{shelf.name}</strong><small>{shelf.tracks.slice(0, 2).map((track) => track.title).join(' · ')}</small></span><ChevronRight size={16} /></button>)}</div>
+            </section>}
+            {homeCharts.length > 0 && <section className="mobile-content-section mobile-home-trends"><header><span><strong>趋势速览</strong><small>各平台正在发生</small></span><button onClick={() => selectCollection('charts')}>全部 <ChevronRight size={15} /></button></header><div className="mobile-home-trend-strip">{homeCharts.slice(0, 4).map((chart) => <button key={`home-chart:${chart.id}`} data-music-source={sourceBrandKey(chart.source)} onClick={() => openSourceChart(chart)}>{renderChartArtwork(chart)}<span><small>{chart.eyebrow}</small><strong>{chart.name}</strong><em>{chart.tracks[0]?.title ?? chart.preview[0]?.title ?? '随平台更新'}</em></span><ChevronRight size={16} /></button>)}</div></section>}
+            {homeFreshPreviewTracks.length > 0 && <section className="mobile-content-section mobile-home-fresh-preview"><header><span><strong>新鲜上架</strong><small>近期值得留意的新作</small></span><button onClick={() => selectMobileHomeSection('new')}>更多 <ChevronRight size={15} /></button></header>{renderMobilePreviewTracks(homeFreshPreviewTracks, 5)}</section>}
+          </>}
+          {mobileHomeSection === 'new' && <>
+            {newReleaseLeadTrack && <div className="mobile-home-tab-page mobile-new-release-page">
+              <section className="mobile-content-section mobile-new-release-section">
+                <header><strong>本周主推</strong><span className="mobile-section-meta">持续更新</span></header>
+                <article className="mobile-new-release-lead" data-music-source={sourceBrandKey(newReleaseLeadTrack.source)} data-track-id={newReleaseLeadTrack.id}>
+                  <ArtworkImage src={newReleaseLeadTrack.cover} alt="" loading="eager" />
+                  <span><small><Sparkles size={14} /> 新作</small><strong>{newReleaseLeadTrack.title}</strong><em>{newReleaseLeadTrack.artist}<i>·</i>{newReleaseLeadTrack.album}</em></span>
+                  <button onClick={() => onPlayTrack(newReleaseLeadTrack, { tracks: freshTracks.length ? freshTracks : hotTracks, context: currentPlaybackContext })} aria-label={`播放 ${newReleaseLeadTrack.title}`}><Play size={17} fill="currentColor" /></button>
+                </article>
+              </section>
+              {newReleaseRailTracks.length > 0 && <section className="mobile-content-section mobile-new-release-rail-section"><header><strong>新作选集</strong><span className="mobile-section-meta">{newReleaseRailTracks.length} 首</span></header><div className="mobile-new-release-rail">{newReleaseRailTracks.map((track) => <button key={`fresh:${track.id}`} data-track-id={track.id} data-music-source={sourceBrandKey(track.source)} onClick={() => onPlayTrack(track, { tracks: freshTimeline, context: currentPlaybackContext })}><ArtworkImage src={track.cover} alt="" /><strong>{track.title}</strong><small>{track.artist}</small></button>)}</div></section>}
+              {(trendingTracks.length > 0 || latestFeedTracks.length > 0) && <section className="mobile-content-section mobile-new-feed-section">
+                <nav className="mobile-provider-tabs mobile-new-feed-tabs" aria-label="新热内容"><button className={visibleMobileNewFeed === 'trending' ? 'is-active' : ''} aria-current={visibleMobileNewFeed === 'trending' ? 'page' : undefined} onClick={() => setMobileNewFeed('trending')} disabled={!trendingTracks.length}>热听趋势</button><button className={visibleMobileNewFeed === 'latest' ? 'is-active' : ''} aria-current={visibleMobileNewFeed === 'latest' ? 'page' : undefined} onClick={() => setMobileNewFeed('latest')} disabled={!latestFeedTracks.length}>刚刚上新</button></nav>
+                {visibleMobileNewFeed === 'trending' ? <div className="mobile-trending-list">{trendingTracks.map((track, index) => <button key={`trend:${track.id}`} data-music-source={sourceBrandKey(track.source)} onClick={() => onPlayTrack(track, { tracks: trendingTracks, context: currentPlaybackContext })}><b>{String(index + 1).padStart(2, '0')}</b><ArtworkImage src={track.cover} alt="" /><span><strong>{track.title}</strong><small>{track.artist}<i>·</i>{track.album}</small></span><Play size={15} fill="currentColor" /></button>)}</div> : renderMobilePreviewTracks(latestFeedTracks, 8)}
+              </section>}
+            </div>}
+            {!hotTracks.length && !freshTracks.length && <section className="mobile-source-loading mobile-home-tab-page"><RadioTower size={24} /><strong>新热内容暂时不可用</strong><span>稍后重新加载</span><button onClick={() => refreshDiscovery(true)}>重新加载</button></section>}
+          </>}
+          {mobileHomeSection === 'collections' && <>
+            {spotlightShelf && spotlightTrack && <div className="mobile-home-tab-page mobile-collections-page">
+              <section className="mobile-collection-feature">
+                <button className="mobile-collection-spotlight" data-shelf-id={spotlightShelf.id} onClick={() => openSourceShelf(spotlightShelf)}><span className="mobile-collection-spotlight-art">{spotlightShelf.tracks.slice(0, 3).map((track) => <ArtworkImage key={`spotlight:${track.id}`} src={track.cover} alt="" loading="eager" />)}</span><span><small>{spotlightShelf.eyebrow}</small><strong>{spotlightShelf.name}</strong><p>{spotlightShelf.description}</p><em>{spotlightShelf.tracks.length} 首 · 跨平台更新</em></span><ChevronRight size={18} /></button>
+                <div className="mobile-collection-feature-tracks">{spotlightShelf.tracks.slice(0, 3).map((track, index) => <button key={`spotlight-track:${track.id}`} data-music-source={sourceBrandKey(track.source)} onClick={() => onPlayTrack(track, { tracks: spotlightShelf.tracks, context: { kind: 'discovery', id: `shelf:${spotlightShelf.id}`, title: spotlightShelf.name } })}><b>{String(index + 1).padStart(2, '0')}</b><span><strong>{track.title}</strong><small>{track.artist}</small></span><Play size={14} fill="currentColor" /></button>)}</div>
+              </section>
+              {curatedCollectionGroups.map((group) => <section className={`mobile-content-section mobile-curated-section${group.shelves.length === 1 ? ' is-single' : ''}`} key={group.id}><header><strong>{group.label}</strong><span className="mobile-section-meta">{group.shelves.length} 个选集</span></header><div className="mobile-curated-rail">{group.shelves.map((shelf) => <button key={`curated:${shelf.id}`} data-shelf-id={shelf.id} onClick={() => openSourceShelf(shelf)}><ArtworkImage src={shelf.tracks[0]?.cover} alt="" /><span><strong>{shelf.name}</strong><small>{shelf.tracks.slice(0, 2).map((track) => track.title).join(' · ')}</small><em>{shelf.eyebrow} · {shelf.tracks.length} 首</em></span><ChevronRight size={16} /></button>)}</div></section>)}
+              {collectionListeningTracks.length > 0 && <section className="mobile-content-section mobile-collection-listening"><header><span><strong>选集中热听</strong><small>来自本期主题</small></span><button onClick={() => onPlayTracks(collectionListeningTracks, { kind: 'discovery', id: 'collections:listening', title: '选集中热听' })}>播放 <Play size={14} fill="currentColor" /></button></header>{renderMobilePreviewTracks(collectionListeningTracks, 6)}</section>}
+            </div>}
+            {!featuredShelves.length && <section className="mobile-source-loading mobile-home-tab-page"><Music2 size={24} /><strong>选集暂时不可用</strong><span>稍后重新加载</span><button onClick={() => refreshDiscovery(true)}>重新加载</button></section>}
+          </>}
+          {mobileHomeSection === 'providers' && <>
+            {sourceProviders.length > 0 && <div className="mobile-home-tab-page mobile-platform-page">
+              <nav className="mobile-provider-tabs" aria-label="音乐平台">{sourceProviders.map((provider) => {
+                const providerAvailable = provider.available !== false && provider.tracks.length > 0
+                return <button key={provider.source} className={activeMobileProvider?.source === provider.source ? 'is-active' : ''} aria-current={activeMobileProvider?.source === provider.source ? 'page' : undefined} data-music-source={sourceBrandKey(provider.source)} onClick={() => providerAvailable && setMobileProviderSource(provider.source)} disabled={!providerAvailable}>{provider.name}</button>
+              })}</nav>
+              {activeMobileProvider && <>
+                <section className="mobile-platform-focus" data-music-source={sourceBrandKey(activeMobileProvider.source)}>
+                  <span className="mobile-platform-focus-art">{activeMobileProvider.tracks.slice(0, 3).map((track) => <ArtworkImage key={`focus:${track.id}`} src={track.cover} alt="" />)}</span>
+                  <span><small>音乐平台</small><strong>{activeMobileProvider.name}</strong><em>{activeMobileProvider.tracks.length} 首可听内容</em></span>
+                  <button onClick={() => onPlayTracks(activeMobileProvider.tracks, { kind: 'discovery', id: `provider:${activeMobileProvider.source}`, title: activeMobileProvider.name })} aria-label={`播放 ${activeMobileProvider.name}`}><Play size={17} fill="currentColor" /></button>
+                </section>
+                <section className="mobile-content-section mobile-platform-selection"><header><span><strong>平台热听</strong><small>来自 {activeMobileProvider.name}</small></span><button onClick={() => openProviderLane(activeMobileProvider)}>全部 <ChevronRight size={15} /></button></header>{renderMobilePreviewTracks(activeMobileProvider.tracks, 8)}</section>
+                {activeProviderAlbums.length > 1 && <section className="mobile-content-section mobile-platform-albums"><header><strong>专辑</strong><span className="mobile-section-meta">{activeProviderAlbums.length} 张</span></header><div className="mobile-card-rail">{activeProviderAlbums.map((album) => <button className="mobile-feature-card" key={`provider-album:${album.id}`} onClick={() => openAlbum(album)}><span><ArtworkImage src={album.cover} alt="" /></span><strong>{album.name}</strong><small>{album.artist}</small></button>)}</div></section>}
+                {activeProviderCharts.length > 0 && <section className="mobile-content-section mobile-platform-charts"><header><strong>官方榜单</strong><button onClick={() => selectCollection('charts')}>全部 <ChevronRight size={15} /></button></header><div className="mobile-home-chart-rail">{activeProviderCharts.map(renderMobileHomeChart)}</div></section>}
+              </>}
+            </div>}
+            {!sourceProviders.length && <section className="mobile-source-loading mobile-home-tab-page"><RadioTower size={24} /><strong>平台内容暂时不可用</strong><span>稍后重新加载</span><button onClick={() => refreshDiscovery(true)}>重新加载</button></section>}
+          </>}
+        </main> : activeCollection === 'featured' && !activeEntity ? <main className="mobile-library-scroll mobile-discovery-page" onScroll={(event) => updateMobileHeader(event.currentTarget.scrollTop)}>
+          <h1 className="visually-hidden">发现</h1>
+          <header className={`mobile-scroll-header mobile-root-toolbar ${mobileHeaderRaised ? 'is-raised' : ''} ${mobileHeaderCondensed ? 'is-condensed' : ''}`}><nav className="mobile-root-tabs" aria-label="发现内容"><button className="is-active" aria-current="page">精选</button><button onClick={() => selectCollection('charts')}>榜单</button></nav><button onClick={() => { setMobileSearchMode(true); window.setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label="搜索"><Search size={20} /></button></header>
           {spotlightShelf && spotlightTrack && <button className="mobile-discovery-lead" onClick={() => openSourceShelf(spotlightShelf)}><ArtworkImage src={spotlightTrack.cover} alt="" /><span><small>{spotlightShelf.eyebrow}</small><strong>{spotlightShelf.name}</strong><p>{spotlightShelf.description}</p></span><ChevronRight size={18} /></button>}
           <section className="mobile-content-section"><header><strong>精选主题</strong></header><div className="mobile-theme-grid">{featuredShelves.map((shelf) => <button key={shelf.id} onClick={() => openSourceShelf(shelf)}><span><ArtworkImage src={shelf.tracks[0]?.cover} alt="" /><ArtworkImage src={shelf.tracks[1]?.cover} alt="" /></span><strong>{shelf.name}</strong><small>{shelf.description}</small></button>)}</div></section>
           {moodShelves.length > 0 && <section className="mobile-content-section"><header><strong>按场景聆听</strong></header><div className="mobile-scene-list">{moodShelves.map((shelf) => <button key={shelf.id} onClick={() => openSourceShelf(shelf)}><ArtworkImage src={shelf.tracks[0]?.cover} alt="" /><span><strong>{shelf.name}</strong><small>{shelf.description}</small></span><ChevronRight size={17} /></button>)}</div></section>}
           {(hotTracks.length > 0 || freshTracks.length > 0) && <section className="mobile-content-section mobile-featured-new-hot"><header><strong>新热精选</strong></header>{hotTracks.length > 0 && renderMobilePreviewTracks(hotTracks, 5)}{freshTracks.length > 0 && renderMobilePreviewTracks(freshTracks, 5)}</section>}
           {sourceProviders.length > 0 && <section className="mobile-content-section mobile-provider-section"><header><strong>平台精选</strong></header><div>{sourceProviders.map((provider) => <button key={provider.source} data-music-source={sourceBrandKey(provider.source)} onClick={() => openProviderLane(provider)} disabled={!provider.available}><span className="mobile-provider-mark"><RadioTower size={16} /></span><span><strong>{provider.name}</strong><small>{provider.available ? `${provider.tracks.length} 首内容` : '暂未返回内容'}</small></span><ChevronRight size={16} /></button>)}</div></section>}
-        </main> : activeCollection === 'charts' && !activeEntity ? <main className="mobile-library-scroll mobile-charts-view mobile-discovery-page">
-          <header className="mobile-page-title"><span><small>探索音乐</small><h1>发现</h1></span></header>
-          <nav className="mobile-discovery-tabs"><button onClick={() => selectCollection('featured')}>精选</button><button className="is-active">榜单</button></nav>
+        </main> : activeCollection === 'charts' && !activeEntity ? <main className="mobile-library-scroll mobile-charts-view mobile-discovery-page" onScroll={(event) => updateMobileHeader(event.currentTarget.scrollTop)}>
+          <h1 className="visually-hidden">发现</h1>
+          <header className={`mobile-scroll-header mobile-root-toolbar ${mobileHeaderRaised ? 'is-raised' : ''} ${mobileHeaderCondensed ? 'is-condensed' : ''}`}><nav className="mobile-root-tabs" aria-label="发现内容"><button onClick={() => selectCollection('featured')}>精选</button><button className="is-active" aria-current="page">榜单</button></nav><button onClick={() => { setMobileSearchMode(true); window.setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label="搜索"><Search size={20} /></button></header>
           <nav className="mobile-chart-filters"><button className={chartSource === 'all' ? 'is-active' : ''} onClick={() => setChartSource('all')}>全部</button>{availableChartSections.map((section) => <button key={section.id} className={chartSource === section.id ? 'is-active' : ''} data-music-source={sourceBrandKey(section.id)} onClick={() => setChartSource(section.id)}><span><RadioTower size={13} /></span>{section.name}</button>)}</nav>
           <section className="mobile-chart-list">{chartSections.flatMap((section) => section.charts).map(renderMobileChart)}</section>
-        </main> : activeCollection === 'personal' && !activeEntity ? <main className="mobile-library-scroll mobile-personal-page">
-          <header className="mobile-personal-toolbar"><button onClick={onOpenSettings} aria-label="应用设置"><Settings2 size={20} /></button><h1>我的</h1><div className="mobile-personal-toolbar-actions">{onOpenTheme && <button onClick={onOpenTheme} aria-label="外观设置"><Palette size={19} /></button>}<button onClick={onOpenSources} aria-label="音乐服务状态"><RadioTower size={19} /><i className={`is-${sourcePhase}`} /></button></div></header>
+        </main> : activeCollection === 'personal' && !activeEntity ? <main className="mobile-library-scroll mobile-personal-page" onScroll={(event) => setPersonalHeaderCondensed(event.currentTarget.scrollTop > 112)}>
+          <h1 className="visually-hidden">我的</h1>
+          <header className={`mobile-personal-toolbar ${personalHeaderCondensed ? 'is-condensed' : ''}`}><button onClick={onOpenSettings} aria-label="应用设置"><Settings2 size={20} /></button><strong>{personalHeaderCondensed ? userName : ''}</strong><div className="mobile-personal-toolbar-actions">{onOpenTheme && <button onClick={onOpenTheme} aria-label="外观设置"><Palette size={19} /></button>}<button onClick={onOpenSources} aria-label="音乐服务状态"><RadioTower size={19} /><i className={`is-${sourcePhase}`} /></button></div></header>
           <section className="mobile-profile-hero">
             <button className="mobile-profile-identity" onClick={onOpenAccount} aria-label="打开账户">
               <span className="mobile-profile-avatar">{userName.trim().slice(0, 1).toLocaleUpperCase() || <UserRound size={24} />}</span>
@@ -933,11 +1160,10 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
             </div>
           </section>
           <section className="mobile-playlists-section"><header><span><strong>我的歌单</strong><small>{playlists.length ? `歌单总数 ${playlists.length}` : '整理喜欢的音乐'}</small></span><button onClick={() => openPlaylistEditor('create')} aria-label="新建歌单"><Plus size={20} /></button></header><div>{playlists.map((playlist) => <article key={playlist.id} className="supports-long-press" data-playlist-id={playlist.id} {...playlistLongPress} onContextMenu={(event) => { event.preventDefault(); setPlaylistMenu({ x: event.clientX, y: event.clientY, playlist }) }}><button onClick={() => selectCollection(playlist.id)}><span className="mobile-playlist-cover">{playlist.trackSnapshots[0] ? <ArtworkImage src={playlist.trackSnapshots[0].cover} alt="" /> : <Music2 size={20} />}</span><span><strong>{playlist.name}</strong><small>{playlist.trackIds.length} 首歌曲</small></span><ChevronRight size={17} /></button><button onClick={(event) => setPlaylistMenu({ ...menuPosition(event.currentTarget), playlist })} aria-label={`管理歌单 ${playlist.name}`}><MoreHorizontal size={19} /></button></article>)}{!playlists.length && <button className="mobile-create-playlist" onClick={() => openPlaylistEditor('create')}><span><Plus size={21} /></span><span><strong>创建第一个歌单</strong><small>按场景、风格或心情整理音乐</small></span><ChevronRight size={17} /></button>}</div></section>
-        </main> : <main className="mobile-library-scroll mobile-collection-page">
+        </main> : <main className="mobile-library-scroll mobile-collection-page" onScroll={(event) => updateMobileHeader(event.currentTarget.scrollTop, 124)}>
+          <header className={`mobile-scroll-header mobile-detail-toolbar ${mobileHeaderRaised ? 'is-raised' : ''} ${mobileHeaderCondensed ? 'is-condensed' : ''}`}><button onClick={mobileBack} aria-label={entityReturnLabel}><ChevronLeft size={22} /></button><strong>{collectionTitle}</strong><button onClick={() => { setMobileSearchMode(true); window.setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label={`在${collectionTitle}中搜索`}><Search size={19} /></button></header>
           <header className={`mobile-collection-hero ${activeEntity ? `is-${activeEntity.type}` : ''}`}>
             <ArtworkImage className="mobile-collection-backdrop" src={mobileCollectionCover} alt="" />
-            <button className="mobile-page-back" onClick={mobileBack} aria-label={entityReturnLabel}><ChevronLeft size={25} /></button>
-            <button className="mobile-collection-search" onClick={() => { setMobileSearchMode(true); window.setTimeout(() => searchInputRef.current?.focus(), 0) }} aria-label={`在${collectionTitle}中搜索`}><Search size={20} /></button>
             <ArtworkImage className="mobile-collection-cover" src={mobileCollectionCover} alt="" />
             <span className="mobile-collection-copy">{collectionKind && <small>{collectionKind}</small>}<h1>{collectionTitle}</h1>{activeEntity?.artist && <button onClick={() => activeEntity.tracks[0] && openTrackArtist(activeEntity.tracks[0])}>{activeEntity.artist}</button>}<p>{activeEntity?.description ?? (activePlaylist ? `${activePlaylist.trackIds.length} 首歌曲` : activeCollection === 'liked' ? `${likedCatalogTracks.length} 首收藏` : activeCollection === 'local' ? runtime.localLibraryLabel : activeCollection === 'downloads' ? `${downloadTaskIds.size} 项待处理` : `${queueTracks.length} 首`)}</p></span>
             <div className="mobile-collection-actions"><button className="is-primary" disabled={!visibleTracks.length} onClick={playCurrentCollection}><Play size={18} fill="currentColor" />播放全部</button>{activeEntity && <button disabled={!visibleTracks.length} onClick={() => setPlaylistPicker({ trackIds: visibleTracks.map((track) => track.id), trackTitle: collectionTitle })}><ListPlus size={18} />收藏</button>}</div>
@@ -969,15 +1195,17 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
               <button className={resultMode === 'artists' ? 'is-active' : ''} onClick={() => setResultMode('artists')}>艺人</button>
             </div>
           )}
-          {!activeEntity && visibleTracks.length > 0 && !['featured', 'charts'].includes(activeCollection) && (activeCollection !== 'home' || query) && <button className="play-collection" onClick={playCurrentCollection}><Play size={15} fill="currentColor" /> 播放</button>}
+          {!activeEntity && visibleTracks.length > 0 && !['new', 'featured', 'charts', 'providers'].includes(activeCollection) && (activeCollection !== 'home' || query) && <button className="play-collection" onClick={playCurrentCollection}><Play size={15} fill="currentColor" /> 播放</button>}
         </div>
       </header>
 
       <aside className="library-sidebar">
         <nav className="library-discovery-nav">
-          <button className={activeCollection === 'home' ? 'is-active' : ''} onClick={() => selectCollection('home')}><House size={16} /><span>首页</span></button>
-          <button className={activeCollection === 'featured' ? 'is-active' : ''} onClick={() => selectCollection('featured')}><Compass size={16} /><span>精选</span></button>
+          <button className={activeCollection === 'home' ? 'is-active' : ''} onClick={() => selectCollection('home')}><House size={16} /><span>推荐</span></button>
+          <button className={activeCollection === 'new' ? 'is-active' : ''} onClick={() => selectCollection('new')}><Flame size={16} /><span>新热</span></button>
+          <button className={activeCollection === 'featured' ? 'is-active' : ''} onClick={() => selectCollection('featured')}><Compass size={16} /><span>选集</span></button>
           <button className={activeCollection === 'charts' ? 'is-active' : ''} onClick={() => selectCollection('charts')}><Trophy size={16} /><span>榜单</span></button>
+          <button className={activeCollection === 'providers' ? 'is-active' : ''} onClick={() => selectCollection('providers')}><Globe2 size={16} /><span>平台</span></button>
         </nav>
         <div className="library-sidebar-label">个人音乐</div>
         <nav className="library-personal-nav">
@@ -1048,7 +1276,9 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
             <section className={`library-entity-hero is-${activeEntity.type}`}>
               <button className="library-entity-back" onClick={closeEntity}><ChevronLeft size={16} /> {entityReturnLabel}</button>
               <div className="library-entity-cover">
-                <ArtworkImage src={activeEntity.cover} alt="" />
+                {activeEntity.type === 'chart' && sourceCharts.find((chart) => chart.id === activeEntity.id)
+                  ? renderChartArtwork(sourceCharts.find((chart) => chart.id === activeEntity.id)!, true, activeEntity.tracks)
+                  : <ArtworkImage src={activeEntity.cover} alt="" />}
                 {activeEntity.type === 'artist' && <span aria-hidden="true"><UserRound size={22} /></span>}
               </div>
               <div className="library-entity-copy">
@@ -1081,18 +1311,15 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
             </section>}
           </div>
         ) : activeCollection === 'home' && !query ? (
-          <div className="library-home library-source-home">
-            <section className="library-home-section library-daily-section">
-              <header><span><CalendarDays size={18} /><strong>每日推荐</strong></span><button className="library-section-link" disabled={!dailyTracks.length} onClick={() => onPlayTracks(dailyTracks, { kind: 'discovery', id: `daily:${new Date().toISOString().slice(0, 10)}`, title: '每日推荐' })}><Play size={14} fill="currentColor" /> 播放全部</button></header>
-              {dailyTracks.length ? <div className="library-daily-grid">
-                <button className="library-daily-collection" onClick={() => onPlayTracks(dailyTracks, { kind: 'discovery', id: `daily:${new Date().toISOString().slice(0, 10)}`, title: '每日推荐' })} aria-label="播放今日推荐">
+          <div className="library-home library-source-home library-recommendation-page">
+            <section className="library-home-section library-recommendation-daily">
+              <header><span><CalendarDays size={18} /><strong>每日推荐</strong><small>{dailyRecommendationCopy}</small></span><button className="library-section-link" disabled={!dailyTracks.length} onClick={() => onPlayTracks(dailyTracks, { kind: 'discovery', id: `daily:${new Date().toISOString().slice(0, 10)}`, title: '每日推荐' })}><Play size={14} fill="currentColor" /> 播放全部</button></header>
+              {dailyTracks.length ? <div className="library-recommendation-layout">
+                <button className="library-daily-collection library-recommendation-mix" onClick={() => onPlayTracks(dailyTracks, { kind: 'discovery', id: `daily:${new Date().toISOString().slice(0, 10)}`, title: '每日推荐' })} aria-label="播放今日推荐">
                   <span className="library-daily-mosaic">{dailyTracks.slice(0, 4).map((track) => <ArtworkImage key={track.id} src={track.cover} alt="" loading="eager" />)}<b><CalendarDays size={15} /> {new Date().getDate()}</b><i><Play size={18} fill="currentColor" /></i></span>
-                  <strong>今日 {dailyTracks.length} 首</strong><small>跨平台选曲 · 每天更新</small>
+                  <span><strong>今日 {dailyTracks.length} 首</strong><small>跨平台甄选</small></span><ChevronRight size={18} />
                 </button>
-              {dailyTracks.slice(0, 5).map((track) => <button className="library-daily-track" key={track.id} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: dailyTracks, context: { kind: 'discovery', id: `daily:${new Date().toISOString().slice(0, 10)}`, title: '每日推荐' } })} onClick={() => onPlayTrack(track, { tracks: dailyTracks, context: { kind: 'discovery', id: `daily:${new Date().toISOString().slice(0, 10)}`, title: '每日推荐' } })}>
-                  <span><ArtworkImage src={track.cover} alt="" loading="eager" /><i><Play size={17} fill="currentColor" /></i></span>
-                  <strong>{track.title}</strong><small>{track.artist}</small><em><i />{track.source}</em>
-                </button>)}
+                {renderDesktopTrackRows(dailyTracks, `daily:${new Date().toISOString().slice(0, 10)}`, '每日推荐', 5)}
               </div> : <div className="library-daily-loading"><LoaderCircle size={20} /><span>{discoveryStatus === 'error' ? '每日推荐暂时不可用' : '正在更新每日推荐'}</span></div>}
             </section>
 
@@ -1106,108 +1333,89 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
             )}
 
             {sourceDiscovery && <>
-              {(hotTracks.length > 0 || freshTracks.length > 0) && <section className="library-home-section library-home-new-hot">
-                <header><span><Waves size={18} /><strong>全平台新热</strong></span><small>{new Set([...hotTracks, ...freshTracks].map((track) => track.source)).size} 个平台联合呈现</small></header>
-                <div className="library-new-hot-grid">
-                  {hotTracks.length > 0 && <article className="library-aggregate-lane is-hot">
-                    <header><span><i><Flame size={15} /></i><span><strong>全网热听</strong><small>各平台官方热榜交错聚合</small></span></span><button onClick={() => onPlayTracks(hotTracks, { kind: 'discovery', id: 'aggregate:hot', title: '全网热听' })} title="播放全网热听" aria-label="播放全网热听"><Play size={14} fill="currentColor" /></button></header>
-                    <div>{hotTracks.slice(0, 5).map((track, index) => <button key={track.id} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: hotTracks, context: { kind: 'discovery', id: 'aggregate:hot', title: '全网热听' } })} onClick={() => onPlayTrack(track, { tracks: hotTracks, context: { kind: 'discovery', id: 'aggregate:hot', title: '全网热听' } })} aria-label={`播放 ${track.title}`}>
-                      <b>{String(index + 1).padStart(2, '0')}</b><ArtworkImage src={track.cover} alt="" /><span><strong>{track.title}</strong><small>{track.artist} · {track.album}</small></span><em><i />{track.source}</em>
-                    </button>)}</div>
-                  </article>}
-                  {freshTracks.length > 0 && <article className="library-aggregate-lane is-fresh">
-                    <header><span><i><Clock3 size={15} /></i><span><strong>新歌速递</strong><small>多平台近期新作汇集</small></span></span><button onClick={() => onPlayTracks(freshTracks, { kind: 'discovery', id: 'aggregate:fresh', title: '新歌速递' })} title="播放新歌速递" aria-label="播放新歌速递"><Play size={14} fill="currentColor" /></button></header>
-                    <div>{freshTracks.slice(0, 5).map((track) => <button key={track.id} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: freshTracks, context: { kind: 'discovery', id: 'aggregate:fresh', title: '新歌速递' } })} onClick={() => onPlayTrack(track, { tracks: freshTracks, context: { kind: 'discovery', id: 'aggregate:fresh', title: '新歌速递' } })} aria-label={`播放 ${track.title}`}>
-                      <b>新</b><ArtworkImage src={track.cover} alt="" /><span><strong>{track.title}</strong><small>{track.artist} · {track.album}</small></span><em><i />{track.source}</em>
-                    </button>)}</div>
-                  </article>}
-                </div>
+              {homeRecommendationTracks.length > 0 && <section className="library-home-section library-recommendation-picks">
+                <header><span><Sparkles size={18} /><strong>为你精选</strong><small>{hasPersonalizationSignals ? '结合你的收藏' : '跨平台挑选'}</small></span><button className="library-section-link" onClick={() => onPlayTracks(homeRecommendationTracks, { kind: 'discovery', id: 'home:picks', title: '为你精选' })}><Play size={14} fill="currentColor" /> 播放</button></header>
+                {renderDesktopTrackRows(homeRecommendationTracks, 'home:picks', '为你精选', 6)}
               </section>}
 
-              {homeCharts.length > 0 && <section className="library-home-section library-home-charts">
-                <header><span><BarChart3 size={18} /><strong>榜单速览</strong></span><button className="library-section-link" onClick={() => selectCollection('charts')}>查看全部榜单 <ChevronRight size={15} /></button></header>
-                <div className={chartGridClass(homeCharts.slice(0, 4).length)}>{homeCharts.slice(0, 4).map(renderSourceChart)}</div>
+              {homeAlbumPicks.length > 0 && <section className="library-home-section library-recommendation-albums">
+                <header><span><Disc3 size={18} /><strong>专辑推荐</strong><small>从今日内容继续发现</small></span></header>
+                <div className="library-home-albums is-recommendation-albums">{homeAlbumPicks.map((album) => <button key={`home-album:${album.id}`} onClick={() => openAlbum(album)} aria-label={`查看专辑 ${album.name}`}><ArtworkImage src={album.cover} alt="" /><span><strong>{album.name}</strong><small>{album.artist}</small></span></button>)}</div>
               </section>}
 
-              <section className="library-home-section library-more-curations">
-                <header><span><Sparkles size={18} /><strong>更多精选</strong></span><button className="library-section-link" onClick={() => selectCollection('featured')}>查看全部 <ChevronRight size={15} /></button></header>
-                <div className="library-home-curation-grid">
-                  {sourceShelves.filter((shelf) => shelf.id !== 'source-trending' && shelf.kind !== 'quality').slice(0, 5).map((shelf) => <button className="library-home-curation-card" key={shelf.id} onClick={() => openSourceShelf(shelf)} aria-label={`浏览${shelf.name}`}>
+              {homeFeaturedShelves.length > 0 && <section className="library-home-section library-more-curations">
+                <header><span><Compass size={18} /><strong>适合此刻</strong><small>按场景与状态整理</small></span><button className="library-section-link" onClick={() => selectCollection('featured')}>全部选集 <ChevronRight size={15} /></button></header>
+                <div className="library-home-curation-grid is-recommendation-grid">
+                  {homeFeaturedShelves.map((shelf) => <button className="library-home-curation-card" key={shelf.id} onClick={() => openSourceShelf(shelf)} aria-label={`浏览${shelf.name}`}>
                     <span className="library-home-curation-covers">{shelf.tracks.slice(0, 3).map((track) => <ArtworkImage key={track.id} src={track.cover} alt="" />)}</span>
                     <span className="library-home-curation-copy"><span><small>{shelf.eyebrow}</small><strong>{shelf.name}</strong></span><i><ChevronRight size={15} /></i></span>
                   </button>)}
                 </div>
-              </section>
+              </section>}
 
-              <section className="library-home-section library-source-platforms">
-                <header><span><Globe2 size={18} /><strong>音乐平台</strong></span><small>{sourceProviders.length} 个平台</small></header>
-                <div className="library-provider-lanes">
-                  {sourceProviders.map((provider) => <article className={provider.available ? '' : 'is-unavailable'} key={provider.source} data-music-source={sourceBrandKey(provider.source)}>
-                    <header><span><i />{provider.name}</span><button disabled={!provider.available} onClick={() => openProviderLane(provider)} title={provider.available ? `查看 ${provider.name}` : `${provider.name}暂未返回内容`} aria-label={provider.available ? `查看 ${provider.name}` : `${provider.name}暂未返回内容`}><ChevronRight size={16} /></button></header>
-                    <div>{provider.available ? provider.tracks.slice(0, 3).map((track) => <button key={track.id} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: provider.tracks, context: { kind: 'discovery', id: `provider:${provider.source}`, title: provider.name } })} onClick={() => onPlayTrack(track, { tracks: provider.tracks, context: { kind: 'discovery', id: `provider:${provider.source}`, title: provider.name } })}><ArtworkImage src={track.cover} alt="" /><span><strong>{track.title}</strong><small>{track.artist}</small></span><Play size={14} fill="currentColor" /></button>) : <span className="library-provider-empty">暂未返回内容</span>}</div>
-                  </article>)}
-                </div>
-              </section>
+              {homeCharts.length > 0 && <section className="library-home-section library-recommendation-trends">
+                <header><span><BarChart3 size={18} /><strong>趋势速览</strong><small>各平台正在发生</small></span><button className="library-section-link" onClick={() => selectCollection('charts')}>全部榜单 <ChevronRight size={15} /></button></header>
+                <div className="library-home-trend-strip">{homeCharts.slice(0, 4).map((chart) => <button key={`home-chart:${chart.id}`} data-music-source={sourceBrandKey(chart.source)} onClick={() => openSourceChart(chart)}>{renderChartArtwork(chart)}<span><small>{chart.eyebrow}</small><strong>{chart.name}</strong><em>{chart.tracks.slice(0, 2).map((track) => track.title).join(' · ') || chart.preview.slice(0, 2).map((track) => track.title).join(' · ') || '随平台更新'}</em></span><ChevronRight size={17} /></button>)}</div>
+              </section>}
 
-              <section className="library-home-section">
-                <header><span><Disc3 size={18} /><strong>专辑与作品集</strong></span><small>当前主题中已发现</small></header>
-                <div className="library-home-albums">
-                  {sourceAlbumGroups.slice(0, 6).map((album) => <button key={album.id} onClick={() => openAlbum(album)} aria-label={`查看专辑 ${album.name}`}><ArtworkImage src={album.cover} alt="" /><span><strong>{album.name}</strong><small>{album.artist}</small></span></button>)}
+              {homeFreshPreviewTracks.length > 0 && <section className="library-home-section library-recommendation-fresh">
+                <header><span><Clock3 size={18} /><strong>新鲜上架</strong><small>近期值得留意的新作</small></span><button className="library-section-link" onClick={() => selectCollection('new')}>进入新热 <ChevronRight size={15} /></button></header>
+                {renderDesktopTrackRows(homeFreshPreviewTracks, 'home:fresh', '新鲜上架', 6)}
+              </section>}
+            </>}
+          </div>
+        ) : activeCollection === 'new' && !query ? (
+          <div className="library-home library-destination-page library-new-page">
+            <section className="library-destination-heading">
+              <div><span><Flame size={16} /> 新作与趋势</span><h2>新作正在抵达</h2><p>按发布时间与全平台热度持续更新。</p></div>
+              {newReleaseLeadTrack && <button className="library-new-lead" data-track-id={newReleaseLeadTrack.id} data-music-source={sourceBrandKey(newReleaseLeadTrack.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, newReleaseLeadTrack, { tracks: freshTracks, context: { kind: 'discovery', id: 'new:fresh', title: '最新发布' } })} onClick={() => onPlayTrack(newReleaseLeadTrack, { tracks: freshTracks, context: { kind: 'discovery', id: 'new:fresh', title: '最新发布' } })}><ArtworkImage src={newReleaseLeadTrack.cover} alt="" /><span><small>最新发布</small><strong>{newReleaseLeadTrack.title}</strong><em>{newReleaseLeadTrack.artist} · {newReleaseLeadTrack.album}</em></span><i><Play size={18} fill="currentColor" /></i></button>}
+            </section>
+
+            {discoveryStatus === 'error' && !sourceDiscovery && <section className="library-source-state"><RadioTower size={25} /><strong>新热内容暂时不可用</strong><span>{discoveryError}</span><button onClick={() => refreshDiscovery(true)}><RefreshCw size={15} /> 重新加载</button></section>}
+            {discoveryStatus === 'loading' && !sourceDiscovery && <section className="library-source-state is-loading"><LoaderCircle size={25} /><strong>正在更新新热内容</strong><span>获取近期发行与热听趋势</span></section>}
+
+            {sourceDiscovery && <>
+              {newReleaseRailTracks.length > 0 && <section className="library-home-section">
+                <header><span><Sparkles size={18} /><strong>新作选集</strong><small>{newReleaseRailTracks.length} 首</small></span><button className="library-section-link" onClick={() => onPlayTracks(freshTimeline, { kind: 'discovery', id: 'new:fresh', title: '最新发布' })}><Play size={14} fill="currentColor" /> 播放全部</button></header>
+                {renderDesktopTrackGrid(newReleaseRailTracks, 'new:fresh', '最新发布', 6)}
+              </section>}
+              <section className="library-home-section library-new-streams">
+                <header><span><Waves size={18} /><strong>趋势与上新</strong><small>持续更新</small></span></header>
+                <div className="library-new-hot-grid">
+                  {trendingTracks.length > 0 && <article className="library-aggregate-lane is-hot"><header><span><i><Flame size={15} /></i><span><strong>热听趋势</strong><small>跨平台热度聚合</small></span></span><button onClick={() => onPlayTracks(trendingTracks, { kind: 'discovery', id: 'new:hot', title: '热听趋势' })} aria-label="播放热听趋势"><Play size={14} fill="currentColor" /></button></header><div>{trendingTracks.map((track, index) => <button key={`hot:${track.id}`} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: trendingTracks, context: { kind: 'discovery', id: 'new:hot', title: '热听趋势' } })} onClick={() => onPlayTrack(track, { tracks: trendingTracks, context: { kind: 'discovery', id: 'new:hot', title: '热听趋势' } })}><b>{String(index + 1).padStart(2, '0')}</b><ArtworkImage src={track.cover} alt="" /><span><strong>{track.title}</strong><small>{track.artist} · {track.album}</small></span><em><i />{track.source}</em></button>)}</div></article>}
+                  {latestFeedTracks.length > 0 && <article className="library-aggregate-lane is-fresh"><header><span><i><Clock3 size={15} /></i><span><strong>刚刚上新</strong><small>按发布时间更新</small></span></span><button onClick={() => onPlayTracks(latestFeedTracks, { kind: 'discovery', id: 'new:recent', title: '刚刚上新' })} aria-label="播放刚刚上新"><Play size={14} fill="currentColor" /></button></header><div>{latestFeedTracks.map((track) => <button key={`recent:${track.id}`} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: latestFeedTracks, context: { kind: 'discovery', id: 'new:recent', title: '刚刚上新' } })} onClick={() => onPlayTrack(track, { tracks: latestFeedTracks, context: { kind: 'discovery', id: 'new:recent', title: '刚刚上新' } })}><b>新</b><ArtworkImage src={track.cover} alt="" /><span><strong>{track.title}</strong><small>{track.artist} · {track.album}</small></span><em><i />{track.source}</em></button>)}</div></article>}
                 </div>
               </section>
             </>}
           </div>
         ) : activeCollection === 'featured' && !query ? (
           <div className="library-home library-featured-page library-source-featured">
-            <section className="library-curation-hero">
-              <div>
-                <span><Compass size={17} /> 主题浏览</span>
-                <h2>从一种声音开始</h2>
-                <p>在不同风格、场景与年代之间，找到适合此刻的声音。</p>
-                <button disabled={!spotlightShelf} onClick={() => spotlightShelf && openSourceShelf(spotlightShelf)}><Play size={16} fill="currentColor" /> 开始探索</button>
-              </div>
-              {spotlightTrack && spotlightShelf && <button className="library-curation-focus" data-music-source={sourceBrandKey(spotlightTrack.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, spotlightTrack, { tracks: spotlightShelf.tracks, context: { kind: 'discovery', id: `shelf:${spotlightShelf.id}`, title: spotlightShelf.name } })} onClick={() => onPlayTrack(spotlightTrack, { tracks: spotlightShelf.tracks, context: { kind: 'discovery', id: `shelf:${spotlightShelf.id}`, title: spotlightShelf.name } })}><ArtworkImage src={spotlightTrack.cover} alt="" /><span><small>{spotlightShelf.eyebrow}</small><strong>{spotlightTrack.title}</strong><em>{spotlightTrack.artist} · {spotlightTrack.source}</em></span><i><Play size={18} fill="currentColor" /></i></button>}
-            </section>
+            {spotlightTrack && spotlightShelf && <section className="library-curation-editorial">
+              <button className="library-curation-primary" data-shelf-id={spotlightShelf.id} onClick={() => openSourceShelf(spotlightShelf)}>
+                <span className="library-curation-primary-art">{spotlightShelf.tracks.slice(0, 4).map((track) => <ArtworkImage key={`editorial:${track.id}`} src={track.cover} alt="" loading="eager" />)}</span>
+                <span className="library-curation-primary-copy"><small>{spotlightShelf.eyebrow}</small><strong>{spotlightShelf.name}</strong><p>{spotlightShelf.description}</p><em>{spotlightShelf.tracks.length} 首 · 跨平台更新</em><i>打开选集 <ChevronRight size={15} /></i></span>
+              </button>
+              <div className="library-curation-preview"><header><strong>本期选曲</strong><button onClick={() => onPlayTracks(spotlightShelf.tracks, { kind: 'discovery', id: `shelf:${spotlightShelf.id}`, title: spotlightShelf.name })} aria-label={`播放${spotlightShelf.name}`}><Play size={14} fill="currentColor" /></button></header>{spotlightShelf.tracks.slice(0, 4).map((track, index) => <button key={`editorial-track:${track.id}`} data-music-source={sourceBrandKey(track.source)} onClick={() => onPlayTrack(track, { tracks: spotlightShelf.tracks, context: { kind: 'discovery', id: `shelf:${spotlightShelf.id}`, title: spotlightShelf.name } })}><b>{String(index + 1).padStart(2, '0')}</b><ArtworkImage src={track.cover} alt="" /><span><strong>{track.title}</strong><small>{track.artist}</small></span><Play size={14} fill="currentColor" /></button>)}</div>
+            </section>}
 
             {discoveryStatus === 'error' && !sourceDiscovery && <section className="library-source-state"><RadioTower size={25} /><strong>主题内容暂时不可用</strong><span>{discoveryError}</span><button onClick={() => refreshDiscovery(true)}><RefreshCw size={15} /> 重新加载</button></section>}
             {discoveryStatus === 'loading' && !sourceDiscovery && <section className="library-source-state is-loading"><LoaderCircle size={25} /><strong>正在加载主题内容</strong><span>获取最新精选内容</span></section>}
 
             {sourceDiscovery && <>
-              <section className="library-home-section">
-                <header><span><Sparkles size={18} /><strong>精选主题</strong></span><small>{featuredShelves.length} 个主题</small></header>
+              {curatedCollectionGroups.map((group) => <section className={`library-home-section library-curated-group${group.shelves.length === 1 ? ' is-single' : ''}`} key={group.id}>
+                <header><span><Sparkles size={18} /><strong>{group.label}</strong></span><small>{group.shelves.length} 个选集</small></header>
                 <div className="library-curation-grid">
-                  {featuredShelves.map((shelf) => <button key={shelf.id} onClick={() => openSourceShelf(shelf)}>
+                  {group.shelves.map((shelf) => <button key={shelf.id} data-shelf-id={shelf.id} onClick={() => openSourceShelf(shelf)}>
                     <span className="library-curation-covers">{shelf.tracks.slice(0, 3).map((track) => <ArtworkImage key={track.id} src={track.cover} alt="" />)}</span>
-                    <span className="library-curation-copy"><small>{shelf.eyebrow}</small><strong>{shelf.name}</strong><p>{shelf.description}</p><em>{shelf.tracks.length} 首 · {new Set(shelf.tracks.map((track) => track.source)).size} 个平台</em></span>
+                    <span className="library-curation-copy"><small>{shelf.eyebrow}</small><strong>{shelf.name}</strong><p>{shelf.tracks.slice(0, 2).map((track) => track.title).join(' · ')}</p><em>{shelf.tracks.length} 首 · {new Set(shelf.tracks.map((track) => track.source)).size} 个平台</em></span>
                   </button>)}
                 </div>
-              </section>
+              </section>)}
 
-              {moodShelves.length > 0 && <section className="library-home-section library-scene-section">
-                <header><span><Headphones size={18} /><strong>按场景聆听</strong></span><small>专注、夜晚与现场</small></header>
-                <div className="library-scene-strips">
-                  {moodShelves.map((shelf) => <button key={shelf.id} onClick={() => openSourceShelf(shelf)}><ArtworkImage src={shelf.tracks[0]?.cover} alt="" /><span><small>{shelf.eyebrow}</small><strong>{shelf.name}</strong><p>{shelf.description}</p></span><ChevronRight size={18} /></button>)}
-                </div>
+              {collectionListeningTracks.length > 0 && <section className="library-home-section library-collection-listening">
+                <header><span><Headphones size={18} /><strong>选集中热听</strong><small>来自本期主题</small></span><button className="library-section-link" onClick={() => onPlayTracks(collectionListeningTracks, { kind: 'discovery', id: 'collections:listening', title: '选集中热听' })}><Play size={14} fill="currentColor" /> 播放</button></header>
+                {renderDesktopTrackRows(collectionListeningTracks, 'collections:listening', '选集中热听', 8)}
               </section>}
-
-              {sourceCharts.length > 0 && <section className="library-home-section library-home-rankings">
-                <header><span><BarChart3 size={18} /><strong>平台官方榜单</strong></span><button className="library-section-link" onClick={() => selectCollection('charts')}>查看全部 <ChevronRight size={15} /></button></header>
-                <div className={chartGridClass(homeCharts.length)}>{homeCharts.map(renderSourceChart)}</div>
-              </section>}
-
-              {qualityShelf && <section className="library-home-section library-quality-section">
-                <header><span><Waves size={18} /><strong>无损与高解析度</strong></span><button className="library-section-link" onClick={() => openSourceShelf(qualityShelf)}>查看全部 <ChevronRight size={15} /></button></header>
-                <div className="library-quality-strip">
-                  {qualityShelf.tracks.slice(0, 6).map((track) => <button key={track.id} data-music-source={sourceBrandKey(track.source)} onContextMenu={(event) => openTrackSurfaceMenu(event, track, { tracks: qualityShelf.tracks, context: { kind: 'discovery', id: `shelf:${qualityShelf.id}`, title: qualityShelf.name } })} onClick={() => onPlayTrack(track, { tracks: qualityShelf.tracks, context: { kind: 'discovery', id: `shelf:${qualityShelf.id}`, title: qualityShelf.name } })}><ArtworkImage src={track.cover} alt="" /><span><strong>{track.title}</strong><small>{track.artist}</small></span><em>{track.quality}</em></button>)}
-                </div>
-              </section>}
-
-              <section className="library-home-section">
-                <header><span><UserRound size={18} /><strong>艺人</strong></span><small>当前主题中已发现</small></header>
-                <div className="library-featured-artists">
-                  {sourceArtistGroups.slice(0, 7).map((artist) => <button key={artist.id} onClick={() => openArtist(artist)}><ArtworkImage src={artist.cover} alt="" /><strong>{artist.name}</strong><small>{artist.tracks.length} 首作品</small></button>)}
-                </div>
-              </section>
             </>}
           </div>
         ) : activeCollection === 'charts' && !query ? (
@@ -1219,7 +1427,7 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
                 <p>纵览各平台的热歌、新歌与趋势排行，曲目顺序随平台持续更新。</p>
                 <button disabled={!activeLeadingChart} onClick={() => activeLeadingChart && openSourceChart(activeLeadingChart)}><ListMusic size={16} /> 浏览核心榜</button>
               </div>
-              {activeLeadingChart && <button className="library-chart-spotlight" data-music-source={sourceBrandKey(activeLeadingChart.source)} onClick={() => openSourceChart(activeLeadingChart)}><span className="library-chart-cover"><ArtworkImage src={activeLeadingChart.cover} alt="" /></span><span><small>{activeLeadingChart.eyebrow} · 平台榜单</small><strong>{activeLeadingChart.name}</strong><em>{activeLeadingChart.updatedAt ? `更新于 ${activeLeadingChart.updatedAt}` : activeLeadingChart.updateFrequency || '随平台更新'}</em></span><ChevronRight size={20} /></button>}
+              {activeLeadingChart && <button className="library-chart-spotlight" data-music-source={sourceBrandKey(activeLeadingChart.source)} onClick={() => openSourceChart(activeLeadingChart)}><span className="library-chart-cover">{renderChartArtwork(activeLeadingChart, true)}</span><span><small>{activeLeadingChart.eyebrow} · 平台榜单</small><strong>{activeLeadingChart.name}</strong><em>{activeLeadingChart.updatedAt ? `更新于 ${activeLeadingChart.updatedAt}` : activeLeadingChart.updateFrequency || '随平台更新'}</em></span><ChevronRight size={20} /></button>}
             </section>
 
             {availableChartSections.length > 0 && <nav className="library-chart-source-filter" aria-label="榜单平台">
@@ -1235,6 +1443,35 @@ export default function LibrarySpace({ mobile = false, catalog, queueTracks, pla
               <div className={chartGridClass(section.charts.length)}>{section.charts.map(renderSourceChart)}</div>
             </section>)}
             {sourceDiscovery && !sourceCharts.length && <section className="library-source-state"><Trophy size={25} /><strong>平台榜单暂时不可用</strong><span>歌曲搜索仍可正常使用，请稍后重新加载榜单。</span><button onClick={() => refreshDiscovery(true)}><RefreshCw size={15} /> 重新加载</button></section>}
+          </div>
+        ) : activeCollection === 'providers' && !query ? (
+          <div className="library-home library-destination-page library-providers-page">
+            <section className="library-destination-heading library-platform-heading">
+              <div><span><Globe2 size={16} /> 音乐平台</span><h2>按来源浏览</h2><p>进入平台热听、专辑与官方榜单。</p></div>
+              <strong>{availableSourceProviders.length}<small> 个平台可用</small></strong>
+            </section>
+
+            {discoveryStatus === 'error' && !sourceDiscovery && <section className="library-source-state"><RadioTower size={25} /><strong>平台内容暂时不可用</strong><span>{discoveryError}</span><button onClick={() => refreshDiscovery(true)}><RefreshCw size={15} /> 重新加载</button></section>}
+            {discoveryStatus === 'loading' && !sourceDiscovery && <section className="library-source-state is-loading"><LoaderCircle size={25} /><strong>正在连接音乐平台</strong><span>获取平台内容</span></section>}
+
+            {sourceDiscovery && sourceProviders.length > 0 && <>
+              <nav className="library-provider-selector" aria-label="音乐平台">
+                {sourceProviders.map((provider) => <button key={provider.source} data-music-source={sourceBrandKey(provider.source)} className={activeProvider?.source === provider.source ? 'is-active' : ''} disabled={provider.available === false || !provider.tracks.length} onClick={() => setMobileProviderSource(provider.source)}><i /><span><strong>{provider.name}</strong><small>{provider.available !== false && provider.tracks.length ? `${provider.tracks.length} 首内容` : '暂不可用'}</small></span></button>)}
+              </nav>
+              {activeProvider && <section className="library-home-section library-provider-focus" data-music-source={sourceBrandKey(activeProvider.source)}>
+                <header><span><RadioTower size={18} /><strong>{activeProvider.name}热听</strong><small>{activeProvider.tracks.length} 首可听内容</small></span><button className="library-section-link" onClick={() => openProviderLane(activeProvider)}>全部歌曲 <ChevronRight size={15} /></button></header>
+                {renderDesktopTrackGrid(activeProvider.tracks, `provider:${activeProvider.source}`, activeProvider.name, 8)}
+              </section>}
+              {activeProviderAlbums.length > 1 && <section className="library-home-section library-provider-albums">
+                <header><span><Disc3 size={18} /><strong>专辑</strong><small>{activeProvider.name}</small></span></header>
+                <div className="library-home-albums">{activeProviderAlbums.map((album) => <button key={album.id} onClick={() => openAlbum(album)} aria-label={`查看专辑 ${album.name}`}><ArtworkImage src={album.cover} alt="" /><span><strong>{album.name}</strong><small>{album.artist}</small></span></button>)}</div>
+              </section>}
+              {activeProviderCharts.length > 0 && <section className="library-home-section library-provider-charts">
+                <header><span><BarChart3 size={18} /><strong>官方榜单</strong><small>{activeProvider.name}</small></span><button className="library-section-link" onClick={() => { setChartSource(activeProvider.source); selectCollection('charts') }}>全部榜单 <ChevronRight size={15} /></button></header>
+                <div className={chartGridClass(activeProviderCharts.length)}>{activeProviderCharts.map(renderSourceChart)}</div>
+              </section>}
+            </>}
+            {sourceDiscovery && !sourceProviders.length && <section className="library-source-state"><Globe2 size={25} /><strong>平台内容暂时不可用</strong><span>稍后重新加载。</span><button onClick={() => refreshDiscovery(true)}><RefreshCw size={15} /> 重新加载</button></section>}
           </div>
         ) : activeCollection === 'home' && resultMode === 'albums' ? (
           <div className="library-group-list">

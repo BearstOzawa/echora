@@ -1,8 +1,10 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { initialTracks } from '../testFixtures'
-import type { SourceDiscoveryCatalog, SourceDiscoveryShelf } from '../sourceDiscovery'
+import { brandMarkPath } from '../brandAssets'
+import type { SourceChart, SourceDiscoveryCatalog, SourceDiscoveryShelf } from '../sourceDiscovery'
 import type { RuntimeCapabilities } from '../runtimeCapabilities'
+import type { Track } from '../types'
 import LibrarySpace from './LibrarySpace'
 
 afterEach(cleanup)
@@ -45,10 +47,10 @@ const discoveryCatalog: SourceDiscoveryCatalog = {
   shelves: discoveryShelves,
   providers: discoveryProviders,
   charts: [
-    { id: 'official:tx:26', boardId: '26', source: 'tx', name: 'QQ 热歌榜', eyebrow: 'QQ 音乐', description: 'QQ 音乐官方榜单', category: 'platform', cover: initialTracks[0].cover, preview: [], tracks: initialTracks.slice(0, 6), updatedAt: '2026-07-14' },
-    { id: 'official:tx:62', boardId: '62', source: 'tx', name: 'QQ 飙升榜', eyebrow: 'QQ 音乐', description: 'QQ 音乐官方榜单', category: 'platform', cover: initialTracks[0].cover, preview: [], tracks: initialTracks.slice(0, 6), updatedAt: '2026-07-14' },
-    { id: 'official:tx:65', boardId: '65', source: 'tx', name: 'QQ 国风热歌榜', eyebrow: 'QQ 音乐', description: 'QQ 音乐官方榜单', category: 'platform', cover: initialTracks[0].cover, preview: [], tracks: initialTracks.slice(0, 6), updatedAt: '2026-07-14' },
-    { id: 'official:wy:3778678', boardId: '3778678', source: 'wy', name: '网易云热歌榜', eyebrow: '网易云音乐', description: '网易云音乐官方榜单', category: 'platform', cover: initialTracks[0].cover, preview: [], tracks: initialTracks.slice(0, 6), updatedAt: '2026-07-14' },
+    { id: 'official:tx:26', boardId: '26', source: 'tx', name: 'QQ 热歌榜', eyebrow: 'QQ 音乐', description: 'QQ 音乐官方榜单', category: 'platform', cover: brandMarkPath, preview: [], tracks: initialTracks.slice(0, 6), updatedAt: '2026-07-14' },
+    { id: 'official:tx:62', boardId: '62', source: 'tx', name: 'QQ 飙升榜', eyebrow: 'QQ 音乐', description: 'QQ 音乐官方榜单', category: 'platform', cover: brandMarkPath, preview: [], tracks: [], updatedAt: '2026-07-14' },
+    { id: 'official:tx:65', boardId: '65', source: 'tx', name: 'QQ 国风热歌榜', eyebrow: 'QQ 音乐', description: 'QQ 音乐官方榜单', category: 'platform', cover: brandMarkPath, preview: [], tracks: [], updatedAt: '2026-07-14' },
+    { id: 'official:wy:3778678', boardId: '3778678', source: 'wy', name: '网易云热歌榜', eyebrow: '网易云音乐', description: '网易云音乐官方榜单', category: 'platform', cover: brandMarkPath, preview: [], tracks: initialTracks.slice(0, 6), updatedAt: '2026-07-14' },
   ],
   hotTracks: initialTracks.slice(0, 8),
   freshTracks: initialTracks.slice(2, 10),
@@ -58,7 +60,7 @@ const discoveryCatalog: SourceDiscoveryCatalog = {
 
 const desktopRuntime: RuntimeCapabilities = { kind: 'desktop', native: true, canControlWindow: true, canImportFolder: true, hasLocalLibrary: true, downloadBehavior: 'offline-library', canExportLocalFiles: true, localLibraryLabel: '下载内容保存在应用本地音乐中；也可以导入文件或音乐文件夹。', downloadSuccessLabel: '已保存到应用本地音乐', credentialStorageLabel: '本机' }
 
-const renderLibrary = (downloadedTrackIds = [1], onSearchCatalog?: (query: string) => Promise<typeof initialTracks>, catalog = initialTracks, runtime?: RuntimeCapabilities) => {
+const renderLibrary = (downloadedTrackIds = [1], onSearchCatalog?: (query: string) => Promise<typeof initialTracks>, catalog = initialTracks, runtime?: RuntimeCapabilities, onLoadChart?: (chart: SourceChart) => Promise<Track[]>) => {
   const actions = {
     onPlayTrack: vi.fn(),
     onPlayTracks: vi.fn(),
@@ -71,7 +73,7 @@ const renderLibrary = (downloadedTrackIds = [1], onSearchCatalog?: (query: strin
     onNotice: vi.fn(),
     onToggleLike: vi.fn(),
   }
-  render(<LibrarySpace catalog={catalog} queueTracks={catalog.slice(0, 2)} downloadedTrackIds={downloadedTrackIds} activeTrackId={1} isPlaying likedTrackIds={[1]} onSearchCatalog={onSearchCatalog} onLoadDiscovery={vi.fn().mockResolvedValue(discoveryCatalog)} runtime={runtime} {...actions} />)
+  render(<LibrarySpace catalog={catalog} queueTracks={catalog.slice(0, 2)} downloadedTrackIds={downloadedTrackIds} activeTrackId={1} isPlaying likedTrackIds={[1]} onSearchCatalog={onSearchCatalog} onLoadDiscovery={vi.fn().mockResolvedValue(discoveryCatalog)} onLoadChart={onLoadChart} runtime={runtime} sourcePhase="ready" {...actions} />)
   return actions
 }
 
@@ -79,7 +81,7 @@ const renderMobileLibrary = (navigationRequest: { key: number; type: 'home' | 'f
   const actions = {
     onPlayTrack: vi.fn(), onPlayTracks: vi.fn(), onPlayNext: vi.fn(), onAddToQueue: vi.fn(), onDownloadTrack: vi.fn(), onRemoveDownload: vi.fn(), onExportLocalTracks: vi.fn(), onRemoveFromQueue: vi.fn(), onNotice: vi.fn(), onToggleLike: vi.fn(),
   }
-  render(<LibrarySpace mobile catalog={initialTracks} queueTracks={initialTracks.slice(0, 2)} downloadedTrackIds={[]} activeTrackId={initialTracks[0].id} isPlaying={false} likedTrackIds={[initialTracks[0].id]} onLoadDiscovery={vi.fn().mockResolvedValue(discoveryCatalog)} navigationRequest={navigationRequest} onMobileNavigationLevelChange={onMobileNavigationLevelChange} {...actions} />)
+  render(<LibrarySpace mobile catalog={initialTracks} queueTracks={initialTracks.slice(0, 2)} downloadedTrackIds={[]} activeTrackId={initialTracks[0].id} isPlaying={false} likedTrackIds={[initialTracks[0].id]} onLoadDiscovery={vi.fn().mockResolvedValue(discoveryCatalog)} sourcePhase="ready" navigationRequest={navigationRequest} onMobileNavigationLevelChange={onMobileNavigationLevelChange} {...actions} />)
   return actions
 }
 
@@ -239,6 +241,7 @@ describe('LibrarySpace playback actions', () => {
     const mobileView = document.querySelector('.mobile-library-view') as HTMLElement
     fireEvent.click(mobileView.querySelector<HTMLElement>('[data-playlist-id="test-late-night"] > button')!)
     await waitFor(() => expect(onMobileNavigationLevelChange).toHaveBeenLastCalledWith('detail'))
+    expect(document.querySelector('.library-workspace')?.getAttribute('data-mobile-layout')).toBe('personal-detail')
 
     fireEvent.click(within(mobileView).getByRole('button', { name: '返回我的' }))
     await waitFor(() => expect(onMobileNavigationLevelChange).toHaveBeenLastCalledWith('root'))
@@ -250,6 +253,8 @@ describe('LibrarySpace playback actions', () => {
 
     const mobileView = document.querySelector('.mobile-library-view') as HTMLElement
     await waitFor(() => expect(onMobileNavigationLevelChange).toHaveBeenLastCalledWith('detail'))
+    expect(document.querySelector('.library-workspace')?.getAttribute('data-mobile-layout')).toBe('personal-detail')
+    expect(document.querySelector('.library-workspace')?.getAttribute('data-mobile-header')).toBe('search')
     fireEvent.click(within(mobileView).getByRole('button', { name: '在喜欢的音乐中搜索' }))
     await waitFor(() => expect(onMobileNavigationLevelChange).toHaveBeenLastCalledWith('search'))
 
@@ -260,7 +265,7 @@ describe('LibrarySpace playback actions', () => {
 
   it('keeps the home curation shelf compact and artwork-led', async () => {
     renderLibrary()
-    await waitFor(() => expect(document.querySelectorAll('.library-home-curation-card')).toHaveLength(5))
+    await waitFor(() => expect(document.querySelectorAll('.library-home-curation-card')).toHaveLength(6))
     const cards = Array.from(document.querySelectorAll('.library-home-curation-card'))
     expect(cards.every((card) => card.querySelectorAll('.library-home-curation-covers img').length === 3)).toBe(true)
     expect(cards.every((card) => card.querySelector('p') === null)).toBe(true)
@@ -275,20 +280,19 @@ describe('LibrarySpace playback actions', () => {
     expect(actions.onExportLocalTracks).toHaveBeenCalledWith([initialTracks[0]])
   })
 
-  it('renders a source-wide music home instead of a personal catalog summary', async () => {
+  it('keeps the recommendation home focused instead of repeating every discovery destination', async () => {
     renderLibrary([1], undefined, initialTracks, desktopRuntime)
     expect(document.querySelector('.library-main-header .workspace-pane-title em')).toBeNull()
     expect(screen.getByText('每日推荐')).toBeTruthy()
     expect(await screen.findByRole('button', { name: '播放今日推荐' })).toBeTruthy()
-    expect(screen.getByText('全平台新热')).toBeTruthy()
-    expect(screen.getByText('全网热听')).toBeTruthy()
-    expect(screen.getByText('新歌速递')).toBeTruthy()
-    expect(screen.getByRole('button', { name: '播放全网热听' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: '播放新歌速递' })).toBeTruthy()
-    expect(screen.getByText('榜单速览')).toBeTruthy()
-    expect(screen.getByText('音乐平台')).toBeTruthy()
-    expect(screen.getByText('专辑与作品集')).toBeTruthy()
-    expect(document.querySelectorAll('.library-more-curations .library-home-curation-card')).toHaveLength(5)
+    expect(screen.getByText('为你精选')).toBeTruthy()
+    expect(screen.getByText('专辑推荐')).toBeTruthy()
+    expect(screen.getByText('适合此刻')).toBeTruthy()
+    expect(screen.getByText('趋势速览')).toBeTruthy()
+    expect(screen.getByText('新鲜上架')).toBeTruthy()
+    expect(document.querySelectorAll('.library-recommendation-daily .library-discovery-track-list > button')).toHaveLength(5)
+    expect(screen.queryByText('全部平台')).toBeNull()
+    expect(document.querySelectorAll('.library-more-curations .library-home-curation-card')).toHaveLength(6)
     const dimensionCard = document.querySelector('.library-home-curation-card')!
     expect(dimensionCard.querySelector('.library-home-curation-covers')).toBeTruthy()
     expect(dimensionCard.querySelector('.library-home-curation-copy')).toBeTruthy()
@@ -296,14 +300,33 @@ describe('LibrarySpace playback actions', () => {
     expect(screen.queryByText('继续聆听')).toBeNull()
   })
 
+  it('shows cached discovery while music services continue checking', async () => {
+    const onLoadDiscovery = vi.fn(async (_force?: boolean, onProgress?: (discovery: SourceDiscoveryCatalog) => void) => {
+      onProgress?.(discoveryCatalog)
+      return discoveryCatalog
+    })
+    const actions = {
+      onPlayTrack: vi.fn(), onPlayTracks: vi.fn(), onPlayNext: vi.fn(), onAddToQueue: vi.fn(), onDownloadTrack: vi.fn(), onRemoveDownload: vi.fn(), onExportLocalTracks: vi.fn(), onRemoveFromQueue: vi.fn(), onNotice: vi.fn(), onToggleLike: vi.fn(),
+    }
+    const props = { mobile: true, catalog: initialTracks, queueTracks: [], downloadedTrackIds: [], activeTrackId: -1, isPlaying: false, likedTrackIds: [], onLoadDiscovery, ...actions }
+    const { rerender } = render(<LibrarySpace {...props} sourcePhase="checking" />)
+
+    expect(screen.queryByText('内容暂时不可用')).toBeNull()
+    await waitFor(() => expect(onLoadDiscovery).toHaveBeenCalledTimes(1))
+    expect(await screen.findByText('适合此刻')).toBeTruthy()
+
+    rerender(<LibrarySpace {...props} sourcePhase="ready" />)
+    await waitFor(() => expect(onLoadDiscovery).toHaveBeenCalledTimes(2))
+  })
+
   it('opens a source-backed curation dimension and plays it as a real collection', async () => {
     const actions = renderLibrary()
-    fireEvent.click(screen.getByRole('button', { name: '精选' }))
-    expect(await screen.findByText('精选主题')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '选集' }))
+    expect(await screen.findByText('新鲜策划')).toBeTruthy()
     expect(document.querySelector('.library-main-header .workspace-pane-title em')).toBeNull()
-    expect(document.querySelectorAll('.library-curation-grid > button')).toHaveLength(discoveryShelves.filter((item) => item.kind !== 'quality').length)
+    expect(document.querySelectorAll('.library-curation-grid > button')).toHaveLength(discoveryShelves.filter((item) => item.kind !== 'quality' && item.id !== 'source-trending').length)
     expect(document.querySelectorAll('.library-curation-grid > .is-leading')).toHaveLength(0)
-    expect(screen.getByText('平台官方榜单')).toBeTruthy()
+    expect(screen.queryByText('平台官方榜单')).toBeNull()
     fireEvent.click(screen.getAllByRole('button', { name: /新声抵达/ })[0])
     expect(screen.getByRole('button', { name: '播放全部' })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: '播放全部' }))
@@ -320,11 +343,64 @@ describe('LibrarySpace playback actions', () => {
     expect(screen.getByText('网易云热歌榜')).toBeTruthy()
     expect(document.querySelector('.library-chart-section.is-tx .library-chart-grid')?.classList.contains('is-count-3')).toBe(true)
     expect(document.querySelector('.library-chart-card > div')).toBeNull()
+    const chartArtwork = document.querySelector('.library-chart-section.is-tx .library-chart-card .chart-artwork-composition')!
+    expect(chartArtwork.querySelectorAll('img')).toHaveLength(3)
+    expect(chartArtwork.querySelector('.is-artwork-fallback')).toBeNull()
     fireEvent.click(document.querySelector('.library-chart-section.is-tx .library-chart-card > button')!)
     expect(screen.getByRole('button', { name: '播放全部' })).toBeTruthy()
     expect(document.querySelector('.library-main-header .workspace-pane-title em')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: '播放全部' }))
     expect(actions.onPlayTracks).toHaveBeenCalled()
+  })
+
+  it('updates chart detail artwork from the loaded ranking tracks', async () => {
+    const loadedTracks = [initialTracks[4], initialTracks[3], initialTracks[2]]
+    const onLoadChart = vi.fn().mockResolvedValue(loadedTracks)
+    renderLibrary([1], undefined, initialTracks, undefined, onLoadChart)
+    fireEvent.click(screen.getByRole('button', { name: '榜单' }))
+    fireEvent.click((await screen.findByText('QQ 飙升榜')).closest('button')!)
+
+    await waitFor(() => expect(onLoadChart).toHaveBeenCalledWith(expect.objectContaining({ name: 'QQ 飙升榜' })))
+    await waitFor(() => {
+      const detailArtwork = document.querySelector('.library-entity-cover .chart-artwork-composition')!
+      expect(detailArtwork.querySelector('img')?.getAttribute('src')).toBe(loadedTracks[0].cover)
+      expect(detailArtwork.querySelectorAll('img')).toHaveLength(3)
+    })
+  })
+
+  it('provides a dedicated desktop new and trending destination', async () => {
+    const actions = renderLibrary()
+    fireEvent.click(screen.getByRole('button', { name: '新热' }))
+
+    expect(await screen.findByRole('heading', { name: '新作正在抵达' })).toBeTruthy()
+    expect(screen.getByText('新作选集')).toBeTruthy()
+    expect(screen.getByText('热听趋势')).toBeTruthy()
+    expect(screen.getByText('刚刚上新')).toBeTruthy()
+    const leadTrackId = document.querySelector('.library-new-lead')?.getAttribute('data-track-id')
+    const releaseTrackIds = Array.from(document.querySelectorAll('.library-new-page .library-source-track-grid > button')).map((item) => item.getAttribute('data-track-id'))
+    expect(leadTrackId).toBe(String(discoveryCatalog.freshTracks[0].id))
+    expect(releaseTrackIds).not.toContain(leadTrackId)
+    expect(new Set(releaseTrackIds).size).toBe(releaseTrackIds.length)
+
+    fireEvent.click(screen.getByRole('button', { name: '播放热听趋势' }))
+    expect(actions.onPlayTracks).toHaveBeenCalledWith(expect.any(Array), expect.objectContaining({ id: 'new:hot' }))
+    const trending = (actions.onPlayTracks.mock.calls.at(-1)?.[0] ?? []) as Track[]
+    expect(trending.every((track) => !discoveryCatalog.freshTracks.some((fresh) => fresh.id === track.id))).toBe(true)
+  })
+
+  it('provides a dedicated desktop platform destination with provider switching', async () => {
+    renderLibrary()
+    fireEvent.click(screen.getByRole('button', { name: '平台' }))
+
+    expect(await screen.findByRole('heading', { name: '按来源浏览' })).toBeTruthy()
+    const providerNavigation = screen.getByRole('navigation', { name: '音乐平台' })
+    const netease = within(providerNavigation).getByRole('button', { name: /网易云音乐/ })
+    fireEvent.click(netease)
+    expect(netease.className).toContain('is-active')
+    expect(document.querySelector('.library-provider-focus')?.getAttribute('data-music-source')).toBe('wy')
+    expect(screen.getByText('网易云音乐热听')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '全部歌曲' }))
+    expect(screen.getByRole('heading', { name: '网易云音乐' })).toBeTruthy()
   })
 
   it('keeps featured and charts as peer tabs inside mobile discovery', async () => {
@@ -334,7 +410,11 @@ describe('LibrarySpace playback actions', () => {
     expect(await within(mobileView).findByText('精选主题')).toBeTruthy()
 
     const featuredScroller = mobileView.querySelector('.mobile-library-scroll') as HTMLElement
+    const featuredHeader = featuredScroller.querySelector('.mobile-scroll-header') as HTMLElement
+    expect(featuredHeader.classList.contains('is-condensed')).toBe(false)
     featuredScroller.scrollTop = 480
+    fireEvent.scroll(featuredScroller)
+    expect(featuredHeader.classList.contains('is-condensed')).toBe(true)
     fireEvent.click(within(mobileView).getByRole('button', { name: '榜单' }))
 
     expect(await within(mobileView).findByRole('heading', { name: '发现' })).toBeTruthy()
@@ -344,6 +424,96 @@ describe('LibrarySpace playback actions', () => {
     expect(await within(mobileView).findByText('QQ 热歌榜')).toBeTruthy()
   })
 
+  it('uses real section controls in the mobile home header without an empty title placeholder', async () => {
+    renderMobileLibrary({ key: 2, type: 'home' })
+    const mobileView = document.querySelector('.mobile-library-view') as HTMLElement
+    const homeNavigation = await within(mobileView).findByRole('navigation', { name: '首页内容' })
+    const homeHeader = homeNavigation.closest('.mobile-scroll-header') as HTMLElement
+
+    expect(within(homeNavigation).getByRole('button', { name: '推荐' }).getAttribute('aria-current')).toBe('page')
+    expect(within(homeNavigation).getByRole('button', { name: '新热' })).toBeTruthy()
+    expect(within(homeNavigation).getByRole('button', { name: '选集' })).toBeTruthy()
+    expect(within(homeNavigation).getByRole('button', { name: '平台' })).toBeTruthy()
+    expect(within(homeNavigation).queryByRole('button', { name: '榜单' })).toBeNull()
+    expect(Array.from(homeHeader.children).some((child) => child.tagName === 'STRONG')).toBe(false)
+    expect(await within(mobileView).findByText('为你精选')).toBeTruthy()
+    expect(within(mobileView).getByText('专辑推荐')).toBeTruthy()
+    expect(within(mobileView).getByText('适合此刻')).toBeTruthy()
+    expect(within(mobileView).getByText('趋势速览')).toBeTruthy()
+    expect(within(mobileView).getByText('新鲜上架')).toBeTruthy()
+    expect(mobileView.querySelectorAll('.mobile-home-chart-card')).toHaveLength(0)
+
+    fireEvent.click(within(homeNavigation).getByRole('button', { name: '新热' }))
+    expect(within(homeNavigation).getByRole('button', { name: '新热' }).getAttribute('aria-current')).toBe('page')
+    expect(await within(mobileView).findByText('本周主推')).toBeTruthy()
+    expect(within(mobileView).getByText('新作选集')).toBeTruthy()
+    const mobileLeadTrackId = mobileView.querySelector('.mobile-new-release-lead')?.getAttribute('data-track-id')
+    const mobileReleaseTrackIds = Array.from(mobileView.querySelectorAll('.mobile-new-release-rail [data-track-id]')).map((item) => item.getAttribute('data-track-id'))
+    expect(mobileReleaseTrackIds).not.toContain(mobileLeadTrackId)
+    expect(new Set(mobileReleaseTrackIds).size).toBe(mobileReleaseTrackIds.length)
+    const newFeedNavigation = within(mobileView).getByRole('navigation', { name: '新热内容' })
+    expect(within(newFeedNavigation).getByRole('button', { name: '热听趋势' }).getAttribute('aria-current')).toBe('page')
+    fireEvent.click(within(newFeedNavigation).getByRole('button', { name: '刚刚上新' }))
+    expect(within(newFeedNavigation).getByRole('button', { name: '刚刚上新' }).getAttribute('aria-current')).toBe('page')
+    expect(mobileView.querySelector('.mobile-new-release-lead > button')?.getAttribute('aria-label')).toBe(`播放 ${discoveryCatalog.freshTracks[0].title}`)
+    expect(within(mobileView).queryByRole('heading', { name: '今天想听什么？' })).toBeNull()
+
+    fireEvent.click(within(homeNavigation).getByRole('button', { name: '选集' }))
+    expect(within(homeNavigation).getByRole('button', { name: '选集' }).getAttribute('aria-current')).toBe('page')
+    expect(await within(mobileView).findByText('新鲜策划')).toBeTruthy()
+    expect(within(mobileView).getByText('场景与情绪')).toBeTruthy()
+    expect(within(mobileView).getByText('选集中热听')).toBeTruthy()
+    expect(mobileView.querySelectorAll('.mobile-collection-feature-tracks > button')).toHaveLength(3)
+    expect(mobileView.querySelectorAll('.mobile-curated-rail')).toHaveLength(3)
+    const mobileSpotlightShelfId = mobileView.querySelector('.mobile-collection-spotlight')?.getAttribute('data-shelf-id')
+    const mobileGroupedShelfIds = Array.from(mobileView.querySelectorAll('.mobile-curated-rail [data-shelf-id]')).map((item) => item.getAttribute('data-shelf-id'))
+    expect(mobileGroupedShelfIds).not.toContain(mobileSpotlightShelfId)
+    expect(new Set(mobileGroupedShelfIds).size).toBe(mobileGroupedShelfIds.length)
+
+    fireEvent.click(within(homeNavigation).getByRole('button', { name: '平台' }))
+    expect(within(homeNavigation).getByRole('button', { name: '平台' }).getAttribute('aria-current')).toBe('page')
+    expect(await within(mobileView).findByRole('navigation', { name: '音乐平台' })).toBeTruthy()
+    expect(within(mobileView).getByText('平台热听')).toBeTruthy()
+    expect(within(mobileView).getAllByText('QQ 音乐').length).toBeGreaterThan(1)
+    expect(within(mobileView).getAllByRole('button', { name: '全部' }).length).toBeGreaterThan(0)
+    expect(mobileView.querySelectorAll('.mobile-platform-selection')).toHaveLength(1)
+    expect(within(mobileView).queryByText('本周主推')).toBeNull()
+
+    const homeScroller = mobileView.querySelector('.mobile-home-page') as HTMLElement
+    homeScroller.scrollTop = 240
+    fireEvent.click(within(homeNavigation).getByRole('button', { name: '推荐' }))
+    expect(homeScroller.scrollTop).toBe(0)
+    expect(within(mobileView).getByText('每日推荐')).toBeTruthy()
+  })
+
+  it('does not repeat spotlight collections or duplicate tracks within discovery sections', async () => {
+    renderLibrary()
+
+    await screen.findByText('为你精选')
+    document.querySelectorAll('.library-discovery-track-list').forEach((section) => {
+      const trackIds = Array.from(section.querySelectorAll('[data-track-id]')).map((item) => item.getAttribute('data-track-id'))
+      expect(new Set(trackIds).size).toBe(trackIds.length)
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '选集' }))
+    await screen.findByText('新鲜策划')
+    const groupedShelfIds = Array.from(document.querySelectorAll('.library-curation-grid [data-shelf-id]')).map((item) => item.getAttribute('data-shelf-id'))
+    expect(groupedShelfIds).not.toContain(discoveryShelves[0].id)
+    expect(document.querySelectorAll(`.library-curation-primary[data-shelf-id="${discoveryShelves[0].id}"]`)).toHaveLength(1)
+    expect(new Set(groupedShelfIds).size).toBe(groupedShelfIds.length)
+  })
+
+  it('keeps discovery categories inside the mobile header instead of a separate row', async () => {
+    renderMobileLibrary()
+    const mobileView = document.querySelector('.mobile-library-view') as HTMLElement
+    const discoveryNavigation = await within(mobileView).findByRole('navigation', { name: '发现内容' })
+    const discoveryHeader = discoveryNavigation.closest('.mobile-scroll-header') as HTMLElement
+
+    expect(within(discoveryNavigation).getByRole('button', { name: '精选' }).getAttribute('aria-current')).toBe('page')
+    expect(within(discoveryNavigation).getByRole('button', { name: '榜单' })).toBeTruthy()
+    expect(Array.from(discoveryHeader.children).some((child) => child.tagName === 'STRONG')).toBe(false)
+  })
+
   it('starts mobile and desktop detail pages at the top after drilling down', async () => {
     renderMobileLibrary()
     const mobileView = document.querySelector('.mobile-library-view') as HTMLElement
@@ -351,12 +521,23 @@ describe('LibrarySpace playback actions', () => {
     const mobileScroller = mobileView.querySelector('.mobile-library-scroll') as HTMLElement
     mobileScroller.scrollTop = 520
     fireEvent.click(mobileView.querySelector('.mobile-theme-grid > button')!)
-    expect((mobileView.querySelector('.mobile-library-scroll') as HTMLElement).scrollTop).toBe(0)
+    const detailScroller = mobileView.querySelector('.mobile-library-scroll') as HTMLElement
+    const detailHeader = detailScroller.querySelector('.mobile-detail-toolbar') as HTMLElement
+    expect(detailScroller.scrollTop).toBe(0)
+    expect(detailHeader.classList.contains('is-raised')).toBe(false)
+    expect(detailHeader.classList.contains('is-condensed')).toBe(false)
+    detailScroller.scrollTop = 12
+    fireEvent.scroll(detailScroller)
+    expect(detailHeader.classList.contains('is-raised')).toBe(true)
+    expect(detailHeader.classList.contains('is-condensed')).toBe(false)
+    detailScroller.scrollTop = 180
+    fireEvent.scroll(detailScroller)
+    expect(detailHeader.classList.contains('is-condensed')).toBe(true)
 
     cleanup()
     renderLibrary()
-    fireEvent.click(screen.getByRole('button', { name: '精选' }))
-    expect(await screen.findByText('精选主题')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '选集' }))
+    expect(await screen.findByText('新鲜策划')).toBeTruthy()
     const desktopScroller = document.querySelector('.library-home') as HTMLElement
     desktopScroller.scrollTop = 640
     fireEvent.click(document.querySelector('.library-curation-grid > button')!)

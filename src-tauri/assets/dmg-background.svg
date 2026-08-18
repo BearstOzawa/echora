@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="430" viewBox="0 0 680 430">
+  <defs>
+    <linearGradient id="bg" x1="72" y1="0" x2="612" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fbfbfc"/>
+      <stop offset="1" stop-color="#eceef2"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="20" y1="18" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff9bb4"/>
+      <stop offset=".52" stop-color="#ff668c"/>
+      <stop offset="1" stop-color="#d9366a"/>
+    </linearGradient>
+  </defs>
+  <rect width="680" height="430" fill="url(#bg)"/>
+  <path d="M-30 360C112 292 176 319 288 375S514 447 720 339" fill="none" stroke="#ff779b" stroke-opacity=".08" stroke-width="74" stroke-linecap="round"/>
+  <g transform="translate(24 22) scale(.64)" fill="none" stroke="url(#brand)" stroke-linecap="round">
+    <path d="M46 14.5A22 22 0 1 0 46 49.5" stroke-width="5.8"/>
+    <path d="M24.5 23.5h15M24.5 32h19M24.5 40.5h12.5" stroke-width="5.2"/>
+  </g>
+  <text x="76" y="47" fill="#202127" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="20" font-weight="700">Echora</text>
+  <text x="28" y="89" fill="#202127" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="25" font-weight="650">拖移至“应用程序”完成安装</text>
+  <text x="29" y="116" fill="#72737b" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13">安装后从“应用程序”打开 Echora</text>
+  <g fill="none" stroke="#b2b4bc" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M283 228h108" stroke-width="2" stroke-dasharray="5 7"/>
+    <path d="m383 220 9 8-9 8" stroke-width="2"/>
+  </g>
+  <rect x="28" y="382" width="624" height="1" fill="#d7d9de"/>
+  <text x="28" y="405" fill="#8a8b92" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11">首次打开受阻时，请查看 echora-cloud.lili.uno/download</text>
+</svg>

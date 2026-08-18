@@ -16,6 +16,7 @@ import { readPlaybackCacheStats } from '../playbackCache'
 import { supportsPlaybackWakeLock, supportsSystemMediaControls } from '../useSystemPlayback'
 import type { CloudSession } from '../cloudApi'
 import { useCloudSession } from '../useCloudSession'
+import '../product-ui.css?echora-css=settings'
 
 function SettingToggle({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
   return <button className={`settings-toggle ${checked ? 'is-on' : ''}`} onClick={onChange} aria-label={label} aria-pressed={checked}><i /></button>
@@ -78,6 +79,13 @@ const categories = [
   { id: 'data', label: '数据与存储', description: '缓存与设备空间', icon: Database, keywords: '数据 存储 缓存 清理 下载 本地 空间' },
   { id: 'about', label: '关于 Echora', description: '版本信息与软件更新', icon: CircleHelp, keywords: '关于 版本 更新 检查 发布 通道' },
 ] as const
+
+const mobileCategoryGroups: Array<{ label: string; categories: SettingsCategory[] }> = [
+  { label: '基础设置', categories: ['general'] },
+  { label: '播放与内容', categories: ['source', 'content', 'local'] },
+  { label: '智能服务', categories: ['ai'] },
+  { label: '存储与产品', categories: ['data', 'about'] },
+]
 
 const categoryCopy: Record<SettingsCategory, { title: string; description: string }> = {
   general: { title: '通用', description: '启动、窗口与操作' },
@@ -283,23 +291,34 @@ export default function SettingsPanel({ settings, sourceStatus, onChange, onClos
     <div className="settings-modal-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
       <section ref={modalRef} className={`settings-modal is-${presentation} ${mobileRoute === 'root' ? 'is-mobile-root' : 'is-mobile-detail'}`} role="dialog" aria-modal="true" aria-label="应用设置" tabIndex={-1} onPointerDown={(event) => event.stopPropagation()}>
         <aside className="settings-navigation">
-          <header className="settings-navigation-brand"><div><strong>应用设置</strong><small>偏好与设备</small></div><button className="settings-mobile-close" onClick={onClose} aria-label="关闭设置"><X size={18} /></button></header>
-          <label className="settings-search"><Search size={17} /><input name="settings-search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="搜索设置" aria-label="搜索设置" />{searchQuery && <button onClick={() => setSearchQuery('')} title="清除搜索" aria-label="清除设置搜索"><X size={15} /></button>}</label>
-          <nav className="settings-category-nav" aria-label="设置分类">
+          <header className="settings-navigation-brand">{presentation === 'mobile' && <button className="settings-mobile-close" onClick={onClose} aria-label="返回我的"><ChevronLeft size={21} /></button>}<div><strong>{presentation === 'mobile' ? '设置' : '应用设置'}</strong></div>{presentation === 'desktop' && <button className="settings-mobile-close" onClick={onClose} aria-label="关闭设置"><X size={18} /></button>}</header>
+          {presentation === 'desktop' && <label className="settings-search"><Search size={17} /><input name="settings-search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="搜索设置" aria-label="搜索设置" />{searchQuery && <button onClick={() => setSearchQuery('')} title="清除搜索" aria-label="清除设置搜索"><X size={15} /></button>}</label>}
+          {presentation === 'mobile' ? <div className="settings-mobile-category-groups">
+            {mobileCategoryGroups.map((group) => {
+              const items = visibleCategories.filter((item) => group.categories.includes(item.id))
+              if (!items.length) return null
+              return <section className="settings-mobile-category-group" key={group.label}>
+                <h2>{group.label}</h2>
+                <nav className="settings-category-nav" aria-label={group.label}>
+                  {items.map((item) => <button key={item.id} onClick={() => openCategory(item.id)}><span><strong>{item.label}</strong></span><ChevronRight className="settings-category-chevron" size={17} /></button>)}
+                </nav>
+              </section>
+            })}
+          </div> : <nav className="settings-category-nav" aria-label="设置分类">
             {visibleCategories.map((item) => {
               const Icon = item.icon
               return <button key={item.id} className={activeCategory === item.id ? 'is-active' : ''} aria-current={activeCategory === item.id ? 'page' : undefined} onClick={() => openCategory(item.id)}><Icon size={18} /><span><strong>{item.label}</strong><small>{item.description}</small></span><ChevronRight className="settings-category-chevron" size={17} /></button>
             })}
-          </nav>
+          </nav>}
           {!visibleCategories.length && <div className="settings-navigation-empty"><Search size={18} /><span>没有匹配的分类</span></div>}
-          <footer><HardDrive size={15} /><span>{runtime.kind === 'web' ? '当前浏览器' : runtime.kind === 'desktop' ? '当前电脑' : '当前设备'}</span></footer>
+          {presentation === 'desktop' && <footer><HardDrive size={15} /><span>{runtime.kind === 'web' ? '当前浏览器' : runtime.kind === 'desktop' ? '当前电脑' : '当前设备'}</span></footer>}
         </aside>
 
         <div className="settings-content">
           <header className="settings-content-header">
             {presentation === 'mobile' && <button className="settings-mobile-back" onClick={() => setMobileRoute('root')} aria-label="返回设置"><ChevronLeft size={21} /></button>}
             <div><h2>{selectedCopy.title}</h2><p>{selectedCopy.description}</p></div>
-            <button onClick={onClose} title="关闭" aria-label="关闭应用设置"><X size={19} /></button>
+            {presentation === 'desktop' && <button onClick={onClose} title="关闭" aria-label="关闭应用设置"><X size={19} /></button>}
           </header>
 
           <div ref={contentScrollRef} className="settings-content-scroll">

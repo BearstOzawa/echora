@@ -77,6 +77,21 @@ describe('SettingsPanel', () => {
     expect(screen.getByRole('heading', { name: '通用' })).toBeTruthy()
   })
 
+  it('uses a concise mobile settings hierarchy without the old subtitle', () => {
+    render(<SettingsPanel presentation="mobile" settings={defaultAppSettings} onChange={vi.fn()} onClose={vi.fn()} onClearSession={vi.fn()} />)
+    expect(screen.getByText('设置')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '基础设置' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '播放与内容' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '智能服务' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: '存储与产品' })).toBeTruthy()
+    expect(screen.queryByText('偏好与设备')).toBeNull()
+    expect(screen.queryByText('启动、窗口与界面行为')).toBeNull()
+    expect(screen.queryByRole('textbox', { name: '搜索设置' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /内容与发现/ }))
+    expect(screen.getByRole('heading', { name: '内容与发现' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '返回设置' })).toBeTruthy()
+  })
+
   it('focuses the dialog without preselecting search and resets content scroll between categories', () => {
     render(<SettingsPanel settings={defaultAppSettings} onChange={vi.fn()} onClose={vi.fn()} onClearSession={vi.fn()} />)
     const dialog = screen.getByRole('dialog', { name: '应用设置' })

@@ -5,5 +5,15 @@
     "devUrl": "http://127.0.0.1:1422",
     "beforeBuildCommand": "npm run build:desktop",
     "frontendDist": "../dist-desktop"
+  },
+  "bundle": {
+    "macOS": {
+      "dmg": {
+        "background": "assets/dmg-background.png",
+        "windowSize": { "width": 680, "height": 430 },
+        "appPosition": { "x": 190, "y": 235 },
+        "applicationFolderPosition": { "x": 490, "y": 235 }
+      }
+    }
   }
 }

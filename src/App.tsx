@@ -15,7 +15,7 @@ import { learnAgentMemoriesFromConversation, mergeAgentMemories, readAgentMemori
 import type { LocalMusicFolder } from './nativeMusicFolders'
 import { createMediaBridgeUrl, inspectMusicCatalogSources, loadMusicChartDetail, loadMusicCharts, searchMusicCatalog } from './musicCatalog'
 import type { MusicCatalogSourceStatus } from './musicCatalog'
-import { loadSourceDiscovery, readSourceDiscoveryCache, sourceDiscoveryFreshnessMs, writeSourceDiscoveryCache } from './sourceDiscovery'
+import { loadSourceDiscovery, readCompatibleSourceDiscoveryCache, readSourceDiscoveryCache, sourceDiscoveryFreshnessMs, writeSourceDiscoveryCache } from './sourceDiscovery'
 import type { SourceDiscoveryCatalog } from './sourceDiscovery'
 import { resolvePlaybackShortcut } from './playbackShortcuts'
 import { inspectMusicSource, normalizeMusicSourceCapabilities, resolveTrackAudio, updateMusicSourceProviderCatalog, updateMusicSourceProviderHealth, updateMusicSourceProviderPlayback } from './musicSource'
@@ -228,7 +228,8 @@ export function useEchoraController() {
   const enhancedQualityEnabled = sourceStatus.phase === 'ready' || sourceStatus.phase === 'degraded'
   const availableOnlineSources = useMemo(() => sourceStatus.providers.filter((provider) => provider.registered).map((provider) => provider.source), [sourceStatus.providers])
   const availableOnlineSourceSignature = availableOnlineSources.join(',')
-  const discoveryCacheSignature = `${availableOnlineSourceSignature}:featured-${appSettings.content.featuredTrackLimit}:charts-${appSettings.content.chartTrackLimit}`
+  const discoveryContentSignature = `featured-${appSettings.content.featuredTrackLimit}:charts-${appSettings.content.chartTrackLimit}`
+  const discoveryCacheSignature = `${availableOnlineSourceSignature}:${discoveryContentSignature}`
   const busyTrackIds = useMemo(() => Array.from(new Set([...resolvingTrackIds, ...downloadingTrackIds])), [downloadingTrackIds, resolvingTrackIds])
   const sourceVariants = useMemo(() => {
     if (!activeTrack) return []
@@ -314,6 +315,24 @@ export function useEchoraController() {
       if (sourceStatusRequestRef.current !== requestId) return
       const registeredCount = providers.filter((provider) => provider.registered).length
       const registeredSources = providers.filter((provider) => provider.registered).map((provider) => provider.source)
+      const capabilityCheckedAt = Date.now()
+      if (!registeredCount) {
+        setSourceStatus({
+          phase: 'error',
+          providers,
+          message: '音乐服务当前不可用',
+          checkedAt: capabilityCheckedAt,
+          activity: null,
+        })
+        return
+      }
+      setSourceStatus({
+        phase: 'ready',
+        providers,
+        message: `${registeredCount} 个音乐平台已连接`,
+        checkedAt: capabilityCheckedAt,
+        activity: null,
+      })
       let catalogStatuses: MusicCatalogSourceStatus[] = []
       let catalogFailure = ''
       try {
@@ -1103,21 +1122,33 @@ export function useEchoraController() {
     return results
   }, [availableOnlineSourceSignature, recordCatalogSourceStatuses])
 
-  const loadLibraryDiscovery = useCallback(async (force = false) => {
-    if (!availableOnlineSources.length) throw new Error('音乐服务暂时不可用')
+  const loadLibraryDiscovery = useCallback(async (force = false, onProgress?: (discovery: SourceDiscoveryCatalog) => void) => {
     if (force || sourceDiscoverySignature !== discoveryCacheSignature) sourceDiscoveryRequest = null
     sourceDiscoverySignature = discoveryCacheSignature
     const resilientSnapshot = readSourceDiscoveryCache(discoveryCacheSignature)
+      ?? readCompatibleSourceDiscoveryCache(discoveryContentSignature)
     const cached = !force && !sourceDiscoveryRequest
       ? readSourceDiscoveryCache(discoveryCacheSignature, localStorage, Date.now(), sourceDiscoveryFreshnessMs)
       : null
     if (cached) sourceDiscoveryRequest = Promise.resolve(cached)
+    if (!cached && resilientSnapshot) {
+      setRemoteCatalog((current) => upsertTracks(current, resilientSnapshot.tracks))
+      onProgress?.(resilientSnapshot)
+    }
+    if (!availableOnlineSources.length) {
+      if (resilientSnapshot) return resilientSnapshot
+      throw new Error(sourceStatus.phase === 'checking' ? '音乐服务正在连接' : '音乐服务暂时不可用')
+    }
     sourceDiscoveryRequest ??= loadSourceDiscovery(
       (query) => searchMusicCatalog(query, availableOnlineSources, undefined, appSettings.content.featuredTrackLimit, recordCatalogSourceStatuses),
       () => loadMusicCharts(availableOnlineSources),
       (chart) => loadMusicChartDetail(chart, appSettings.content.featuredTrackLimit),
       appSettings.content.featuredTrackLimit,
       availableOnlineSources,
+      (discovery) => {
+        setRemoteCatalog((current) => upsertTracks(current, discovery.tracks))
+        onProgress?.(discovery)
+      },
     ).then((discovery) => {
       writeSourceDiscoveryCache(discoveryCacheSignature, discovery)
       return discovery
@@ -1129,7 +1160,7 @@ export function useEchoraController() {
     const discovery = await sourceDiscoveryRequest
     setRemoteCatalog((current) => upsertTracks(current, discovery.tracks))
     return discovery
-  }, [appSettings.content.featuredTrackLimit, discoveryCacheSignature, recordCatalogSourceStatuses])
+  }, [appSettings.content.featuredTrackLimit, availableOnlineSourceSignature, discoveryCacheSignature, discoveryContentSignature, recordCatalogSourceStatuses, sourceStatus.phase])
 
   const loadLibraryChart = useCallback(async (chart: Parameters<typeof loadMusicChartDetail>[0]) => {
     const chartTracks = await loadMusicChartDetail(chart, appSettings.content.chartTrackLimit)
@@ -1541,7 +1572,13 @@ export function useEchoraController() {
         localTracksRef.current = nextLocalTracks
         setLocalTracks(nextLocalTracks)
         setDownloadedTrackIds(nextLocalTracks.map((item) => item.id))
-        setTracks((current) => current.map((item) => hasSameRemoteIdentity(item, downloaded) ? mergePlaybackResource(item, downloaded) : item))
+        setTracks((current) => current.map((item) => {
+          if (!hasSameRemoteIdentity(item, downloaded)) return item
+          // Replacing the active URL tears down the media element. Let the
+          // current stream finish; the next playback resolves to the local copy.
+          if (item.id === activeTrackId && isPlaying) return item
+          return mergePlaybackResource(item, downloaded)
+        }))
         commitDownloadState(track.id, { trackId: track.id, requestKey, phase: 'complete', receivedBytes: audio.size, totalBytes: audio.size, progress: 100 })
         showNotice(`“${downloaded.title}”${runtime.downloadSuccessLabel}`)
       } finally {
@@ -1779,7 +1816,7 @@ export function useEchoraController() {
     if (previousId !== null) playQueueTrack(previousId)
   }
 
-  const { seek: seekPlayback } = useAudioPlayback({
+  const { seek: seekPlayback, audioEffectsProcessingState } = useAudioPlayback({
     track: activeTrack,
     isPlaying,
     progress: playProgressRef.current,
@@ -1957,6 +1994,7 @@ export function useEchoraController() {
     setAppSettings,
     audioEffects,
     setAudioEffects,
+    audioEffectsProcessingState,
     appearance,
     setAppearance,
     paletteByAppearance,

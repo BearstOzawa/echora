@@ -30,6 +30,7 @@ targets:
     sources:
       - path: Sources
       - path: ../../ios/EchoraLiveActivityBridge.swift
+      - path: ../../ios/EchoraExternalNavigationBridge.swift
       - path: ../../ios/EchoraLiveActivityIntents.swift
       - path: ../../ios/EchoraSpeechRecognitionBridge.swift
       - path: ../../ios/EchoraMediaSessionBridge.swift
@@ -37,6 +38,7 @@ targets:
       - path: ../../ios/EchoraNowPlayingAttributes.swift
       - path: Assets.xcassets
       - path: Externals
+        buildPhase: none
       - path: echora_iOS
       - path: assets
         buildPhase: resources

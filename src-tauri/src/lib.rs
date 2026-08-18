@@ -87,6 +87,9 @@ struct IosNowPlayingState {
 static IOS_NOW_PLAYING_METADATA: OnceLock<Mutex<Option<IosNowPlayingMetadata>>> = OnceLock::new();
 
 #[cfg(target_os = "ios")]
+static IOS_NOW_PLAYING_STATE: OnceLock<Mutex<Option<IosNowPlayingState>>> = OnceLock::new();
+
+#[cfg(target_os = "ios")]
 static IOS_NATIVE_APP_HANDLE: OnceLock<tauri::AppHandle> = OnceLock::new();
 
 #[cfg(target_os = "ios")]
@@ -103,6 +106,9 @@ type SpeechRecognitionStartFn = unsafe extern "C" fn(i64);
 
 #[cfg(target_os = "ios")]
 type SpeechRecognitionControlFn = unsafe extern "C" fn();
+
+#[cfg(target_os = "ios")]
+type ExternalUrlOpenFn = unsafe extern "C" fn(*const c_char) -> bool;
 
 #[cfg(target_os = "ios")]
 type LiveActivityUpdateFn =
@@ -202,6 +208,18 @@ fn ios_speech_recognition_cancel_symbol() -> Option<SpeechRecognitionControlFn> 
         let pointer = libc::dlsym(
             libc::RTLD_DEFAULT,
             b"echora_speech_recognition_cancel\0".as_ptr().cast(),
+        );
+        (!pointer.is_null()).then(|| std::mem::transmute(pointer))
+    })
+}
+
+#[cfg(target_os = "ios")]
+fn ios_external_url_open_symbol() -> Option<ExternalUrlOpenFn> {
+    static SYMBOL: OnceLock<Option<ExternalUrlOpenFn>> = OnceLock::new();
+    *SYMBOL.get_or_init(|| unsafe {
+        let pointer = libc::dlsym(
+            libc::RTLD_DEFAULT,
+            b"echora_external_url_open\0".as_ptr().cast(),
         );
         (!pointer.is_null()).then(|| std::mem::transmute(pointer))
     })
@@ -1399,6 +1417,14 @@ fn set_ios_now_playing_metadata(payload: IosNowPlayingMetadata) {
         unsafe { info.insert(MPMediaItemPropertyArtwork, &artwork) };
     }
     unsafe { MPNowPlayingInfoCenter::defaultCenter().setNowPlayingInfo(Some(&info)) };
+    if let Some(state) = IOS_NOW_PLAYING_STATE
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+        .ok()
+        .and_then(|value| value.clone())
+    {
+        update_ios_live_activity(&payload, &state);
+    }
 }
 
 #[cfg(target_os = "ios")]
@@ -1432,6 +1458,12 @@ fn update_ios_live_activity(metadata: &IosNowPlayingMetadata, state: &IosNowPlay
 
 #[cfg(target_os = "ios")]
 fn set_ios_now_playing_state(payload: IosNowPlayingState) {
+    if let Ok(mut current) = IOS_NOW_PLAYING_STATE
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+    {
+        *current = Some(payload.clone());
+    }
     let center = unsafe { MPNowPlayingInfoCenter::defaultCenter() };
     let info = unsafe { center.nowPlayingInfo() }
         .map(|current| NSMutableDictionary::dictionaryWithDictionary(&current))
@@ -1505,6 +1537,12 @@ fn clear_ios_now_playing(app: tauri::AppHandle) -> Result<(), String> {
         {
             *current = None;
         }
+        if let Ok(mut current) = IOS_NOW_PLAYING_STATE
+            .get_or_init(|| Mutex::new(None))
+            .lock()
+        {
+            *current = None;
+        }
         if let Some(end) = ios_live_activity_end_symbol() {
             end();
         }
@@ -1518,12 +1556,12 @@ fn clear_ios_now_playing(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn start_ios_speech_recognition(app: tauri::AppHandle, generation: i64) -> Result<(), String> {
     #[cfg(target_os = "ios")]
-    app.run_on_main_thread(move || {
-        if let Some(start) = ios_speech_recognition_start_symbol() {
-            unsafe { start(generation) };
-        }
-    })
-    .map_err(|error| error.to_string())?;
+    {
+        let start = ios_speech_recognition_start_symbol()
+            .ok_or_else(|| "原生语音组件未载入".to_string())?;
+        app.run_on_main_thread(move || unsafe { start(generation) })
+            .map_err(|error| error.to_string())?;
+    }
     #[cfg(not(target_os = "ios"))]
     let _ = (app, generation);
     Ok(())
@@ -1532,12 +1570,12 @@ fn start_ios_speech_recognition(app: tauri::AppHandle, generation: i64) -> Resul
 #[tauri::command]
 fn stop_ios_speech_recognition(app: tauri::AppHandle) -> Result<(), String> {
     #[cfg(target_os = "ios")]
-    app.run_on_main_thread(|| {
-        if let Some(stop) = ios_speech_recognition_stop_symbol() {
-            unsafe { stop() };
-        }
-    })
-    .map_err(|error| error.to_string())?;
+    {
+        let stop = ios_speech_recognition_stop_symbol()
+            .ok_or_else(|| "原生语音组件未载入".to_string())?;
+        app.run_on_main_thread(move || unsafe { stop() })
+            .map_err(|error| error.to_string())?;
+    }
     #[cfg(not(target_os = "ios"))]
     let _ = app;
     Ok(())
@@ -1546,14 +1584,34 @@ fn stop_ios_speech_recognition(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn cancel_ios_speech_recognition(app: tauri::AppHandle) -> Result<(), String> {
     #[cfg(target_os = "ios")]
-    app.run_on_main_thread(|| {
-        if let Some(cancel) = ios_speech_recognition_cancel_symbol() {
-            unsafe { cancel() };
-        }
-    })
-    .map_err(|error| error.to_string())?;
+    {
+        let cancel = ios_speech_recognition_cancel_symbol()
+            .ok_or_else(|| "原生语音组件未载入".to_string())?;
+        app.run_on_main_thread(move || unsafe { cancel() })
+            .map_err(|error| error.to_string())?;
+    }
     #[cfg(not(target_os = "ios"))]
     let _ = app;
+    Ok(())
+}
+
+#[tauri::command]
+fn open_ios_external_url(app: tauri::AppHandle, url: String) -> Result<(), String> {
+    let parsed = reqwest::Url::parse(&url).map_err(|_| "链接地址无效".to_string())?;
+    if !matches!(parsed.scheme(), "http" | "https") {
+        return Err("链接地址不受支持".to_string());
+    }
+    #[cfg(target_os = "ios")]
+    {
+        let value = CString::new(url).map_err(|_| "链接地址无效".to_string())?;
+        let open = ios_external_url_open_symbol().ok_or_else(|| "无法打开网页".to_string())?;
+        app.run_on_main_thread(move || unsafe {
+            open(value.as_ptr());
+        })
+        .map_err(|error| error.to_string())?;
+    }
+    #[cfg(not(target_os = "ios"))]
+    let _ = (app, url);
     Ok(())
 }
 
@@ -1589,6 +1647,7 @@ pub fn run() {
             start_ios_speech_recognition,
             stop_ios_speech_recognition,
             cancel_ios_speech_recognition,
+            open_ios_external_url,
         ])
         .build(tauri::generate_context!())
         .expect("error while building Echora")
@@ -1632,6 +1691,11 @@ fn setup_ios_webview(app: &tauri::App) -> tauri::Result<()> {
             scroll_view.setContentInsetAdjustmentBehavior(
                 UIScrollViewContentInsetAdjustmentBehavior::Never,
             );
+            scroll_view.setMinimumZoomScale(1.0);
+            scroll_view.setMaximumZoomScale(1.0);
+            if let Some(pinch) = scroll_view.pinchGestureRecognizer() {
+                pinch.setEnabled(false);
+            }
         })?;
     }
     Ok(())

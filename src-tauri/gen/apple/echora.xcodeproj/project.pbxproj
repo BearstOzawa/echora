@@ -16,9 +16,9 @@
 		4DEB05A7C402A0C14C23AFAB /* EchoraMediaSessionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 334EB9AE6A0548B5587FC9BB /* EchoraMediaSessionBridge.swift */; };
 		6310894952D08C68C92DB9F3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F4DA3B57A0254E5AAC1FCD7F /* LaunchScreen.storyboard */; };
 		64594A39BF4AE524A19259C9 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC03B3F4D0AB4731D07912BA /* libapp.a */; };
-		6BB97F237A5415FC43498FD3 /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = 983A23694DD9EC03A962A54D /* libapp.a */; };
 		6DC955AE025BC5B7850B5EDA /* EchoraNowPlayingAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F21E1047E07A4478B3D7FF8 /* EchoraNowPlayingAttributes.swift */; };
 		6DC989BD19546D7278F0BA02 /* AVFAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F866345F8A92EF486C96D8AF /* AVFAudio.framework */; };
+		6F1B81B6741660A5EC995CF8 /* EchoraExternalNavigationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56FBB45DCA6A1F31354E2038 /* EchoraExternalNavigationBridge.swift */; };
 		731B5074AEA87D9788F97CF0 /* EchoraQuickActionBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55564F9DD6ADFC8571941E9 /* EchoraQuickActionBridge.swift */; };
 		854989113AAEA9F89E555FF9 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = D1CB0FEB5F4775E3338DF9C6 /* main.mm */; };
 		88A640FC241B6FDB236B229B /* EchoraLiveActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA93FC328210D38E014C7A2 /* EchoraLiveActivityIntents.swift */; };
@@ -69,8 +69,10 @@
 		420B28F7989F8802CD032965 /* EchoraSpeechRecognitionBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraSpeechRecognitionBridge.swift; sourceTree = "<group>"; };
 		4788FBD2E5044D06F766F937 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
 		48F15D48F9BBEE8E1056E2E3 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		56FBB45DCA6A1F31354E2038 /* EchoraExternalNavigationBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraExternalNavigationBridge.swift; sourceTree = "<group>"; };
 		5C8298ABFE0208E65C55FEA1 /* EchoraNowPlayingLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoraNowPlayingLiveActivity.swift; sourceTree = "<group>"; };
 		60804FD1FB699FFA118E755C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		6D49CFBCFE1E4F21A00D4CFB /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
 		754C0880C2122596098416BB /* echora_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = echora_iOS.entitlements; sourceTree = "<group>"; };
 		8BF0F2B07B9B48B5FC40425A /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
 		8EEC1661562D606F1D5ED624 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -117,6 +119,7 @@
 		0AA99A453CCAF942AB583352 /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				56FBB45DCA6A1F31354E2038 /* EchoraExternalNavigationBridge.swift */,
 				A75D1418D41891A1ABFDC8DD /* EchoraLiveActivityBridge.swift */,
 				1DA93FC328210D38E014C7A2 /* EchoraLiveActivityIntents.swift */,
 				334EB9AE6A0548B5587FC9BB /* EchoraMediaSessionBridge.swift */,
@@ -137,6 +140,14 @@
 			);
 			name = src;
 			path = ../../src;
+			sourceTree = "<group>";
+		};
+		39D8BA2EDAA86A02626EA301 /* release */ = {
+			isa = PBXGroup;
+			children = (
+				6D49CFBCFE1E4F21A00D4CFB /* libapp.a */,
+			);
+			path = release;
 			sourceTree = "<group>";
 		};
 		5215D2ECDA62E2765FE3E4E6 /* echora_iOS */ = {
@@ -194,6 +205,7 @@
 			isa = PBXGroup;
 			children = (
 				87E9A5C57CA61C4BED2A3604 /* debug */,
+				39D8BA2EDAA86A02626EA301 /* release */,
 			);
 			path = arm64;
 			sourceTree = "<group>";
@@ -240,7 +252,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		"TEMP_9F3FB46D-0361-4C6F-885F-1A2D790BEFE3" /* x86_64 */ = {
+		"TEMP_29A23445-ED14-43D1-910B-96E3D05F5053" /* x86_64 */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -328,7 +340,6 @@
 				FCC31037D91E6E87A218C377 /* Assets.xcassets in Resources */,
 				6310894952D08C68C92DB9F3 /* LaunchScreen.storyboard in Resources */,
 				100AD6CF3006A2B545F312A3 /* assets in Resources */,
-				6BB97F237A5415FC43498FD3 /* libapp.a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,6 +384,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6F1B81B6741660A5EC995CF8 /* EchoraExternalNavigationBridge.swift in Sources */,
 				059A490555F26CC27F86AE95 /* EchoraLiveActivityBridge.swift in Sources */,
 				A263EF5DB7DD5D12C310EF2C /* EchoraLiveActivityIntents.swift in Sources */,
 				4DEB05A7C402A0C14C23AFAB /* EchoraMediaSessionBridge.swift in Sources */,

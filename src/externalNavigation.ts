@@ -10,7 +10,11 @@ const safeExternalUrl = (value: string) => {
 export const openExternalUrl = async (value: string, runtime: RuntimeCapabilities = detectRuntimeCapabilities()) => {
   const url = safeExternalUrl(value)
   if (runtime.native) {
-    if (new URL(url).hostname === 'api-v2.yuafeng.cn') {
+    const ios = /iPad|iPhone|iPod/i.test(navigator.userAgent)
+    if (ios) {
+      const { invoke } = await import('@tauri-apps/api/core')
+      await invoke('open_ios_external_url', { url })
+    } else if (new URL(url).hostname === 'api-v2.yuafeng.cn') {
       const { invoke } = await import('@tauri-apps/api/core')
       await invoke('open_enhanced_quality_registration')
     } else {

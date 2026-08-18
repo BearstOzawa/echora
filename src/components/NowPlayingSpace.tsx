@@ -1,6 +1,6 @@
 import { AudioLines, ChevronDown, LoaderCircle, RotateCcw } from 'lucide-react'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import type { LyricLine } from '../lyrics'
 import { usePlaybackProgressSelector } from '../playbackProgress'
@@ -8,6 +8,7 @@ import type { PlaybackProgressStore } from '../playbackProgress'
 import type { Track } from '../types'
 import { sourceBrandKey } from '../sourceBrand'
 import ArtworkImage from './ArtworkImage'
+import '../product-ui.css?echora-css=now-playing'
 
 type Props = {
   track: Track
@@ -91,6 +92,7 @@ export default function NowPlayingSpace({ track, isPlaying, progressStore, lyric
   const [contentView, setContentView] = useState<ContentView>('lyrics')
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => mobile ? 'record' : 'split')
   const [mobileLandscape, setMobileLandscape] = useState(false)
+  const [dismissOffset, setDismissOffset] = useState(0)
   const activeLine = usePlaybackProgressSelector(progressStore, (progress) => getActiveLine(lyrics, track.durationSeconds * progress / 100))
   const lyricStyle = useMemo(() => ({
     '--lyric-font-size': `${16 + fontLevel * .8}px`,
@@ -102,6 +104,8 @@ export default function NowPlayingSpace({ track, isPlaying, progressStore, lyric
   }) as CSSProperties, [fontLevel])
   const lyricsScrollRef = useRef<HTMLDivElement | null>(null)
   const fontControlsRef = useRef<HTMLDivElement | null>(null)
+  const dismissGestureRef = useRef<{ startX: number; startY: number; offset: number; vertical: boolean } | null>(null)
+  const suppressDismissClickRef = useRef(false)
   const fontControlsOpen = controlledFontControlsOpen ?? internalFontControlsOpen
   const setFontControlsOpen = useCallback((open: boolean) => {
     if (controlledFontControlsOpen === undefined) setInternalFontControlsOpen(open)
@@ -153,6 +157,43 @@ export default function NowPlayingSpace({ track, isPlaying, progressStore, lyric
   }
   const showLyrics = useCallback(() => changeDisplayMode('lyrics'), [])
 
+  const beginDismissGesture = (event: ReactPointerEvent<HTMLElement>) => {
+    if (!mobile || !onClose || event.button !== 0) return
+    const target = event.target as HTMLElement
+    if (target.closest('.lyrics-scroll, .song-info-view, .song-related-view, input, select, textarea, [role="slider"]')) return
+    dismissGestureRef.current = { startX: event.clientX, startY: event.clientY, offset: 0, vertical: false }
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+  }
+  const moveDismissGesture = (event: ReactPointerEvent<HTMLElement>) => {
+    const gesture = dismissGestureRef.current
+    if (!gesture) return
+    const deltaX = event.clientX - gesture.startX
+    const deltaY = event.clientY - gesture.startY
+    if (!gesture.vertical) {
+      if (Math.abs(deltaY) < 6) return
+      if (deltaY <= 0 || Math.abs(deltaX) > Math.abs(deltaY)) {
+        dismissGestureRef.current = null
+        setDismissOffset(0)
+        return
+      }
+      gesture.vertical = true
+    }
+    event.preventDefault()
+    gesture.offset = Math.min(180, Math.max(0, deltaY))
+    setDismissOffset(gesture.offset)
+  }
+  const finishDismissGesture = (cancelled = false) => {
+    const gesture = dismissGestureRef.current
+    dismissGestureRef.current = null
+    if (!gesture) return
+    suppressDismissClickRef.current = gesture.vertical
+    if (!cancelled && gesture.offset >= 76) {
+      onClose?.()
+      return
+    }
+    setDismissOffset(0)
+  }
+
   useEffect(() => {
     if (activeLine < 0) return
     const scroller = lyricsScrollRef.current
@@ -192,7 +233,23 @@ export default function NowPlayingSpace({ track, isPlaying, progressStore, lyric
     </div>
   </div> : null
   return (
-    <section className="now-playing-workspace" data-playing={isPlaying ? 'true' : 'false'} data-display-mode={displayMode}>
+    <section
+      className="now-playing-workspace"
+      data-playing={isPlaying ? 'true' : 'false'}
+      data-display-mode={displayMode}
+      data-dragging={dismissOffset > 0 ? 'true' : 'false'}
+      style={{ '--now-playing-dismiss-offset': `${dismissOffset}px` } as CSSProperties}
+      onPointerDown={beginDismissGesture}
+      onPointerMove={moveDismissGesture}
+      onPointerUp={() => finishDismissGesture()}
+      onPointerCancel={() => finishDismissGesture(true)}
+      onClickCapture={(event) => {
+        if (!suppressDismissClickRef.current) return
+        suppressDismissClickRef.current = false
+        event.preventDefault()
+        event.stopPropagation()
+      }}
+    >
       {onClose && <button className="mobile-now-playing-dismiss" onClick={onClose} aria-label="收起歌曲页"><ChevronDown size={22} /></button>}
       <AmbientArtwork track={track} />
       <div className="now-playing-layout">

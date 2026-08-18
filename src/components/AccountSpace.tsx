@@ -9,6 +9,7 @@ import type { UserProfile } from '../userProfile'
 import { useCloudSession } from '../useCloudSession'
 import BrandMark from './BrandMark'
 import CloudAuthChallenge from './CloudAuthChallenge'
+import '../product-ui.css?echora-css=account'
 
 type AccountMode = 'login' | 'register' | 'recover' | 'pending-deletion'
 type AuthRequest = {
