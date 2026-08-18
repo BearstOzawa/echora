@@ -43,26 +43,26 @@
     "@tauri-apps/plugin-http": "^2.5.9",
     "@tauri-apps/plugin-opener": "^2.5.2",
     "js-md5": "^0.9.2",
-    "lucide-react": "^0.468.0",
-    "music-metadata": "^11.13.0",
+    "lucide-react": "^0.577.0",
+    "music-metadata": "^11.14.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
+    "@testing-library/user-event": "^14.6.4",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.4.1",
     "cross-env": "^7.0.3",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
-    "postcss": "^8.5.16",
-    "sharp": "^0.34.5",
+    "postcss": "^8.5.26",
+    "sharp": "^0.35.3",
     "typescript": "^5.7.3",
     "vite": "^6.1.0",
     "vitest": "^4.1.10",
-    "wrangler": "^4.114.0"
+    "wrangler": "^4.123.0"
   }
 }
